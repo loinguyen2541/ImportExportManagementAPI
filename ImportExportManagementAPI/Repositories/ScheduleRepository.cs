@@ -20,6 +20,7 @@ namespace ImportExportManagement_API.Repositories
         {
             List<Schedule> schedules = new List<Schedule>();
             IQueryable<Schedule> rawData = null;
+            rawData = _dbSet;
             schedules = DoFilter(filter, rawData);
             //schedules = _dbSet.ToList();
             return schedules;
@@ -29,16 +30,16 @@ namespace ImportExportManagement_API.Repositories
         {
             if (filter.PartnerName != null && filter.PartnerName.Length > 0)
             {
-                queryable = _dbSet.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
+                queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
             }
             if (DateTime.TryParse(filter.ScheduleDate, out DateTime date))
             {
                 DateTime scheduleDate = DateTime.Parse(filter.ScheduleDate);
-                queryable = _dbSet.Where(p => p.ScheduleDate == scheduleDate);
+                queryable = queryable.Where(p => p.ScheduleDate == scheduleDate);
             }
             if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
             {
-                queryable = _dbSet.Where(p => p.TransactionType.ToString() == filter.TransactionType);
+                queryable = queryable.Where(p => p.TransactionType.ToString() == filter.TransactionType);
             }
             return queryable.ToList();
         }
