@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using ImportExportManagementAPI.Models;
 
 /**
 * @author Loi Nguyen
@@ -15,7 +16,7 @@ namespace ImportExportManagement_API.Repositories
 {
     public class ScheduleRepository : BaseRepository<Schedule>
     {
-        public List<Schedule> GetAll(int page, int size, ScheduleFilter filter)
+        public List<Schedule> GetAll(Paging paging, ScheduleFilter filter)
         {
             List<Schedule> schedules = new List<Schedule>();
             IQueryable<Schedule> rawData = null;

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ImportExportManagement_API;
 using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
+using ImportExportManagementAPI.Models;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -26,9 +27,9 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/Schedules
         [HttpGet]
-        public ActionResult<List<Schedule>> GetSchedule(int page, int size, [FromQuery] ScheduleFilter filter)
+        public ActionResult<List<Schedule>> GetSchedule([FromQuery] Paging paging, [FromQuery] ScheduleFilter filter)
         {
-            List<Schedule> schedules = _repo.GetAll(page, size, filter);
+            List<Schedule> schedules = _repo.GetAll(paging, filter);
             return Ok(schedules);
         }
 
