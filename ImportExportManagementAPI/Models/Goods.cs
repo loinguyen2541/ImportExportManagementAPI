@@ -17,6 +17,7 @@ namespace ImportExportManagement_API.Models
         public int GoodsId { get; set; }
         [MaxLength(50)]
         public String GoodName { get; set; }
+        public float QuantityOfInventory { get; set; }
 
         public List<Transaction> Transactions { get; set; }
 

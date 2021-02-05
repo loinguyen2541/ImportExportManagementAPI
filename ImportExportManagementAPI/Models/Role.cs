@@ -16,6 +16,6 @@ namespace ImportExportManagement_API.Models
         public int RoleId { get; set; }
         public String RoleName { get; set; }
 
-        public Account Account { get; set; }
+        public List<Account> Accounts { get; set; }
     }
 }
