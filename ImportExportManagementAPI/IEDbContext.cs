@@ -34,6 +34,9 @@ namespace ImportExportManagement_API
             //Partner
             modelBuilder.Entity<Partner>().HasOne(p => p.Account).WithOne(a => a.Partner).HasForeignKey<Partner>(p => p.Username);
 
+            //Schedule
+            modelBuilder.Entity<Schedule>().Property(s => s.IsCanceled).HasDefaultValue(false);
+
         }
 
         public DbSet<Partner> Partner { get; set; }

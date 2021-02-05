@@ -17,9 +17,14 @@ namespace ImportExportManagement_API.Repositories
     {
         List<TEntity> GetAll();
         TEntity GetByID(object id);
+        Task<List<TEntity>> GetAllAsync();
+        Task<TEntity> GetByIDAsync(object id);
+
         void Delete(TEntity entityToDelete);
         void Delete(object id);
         void Insert(TEntity entity);
         void Update(TEntity entityToUpdate);
+        void Save();
+        Task SaveAsync();
     }
 }

@@ -16,17 +16,17 @@ namespace ImportExportManagement_API.Repositories
 {
     public class ScheduleRepository : BaseRepository<Schedule>
     {
-        public List<Schedule> GetAll(Paging paging, ScheduleFilter filter)
+        public async ValueTask<List<Schedule>> GetAllAsync(Paging paging, ScheduleFilter filter)
         {
             List<Schedule> schedules = new List<Schedule>();
             IQueryable<Schedule> rawData = null;
             rawData = _dbSet;
-            schedules = DoFilter(filter, rawData);
+            schedules = await DoFilter(filter, rawData);
             //schedules = _dbSet.ToList();
             return schedules;
         }
 
-        private List<Schedule> DoFilter(ScheduleFilter filter, IQueryable<Schedule> queryable)
+        private async Task<List<Schedule>> DoFilter(ScheduleFilter filter, IQueryable<Schedule> queryable)
         {
             if (filter.PartnerName != null && filter.PartnerName.Length > 0)
             {
@@ -41,7 +41,24 @@ namespace ImportExportManagement_API.Repositories
             {
                 queryable = queryable.Where(p => p.TransactionType.ToString() == filter.TransactionType);
             }
-            return queryable.ToList();
+            return await queryable.ToListAsync();
+        }
+
+        public new void Delete(Schedule schedule)
+        {
+            schedule.IsCanceled = true;
+            Update(schedule);
+        }
+        public new void Delete(object id)
+        {
+            Schedule schedule = _dbSet.Find(id);
+            schedule.IsCanceled = true;
+            Update(schedule);
+        }
+
+        public bool Exist(int id)
+        {
+            return _dbSet.Any(e => e.ScheduleId == id);
         }
     }
 }

@@ -12,24 +12,22 @@ using ImportExportManagementAPI.Models;
 
 namespace ImportExportManagementAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/schedules")]
     [ApiController]
     public class SchedulesController : ControllerBase
     {
-        private readonly IEDbContext _context;
         private readonly ScheduleRepository _repo;
 
-        public SchedulesController(IEDbContext context)
+        public SchedulesController()
         {
             _repo = new ScheduleRepository();
-            _context = context;
         }
 
         // GET: api/Schedules
         [HttpGet]
-        public ActionResult<List<Schedule>> GetSchedule([FromQuery] Paging paging, [FromQuery] ScheduleFilter filter)
+        public async Task<ActionResult<List<Schedule>>> GetSchedule([FromQuery] Paging paging, [FromQuery] ScheduleFilter filter)
         {
-            List<Schedule> schedules = _repo.GetAll(paging, filter);
+            List<Schedule> schedules = await _repo.GetAllAsync(paging, filter);
             return Ok(schedules);
         }
 
@@ -37,14 +35,14 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Schedule>> GetSchedule(int id)
         {
-            var schedule = await _context.Schedule.FindAsync(id);
+            var schedule = await _repo.GetByIDAsync(id);
 
             if (schedule == null)
             {
                 return NotFound();
             }
 
-            return schedule;
+            return Ok(schedule);
         }
 
         // PUT: api/Schedules/5
@@ -57,15 +55,15 @@ namespace ImportExportManagementAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(schedule).State = EntityState.Modified;
+            _repo.Update(schedule);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _repo.SaveAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ScheduleExists(id))
+                if (!_repo.Exist(id))
                 {
                     return NotFound();
                 }
@@ -83,8 +81,8 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Schedule>> PostSchedule(Schedule schedule)
         {
-            _context.Schedule.Add(schedule);
-            await _context.SaveChangesAsync();
+            _repo.Insert(schedule);
+            await _repo.SaveAsync();
 
             return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
         }
@@ -93,21 +91,16 @@ namespace ImportExportManagementAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSchedule(int id)
         {
-            var schedule = await _context.Schedule.FindAsync(id);
+            var schedule = await _repo.GetByIDAsync(id);
             if (schedule == null)
             {
                 return NotFound();
             }
 
-            _context.Schedule.Remove(schedule);
-            await _context.SaveChangesAsync();
+            _repo.Delete(schedule);
+            await _repo.SaveAsync();
 
             return NoContent();
-        }
-
-        private bool ScheduleExists(int id)
-        {
-            return _context.Schedule.Any(e => e.ScheduleId == id);
         }
     }
 }

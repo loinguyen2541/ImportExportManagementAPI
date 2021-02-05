@@ -45,14 +45,35 @@ namespace ImportExportManagement_API.Repositories
             return entities;
         }
 
+        public async Task<List<TEntity>> GetAllAsync()
+        {
+            List<TEntity> entities = await _dbSet.ToListAsync();
+            return entities;
+        }
+
         public TEntity GetByID(object id)
         {
             return _dbSet.Find(id);
         }
 
+        public async Task<TEntity> GetByIDAsync(object id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+
         public void Insert(TEntity entity)
         {
             _dbSet.Add(entity);
+        }
+
+        public void Save()
+        {
+            _dbContext.SaveChanges();
+        }
+
+        public async Task SaveAsync()
+        {
+            await _dbContext.SaveChangesAsync();
         }
 
         public void Update(TEntity entityToUpdate)
