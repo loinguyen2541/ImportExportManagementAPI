@@ -7,12 +7,16 @@ namespace ImportExportManagement_API.Models
 {
     public class Transaction
     {
+        public enum TransactionTypeX
+        {
+            Import, Export
+        }
         public int TransactionId { get; set; }
         public DateTime TimeIn { get; set; }
         public DateTime TimeOut { get; set; }
         public float WeightIn { get; set; }
         public float WeightOut { get; set; }
-        public TransactionType TransactionType { get; set; }
+        public TransactionTypeX TransactionType { get; set; }
         public TransactionStatus TransactionStatus { get; set; }
 
         public int PartnerId { get; set; }
