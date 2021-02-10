@@ -35,7 +35,7 @@ namespace ImportExportManagement_API.Repositories
             if (DateTime.TryParse(filter.ScheduleDate, out DateTime date))
             {
                 DateTime scheduleDate = DateTime.Parse(filter.ScheduleDate);
-                queryable = queryable.Where(p => p.ScheduleDate == scheduleDate);
+                queryable = queryable.Where(p => p.ScheduleDate.Date == scheduleDate.Date);
             }
             if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
             {
