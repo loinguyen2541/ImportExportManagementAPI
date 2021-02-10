@@ -103,7 +103,7 @@ namespace ImportExportManagementAPI.Controllers
             return NoContent();
         }
 
-        [HttpGet("/type")]
+        [HttpGet("types")]
         public ActionResult<Object> GetTransType()
         {
             return Ok(Enum.GetValues(typeof(TransactionType)).Cast<TransactionType>().ToList());

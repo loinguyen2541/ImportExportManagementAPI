@@ -20,7 +20,7 @@ namespace ImportExportManagement_API.Repositories
         {
             List<Schedule> schedules = new List<Schedule>();
             IQueryable<Schedule> rawData = null;
-            rawData = _dbSet;
+            rawData = _dbSet.Include(s => s.Partner);
             schedules = await DoFilter(filter, rawData);
             //schedules = _dbSet.ToList();
             return schedules;
@@ -39,7 +39,8 @@ namespace ImportExportManagement_API.Repositories
             }
             if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
             {
-                queryable = queryable.Where(p => p.TransactionType.ToString() == filter.TransactionType);
+                TransactionType type = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
+                queryable = queryable.Where(p => p.TransactionType == type);
             }
             return await queryable.ToListAsync();
         }
