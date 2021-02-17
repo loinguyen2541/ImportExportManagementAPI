@@ -12,10 +12,10 @@ namespace ImportExportManagementAPI.Controllers
 {
     [Route("api/transactions")]
     [ApiController]
-    public class TransactionController : ControllerBase
+    public class TransactionsController : ControllerBase
     {
         private readonly TransactionRepository _repo;
-        public TransactionController()
+        public TransactionsController()
         {
             _repo = new TransactionRepository();
         }
