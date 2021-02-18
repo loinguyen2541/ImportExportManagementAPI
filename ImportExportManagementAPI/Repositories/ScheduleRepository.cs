@@ -51,7 +51,7 @@ namespace ImportExportManagement_API.Repositories
                 paging.Size = 1;
             }
 
-            int count = Count();
+            int count = queryable.Count();
 
             if (((paging.Page - 1) * paging.Size) > count)
             {
@@ -63,7 +63,7 @@ namespace ImportExportManagement_API.Repositories
             Pagination<Schedule> pagination = new Pagination<Schedule>();
             pagination.Page = paging.Page;
             pagination.Size = paging.Size;
-            double totalPage = (count * 1.0)  / (pagination.Size * 1.0);
+            double totalPage = (count * 1.0) / (pagination.Size * 1.0);
             pagination.TotalPage = (int)Math.Ceiling(totalPage);
             pagination.Data = await queryable.ToListAsync();
 
