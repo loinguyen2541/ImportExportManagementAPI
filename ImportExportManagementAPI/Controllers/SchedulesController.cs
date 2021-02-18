@@ -25,9 +25,9 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/Schedules
         [HttpGet]
-        public async Task<ActionResult<List<Schedule>>> GetSchedule([FromQuery] Paging paging, [FromQuery] ScheduleFilter filter)
+        public async Task<ActionResult<Pagination<Schedule>>> GetSchedule([FromQuery] PaginationParam paging, [FromQuery] ScheduleFilterParam filter)
         {
-            List<Schedule> schedules = await _repo.GetAllAsync(paging, filter);
+            Pagination<Schedule> schedules = await _repo.GetAllAsync(paging, filter);
             return Ok(schedules);
         }
 
