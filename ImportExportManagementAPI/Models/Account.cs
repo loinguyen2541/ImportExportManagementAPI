@@ -20,7 +20,6 @@ namespace ImportExportManagement_API.Models
 
         public int RoleId { get; set; }
         public Role Role { get; set; }
-
         public Partner Partner { get; set; }
     }
 }
