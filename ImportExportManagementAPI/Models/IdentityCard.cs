@@ -16,7 +16,7 @@ namespace ImportExportManagement_API.Models
         public String IdentityCardId { get; set; }
         public IdentityCardStatus IdentityCardStatus { get; set; }
 
-        public int ParnerId { get; set; }
+        public int PartnerId { get; set; }
         public Partner Partner { get; set; }
     }
 }
