@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ImportExportManagement_API;
 using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Repositories;
+using ImportExportManagementAPI.Models;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -27,6 +28,15 @@ namespace ImportExportManagementAPI.Controllers
         public async Task<ActionResult<IEnumerable<IdentityCard>>> GetIdentityCard()
         {
             return await _repo.GetAllAsync();
+        }
+
+
+        // GET: api/Partners
+        [HttpGet("/searchCard")]
+        public  ActionResult<IEnumerable<IdentityCard>> SearchCardByFilterAsync([FromQuery] IdentityCardFilter partnerFilter)
+        {
+            List<IdentityCard> identityCards =  _repo.GetAllAsync(partnerFilter);
+            return identityCards;
         }
 
         // GET: api/IdentityCards/5
