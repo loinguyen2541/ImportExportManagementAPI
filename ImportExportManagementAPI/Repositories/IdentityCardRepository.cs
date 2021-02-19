@@ -10,7 +10,7 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class IdentityCardRepository : BaseRepository<IdentityCard>
     {
-        public async ValueTask<List<IdentityCard>> GetAllAsync(IdentityCardFilter filter)
+        public List<IdentityCard> GetAllAsync(IdentityCardFilter filter)
         {
             List<IdentityCard> IdentityCards = new List<IdentityCard>();
             IQueryable<IdentityCard> rawData = null;
@@ -43,9 +43,9 @@ namespace ImportExportManagementAPI.Repositories
             IdentityCards = _dbSet.Where(p => p.IdentityCardStatus == IdentityCardStatus.Active).ToList();
             return IdentityCards;
         }
-        public bool Exist(int id)
+        public bool Exist(String id)
         {
-            return _dbSet.Any(e => e.IdentityCardId == id);
+            return _dbSet.Any(e => e.IdentityCardId.Equals(id));
         }
 
         public void DeleteIdentityCard(IdentityCard IdentityCard)

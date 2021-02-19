@@ -46,9 +46,9 @@ namespace ImportExportManagementAPI.Controllers
         // PUT: api/IdentityCards/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutIdentityCard(int id, IdentityCard identityCard)
+        public async Task<IActionResult> PutIdentityCard(String id, IdentityCard identityCard)
         {
-            if (id != identityCard.IdentityCardId)
+            if (!id.Equals( identityCard.IdentityCardId))
             {
                 return BadRequest();
             }
