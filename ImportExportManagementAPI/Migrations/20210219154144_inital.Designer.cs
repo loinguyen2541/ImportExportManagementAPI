@@ -4,27 +4,29 @@ using ImportExportManagement_API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    partial class IEDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210219154144_inital")]
+    partial class inital
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.3")
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "5.0.2");
 
             modelBuilder.Entity("ImportExportManagementAPI.Models.PartnerType", b =>
                 {
                     b.Property<int>("PartnerTypeId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<string>("PartnerTypeName")
                         .HasColumnType("nvarchar(max)");
@@ -40,8 +42,7 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Password")
-                        .HasMaxLength(25)
-                        .HasColumnType("nvarchar(25)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
@@ -61,7 +62,7 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("GoodsId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<string>("GoodName")
                         .HasMaxLength(50)
@@ -86,7 +87,10 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("IdentityCardStatus")
                         .HasColumnType("int");
 
-                    b.Property<int>("PartnerId")
+                    b.Property<int>("ParnerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PartnerId")
                         .HasColumnType("int");
 
                     b.HasKey("IdentityCardId");
@@ -101,7 +105,7 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("InventoryId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<DateTime>("RecordedDate")
                         .HasColumnType("datetime2");
@@ -134,15 +138,15 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("PartnerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<string>("Address")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("DisplayName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(50)
@@ -172,7 +176,7 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("RoleId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<string>("RoleName")
                         .HasColumnType("nvarchar(max)");
@@ -187,7 +191,7 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("ScheduleId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<int>("GoodsId")
                         .HasColumnType("int");
@@ -223,12 +227,15 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("TransactionId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<int>("GoodsId")
                         .HasColumnType("int");
 
                     b.Property<int>("PartnerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ScheduleId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("TimeIn")
@@ -254,6 +261,8 @@ namespace ImportExportManagementAPI.Migrations
                     b.HasIndex("GoodsId");
 
                     b.HasIndex("PartnerId");
+
+                    b.HasIndex("ScheduleId");
 
                     b.ToTable("Transaction");
                 });
@@ -288,9 +297,7 @@ namespace ImportExportManagementAPI.Migrations
                 {
                     b.HasOne("ImportExportManagement_API.Models.Partner", "Partner")
                         .WithMany("IdentityCards")
-                        .HasForeignKey("PartnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PartnerId");
 
                     b.Navigation("Partner");
                 });
@@ -356,9 +363,17 @@ namespace ImportExportManagementAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ImportExportManagement_API.Models.Schedule", "Schedule")
+                        .WithMany()
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Goods");
 
                     b.Navigation("Partner");
+
+                    b.Navigation("Schedule");
                 });
 
             modelBuilder.Entity("PartnerPartnerType", b =>

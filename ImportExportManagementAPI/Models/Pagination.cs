@@ -6,14 +6,16 @@ using System.Threading.Tasks;
 /**
 * @author Loi Nguyen
 *
-* @date - 2/5/2021 3:56:01 PM 
+* @date - 2/16/2021 2:29:41 AM 
 */
 
 namespace ImportExportManagementAPI.Models
 {
-    public class Paging
+    public class Pagination<TEntity> where TEntity : class
     {
-        public int Page { get; set; }
         public int Size { get; set; }
+        public int Page { get; set; }
+        public int TotalPage { get; set; }
+        public List<TEntity> Data { get; set; }
     }
 }

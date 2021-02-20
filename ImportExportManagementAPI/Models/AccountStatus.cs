@@ -3,9 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ImportExportManagement_API.Models
+/**
+* @author Loi Nguyen
+*
+* @date - 2/19/2021 10:29:07 AM 
+*/
+
+namespace ImportExportManagementAPI.Models
 {
-    public enum IdentityCardStatus
+    public enum AccountStatus
     {
         Active, Block
     }
