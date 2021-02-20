@@ -29,12 +29,21 @@ namespace ImportExportManagementAPI.Controllers
         }
         //add transaction
         [HttpPost]
-        public async Task<ActionResult<Transaction>> PostTransaction(Transaction transaction)
+        public async Task<ActionResult<Transaction>> CreateTransaction(Transaction transaction)
         {
             _repo.Insert(transaction);
             await _repo.SaveAsync();
 
             return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+        }
+        //update transaction information
+        [HttpPut]
+        public async Task<ActionResult<Transaction>> UpdateTransaction(Transaction transaction)
+        {
+            _repo.Update(transaction);
+            await _repo.SaveAsync();
+
+            return Ok();
         }
     }
 }
