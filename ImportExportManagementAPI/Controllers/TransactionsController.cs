@@ -23,11 +23,12 @@ namespace ImportExportManagementAPI.Controllers
         //KhanhBDB
         //get transaction
         [HttpGet]
-        public async Task<ActionResult<List<Transaction>>> GetTransaction([FromQuery] Paging paging, [FromQuery] TransactionFilter filter)
+        public async Task<ActionResult<List<Transaction>>> GetAllTransaction([FromQuery] TransactionFilter filter)
         {
-            List<Transaction> listTransaction = await _repo.GetAllAsync(paging, filter);
+            List<Transaction> listTransaction = await _repo.GetAllAsync(filter);
             return Ok(listTransaction);
         }
+        //KhanhBDB
         //add transaction
         [HttpPost]
         public async Task<ActionResult<Transaction>> CreateTransaction(Transaction transaction)
@@ -37,11 +38,12 @@ namespace ImportExportManagementAPI.Controllers
 
             return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
         }
+        //KhanhBDB
         //update transaction information
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTransaction(String id, Transaction trans)
+        public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
         {
-            if (!id.Equals(trans.TransactionId))
+            if (id != trans.TransactionId)
             {
                 return BadRequest();
             }
@@ -65,6 +67,21 @@ namespace ImportExportManagementAPI.Controllers
             }
 
             return NoContent();
+        }
+
+        //KhanhBDB
+        //get transaction by id
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Transaction>> GetTransaction(int id)
+        {
+            var trans = await _repo.GetByIDAsync(id);
+
+            if (trans == null)
+            {
+                return NotFound();
+            }
+
+            return trans;
         }
     }
 }

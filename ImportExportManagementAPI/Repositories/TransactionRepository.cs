@@ -11,7 +11,7 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class TransactionRepository : BaseRepository<Transaction>
     {
-        public async ValueTask<List<Transaction>> GetAllAsync(Paging paging, TransactionFilter filter)
+        public async ValueTask<List<Transaction>> GetAllAsync(TransactionFilter filter)
         {
             List<Transaction> listTransaction = new List<Transaction>();
             IQueryable<Transaction> rawData = null;
