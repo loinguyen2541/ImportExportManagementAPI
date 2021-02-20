@@ -18,10 +18,12 @@ namespace ImportExportManagement_API.Models
         [MaxLength(50)]
         public String GoodName { get; set; }
         public float QuantityOfInventory { get; set; }
+        public GoodsStatus GoodsStatus { get; set; }
 
         public List<Transaction> Transactions { get; set; }
 
         public List<Schedule> Schedules { get; set; }
+
         public List<InventoryDetail> InventoryDetails { get; set; }
     }
 }

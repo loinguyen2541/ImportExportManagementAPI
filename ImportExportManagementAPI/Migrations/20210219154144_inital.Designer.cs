@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    [Migration("20210205063848_inital")]
+    [Migration("20210219154144_inital")]
     partial class inital
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,6 +20,21 @@ namespace ImportExportManagementAPI.Migrations
                 .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.2");
+
+            modelBuilder.Entity("ImportExportManagementAPI.Models.PartnerType", b =>
+                {
+                    b.Property<int>("PartnerTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("PartnerTypeName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("PartnerTypeId");
+
+                    b.ToTable("PartnerType");
+                });
 
             modelBuilder.Entity("ImportExportManagement_API.Models.Account", b =>
                 {
@@ -32,10 +47,12 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.HasKey("Username");
 
-                    b.HasIndex("RoleId")
-                        .IsUnique();
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Account");
                 });
@@ -51,6 +68,12 @@ namespace ImportExportManagementAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("GoodsStatus")
+                        .HasColumnType("int");
+
+                    b.Property<float>("QuantityOfInventory")
+                        .HasColumnType("real");
+
                     b.HasKey("GoodsId");
 
                     b.ToTable("Goods");
@@ -58,10 +81,8 @@ namespace ImportExportManagementAPI.Migrations
 
             modelBuilder.Entity("ImportExportManagement_API.Models.IdentityCard", b =>
                 {
-                    b.Property<int>("IdentityCardId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
+                    b.Property<string>("IdentityCardId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("IdentityCardStatus")
                         .HasColumnType("int");
@@ -175,6 +196,11 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("GoodsId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsCanceled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<int>("PartnerId")
                         .HasColumnType("int");
 
@@ -241,11 +267,26 @@ namespace ImportExportManagementAPI.Migrations
                     b.ToTable("Transaction");
                 });
 
+            modelBuilder.Entity("PartnerPartnerType", b =>
+                {
+                    b.Property<int>("PartnerTypesPartnerTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PartnersPartnerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PartnerTypesPartnerTypeId", "PartnersPartnerId");
+
+                    b.HasIndex("PartnersPartnerId");
+
+                    b.ToTable("PartnerPartnerType");
+                });
+
             modelBuilder.Entity("ImportExportManagement_API.Models.Account", b =>
                 {
                     b.HasOne("ImportExportManagement_API.Models.Role", "Role")
-                        .WithOne("Account")
-                        .HasForeignKey("ImportExportManagement_API.Models.Account", "RoleId")
+                        .WithMany("Accounts")
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -335,6 +376,21 @@ namespace ImportExportManagementAPI.Migrations
                     b.Navigation("Schedule");
                 });
 
+            modelBuilder.Entity("PartnerPartnerType", b =>
+                {
+                    b.HasOne("ImportExportManagementAPI.Models.PartnerType", null)
+                        .WithMany()
+                        .HasForeignKey("PartnerTypesPartnerTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ImportExportManagement_API.Models.Partner", null)
+                        .WithMany()
+                        .HasForeignKey("PartnersPartnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ImportExportManagement_API.Models.Account", b =>
                 {
                     b.Navigation("Partner");
@@ -365,7 +421,7 @@ namespace ImportExportManagementAPI.Migrations
 
             modelBuilder.Entity("ImportExportManagement_API.Models.Role", b =>
                 {
-                    b.Navigation("Account");
+                    b.Navigation("Accounts");
                 });
 #pragma warning restore 612, 618
         }

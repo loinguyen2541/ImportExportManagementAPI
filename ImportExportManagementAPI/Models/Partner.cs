@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImportExportManagementAPI.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace ImportExportManagement_API.Models
     {
         public int PartnerId { get; set; }
 
-        [MaxLength(50)]
+        [MaxLength(200)]
         public String DisplayName { get; set; }
 
         [MaxLength(50)]
@@ -29,6 +30,8 @@ namespace ImportExportManagement_API.Models
 
         public String Username { get; set; }
         public Account Account { get; set; }
+
+        public List<PartnerType> PartnerTypes { get; set; }
 
     }
 }

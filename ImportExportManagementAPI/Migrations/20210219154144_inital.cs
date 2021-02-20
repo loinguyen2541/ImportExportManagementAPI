@@ -13,7 +13,9 @@ namespace ImportExportManagementAPI.Migrations
                 {
                     GoodsId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    GoodName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
+                    GoodName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    QuantityOfInventory = table.Column<float>(type: "real", nullable: false),
+                    GoodsStatus = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -32,6 +34,19 @@ namespace ImportExportManagementAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Inventory", x => x.InventoryId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PartnerType",
+                columns: table => new
+                {
+                    PartnerTypeId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PartnerTypeName = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PartnerType", x => x.PartnerTypeId);
                 });
 
             migrationBuilder.CreateTable(
@@ -77,6 +92,7 @@ namespace ImportExportManagementAPI.Migrations
                 {
                     Username = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     RoleId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -118,8 +134,7 @@ namespace ImportExportManagementAPI.Migrations
                 name: "IdentityCard",
                 columns: table => new
                 {
-                    IdentityCardId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IdentityCardId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IdentityCardStatus = table.Column<int>(type: "int", nullable: false),
                     ParnerId = table.Column<int>(type: "int", nullable: false),
                     PartnerId = table.Column<int>(type: "int", nullable: true)
@@ -136,6 +151,30 @@ namespace ImportExportManagementAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PartnerPartnerType",
+                columns: table => new
+                {
+                    PartnerTypesPartnerTypeId = table.Column<int>(type: "int", nullable: false),
+                    PartnersPartnerId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PartnerPartnerType", x => new { x.PartnerTypesPartnerTypeId, x.PartnersPartnerId });
+                    table.ForeignKey(
+                        name: "FK_PartnerPartnerType_Partner_PartnersPartnerId",
+                        column: x => x.PartnersPartnerId,
+                        principalTable: "Partner",
+                        principalColumn: "PartnerId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PartnerPartnerType_PartnerType_PartnerTypesPartnerTypeId",
+                        column: x => x.PartnerTypesPartnerTypeId,
+                        principalTable: "PartnerType",
+                        principalColumn: "PartnerTypeId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Schedule",
                 columns: table => new
                 {
@@ -144,6 +183,7 @@ namespace ImportExportManagementAPI.Migrations
                     ScheduleDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RegisteredWeight = table.Column<float>(type: "real", nullable: false),
                     TransactionType = table.Column<int>(type: "int", nullable: false),
+                    IsCanceled = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     PartnerId = table.Column<int>(type: "int", nullable: false),
                     GoodsId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -206,8 +246,7 @@ namespace ImportExportManagementAPI.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Account_RoleId",
                 table: "Account",
-                column: "RoleId",
-                unique: true);
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_IdentityCard_PartnerId",
@@ -225,6 +264,11 @@ namespace ImportExportManagementAPI.Migrations
                 column: "Username",
                 unique: true,
                 filter: "[Username] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PartnerPartnerType_PartnersPartnerId",
+                table: "PartnerPartnerType",
+                column: "PartnersPartnerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Schedule_GoodsId",
@@ -261,10 +305,16 @@ namespace ImportExportManagementAPI.Migrations
                 name: "InventoryDetail");
 
             migrationBuilder.DropTable(
+                name: "PartnerPartnerType");
+
+            migrationBuilder.DropTable(
                 name: "Transaction");
 
             migrationBuilder.DropTable(
                 name: "Inventory");
+
+            migrationBuilder.DropTable(
+                name: "PartnerType");
 
             migrationBuilder.DropTable(
                 name: "Schedule");
