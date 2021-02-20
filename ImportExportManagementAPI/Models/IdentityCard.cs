@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,10 +13,10 @@ namespace ImportExportManagement_API.Models
 {
     public class IdentityCard
     {
-        public String IdentityCardId { get; set; }
+        public int IdentityCardId { get; set; }
         public IdentityCardStatus IdentityCardStatus { get; set; }
 
-        public int PartnerId { get; set; }
+        public int ParnerId { get; set; }
         public Partner Partner { get; set; }
     }
 }

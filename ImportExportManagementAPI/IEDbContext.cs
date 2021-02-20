@@ -37,9 +37,6 @@ namespace ImportExportManagement_API
             //Schedule
             modelBuilder.Entity<Schedule>().Property(s => s.IsCanceled).HasDefaultValue(false);
 
-            //IdentityCard
-            modelBuilder.Entity<IdentityCard>().HasKey(i => i.IdentityCardId);
-
         }
 
         public DbSet<Partner> Partner { get; set; }
