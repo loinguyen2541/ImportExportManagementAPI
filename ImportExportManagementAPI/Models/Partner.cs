@@ -11,7 +11,7 @@ namespace ImportExportManagement_API.Models
     {
         public int PartnerId { get; set; }
 
-        [MaxLength(50)]
+        [MaxLength(200)]
         public String DisplayName { get; set; }
 
         [MaxLength(50)]
