@@ -3,6 +3,7 @@ using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,13 +38,33 @@ namespace ImportExportManagementAPI.Controllers
             return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
         }
         //update transaction information
-        [HttpPut]
-        public async Task<ActionResult<Transaction>> UpdateTransaction(Transaction transaction)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTransaction(String id, Transaction trans)
         {
-            _repo.Update(transaction);
-            await _repo.SaveAsync();
+            if (!id.Equals(trans.TransactionId))
+            {
+                return BadRequest();
+            }
 
-            return Ok();
+            _repo.Update(trans);
+
+            try
+            {
+                await _repo.SaveAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (_repo.GetByID(id) == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
     }
 }
