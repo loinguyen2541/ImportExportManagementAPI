@@ -41,7 +41,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/IdentityCards/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<IdentityCard>> GetIdentityCard(int id)
+        public async Task<ActionResult<IdentityCard>> GetIdentityCard(String id)
         {
             var identityCard = await _repo.GetByIDAsync(id);
 
@@ -97,7 +97,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // DELETE: api/IdentityCards/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteIdentityCard(int id)
+        public async Task<IActionResult> DeleteIdentityCard(String id)
         {
             var identityCard = await _repo.GetByIDAsync(id);
             if (identityCard == null)

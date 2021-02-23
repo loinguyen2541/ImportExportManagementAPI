@@ -12,7 +12,7 @@ using ImportExportManagementAPI.Models;
 
 namespace ImportExportManagementAPI
 {
-    [Route("api/partner")]
+    [Route("api/partners")]
     [ApiController]
     public class PartnersController : ControllerBase
     {
@@ -30,7 +30,7 @@ namespace ImportExportManagementAPI
         }
 
         // GET: api/Partners
-        [HttpGet("/search")]
+        [HttpGet("/api/partners/search")]
         public async Task<ActionResult<IEnumerable<Partner>>> SearchPartnersByFilterAsync([FromQuery] PartnerFilter partnerFilter)
         {
             List<Partner> schedules = await _repo.GetAllAsync(partnerFilter);
