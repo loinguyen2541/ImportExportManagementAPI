@@ -16,7 +16,8 @@ namespace ImportExportManagement_API.Models
     {
         public String IdentityCardId { get; set; }
         public IdentityCardStatus IdentityCardStatus { get; set; }
-
+        public DateTime CreatedDate { get; set; }
+        public List<Transaction> Transactions { get; set; }
         public int PartnerId { get; set; }
         public Partner Partner { get; set; }
     }

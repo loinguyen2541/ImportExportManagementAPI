@@ -54,6 +54,30 @@ namespace ImportExportManagementAPI.Repositories
             partner.PartnerStatus = PartnerStatus.Block;
             Update(partner);
         }
+        public new void Insert(Partner partner)
+        {
+            Account account = new Account();
+
+            account.Username = partner.Email;
+            account.Password = "123";
+            account.RoleId = 3;
+            account.Status = AccountStatus.Active;
+            account.Partner = partner;
+            partner.PartnerPartnerTypes = new List<PartnerPartnerType>();
+            foreach (var item in partner.PartnerTypes)
+            {
+                PartnerPartnerType partnerPartnerType = new PartnerPartnerType();
+                partnerPartnerType.PartnerId = partner.PartnerId;
+                partnerPartnerType.PartnerTypeId = item.PartnerTypeId;
+                partner.PartnerPartnerTypes.Add(partnerPartnerType);
+            }
+            partner.PartnerTypes = null;
+
+
+
+            _dbContext.Account.Add(account);
+            Save();
+        }
 
     }
 }

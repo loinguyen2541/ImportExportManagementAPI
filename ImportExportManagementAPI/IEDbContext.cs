@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ImportExportManagementAPI.Models;
 
 namespace ImportExportManagement_API
 {
@@ -40,6 +41,25 @@ namespace ImportExportManagement_API
             //IdentityCard
             modelBuilder.Entity<IdentityCard>().HasKey(i => i.IdentityCardId);
 
+            //PartnerPartnerType
+            modelBuilder.Entity<PartnerPartnerType>().HasKey(p => new { p.PartnerId, p.PartnerTypeId });
+
+            modelBuilder.Entity<Partner>()
+            .HasMany(p => p.PartnerTypes)
+            .WithMany(p => p.Partners)
+            .UsingEntity<PartnerPartnerType>(
+                j => j
+                    .HasOne(pt => pt.PartnerType)
+                    .WithMany(t => t.PartnerPartnerTypes)
+                    .HasForeignKey(pt => pt.PartnerTypeId),
+                j => j
+                    .HasOne(pt => pt.Partner)
+                    .WithMany(p => p.PartnerPartnerTypes)
+                    .HasForeignKey(pt => pt.PartnerId)
+         );
+
+            //Transaction
+            modelBuilder.Entity<Transaction>().HasOne(t => t.IdentityCard).WithMany(c => c.Transactions).HasForeignKey(t => t.IdentityCardId);
         }
 
         public DbSet<Partner> Partner { get; set; }
@@ -51,6 +71,7 @@ namespace ImportExportManagement_API
         public DbSet<InventoryDetail> InventoryDetail { get; set; }
         public DbSet<Account> Account { get; set; }
         public DbSet<Role> Role { get; set; }
-
+        public DbSet<ImportExportManagementAPI.Models.PartnerType> PartnerType { get; set; }
+        public DbSet<ImportExportManagementAPI.Models.PartnerPartnerType> PartnerPartnerType { get; set; }
     }
 }
