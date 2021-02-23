@@ -11,56 +11,56 @@
     <h4>Transaction</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.TimeIn)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.TimeIn)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.TimeOut)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.TimeOut)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.WeightIn)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.WeightIn)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.WeightOut)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.WeightOut)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.TransactionType)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.TransactionType)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.TransactionStatus)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.TransactionStatus)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Partner)
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IdentityCard)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Partner.PartnerId)
-        </dd class>
-        <dt class = "col-sm-2">
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IdentityCard.IdentityCardId)
+        </dd>
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Goods)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Goods.GoodsId)
-        </dd class>
+        </dd>
     </dl>
-    
+
     <form asp-action="Delete">
         <input type="hidden" asp-for="TransactionId" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |

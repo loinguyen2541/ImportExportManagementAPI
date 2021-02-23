@@ -31,7 +31,7 @@
                 @Html.DisplayNameFor(model => model.TransactionStatus)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Partner)
+                @Html.DisplayNameFor(model => model.IdentityCard)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Goods)
@@ -40,38 +40,39 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.TimeIn)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TimeOut)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.WeightIn)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.WeightOut)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TransactionType)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TransactionStatus)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Partner.PartnerId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Goods.GoodsId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.TransactionId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.TransactionId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.TransactionId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TimeIn)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TimeOut)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.WeightIn)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.WeightOut)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TransactionType)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TransactionStatus)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IdentityCard.IdentityCardId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Goods.GoodsId)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.TransactionId">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.TransactionId">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.TransactionId">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
