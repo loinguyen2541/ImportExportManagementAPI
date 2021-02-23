@@ -24,7 +24,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             if (filter.partnerName != null && filter.partnerName.Length > 0)
             {
-                queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.partnerName));
+                queryable = queryable.Where(p => p.IdentityCard.Partner.DisplayName.Contains(filter.partnerName));
             }
             if (DateTime.TryParse(filter.dateCreate, out DateTime date))
             {
