@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImportExportManagementAPI.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace ImportExportManagement_API.Models
     {
         public String Username { get; set; }
         public String Password { get; set; }
+        public AccountStatus Status { get; set; }
 
         public int RoleId { get; set; }
         public Role Role { get; set; }

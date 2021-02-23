@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace ImportExportManagement_API.Models
 {
-    public class ScheduleFilter
+    public class ScheduleFilterParam
     {
         public String TransactionType { get; set; }
         public String PartnerName { get; set; }
