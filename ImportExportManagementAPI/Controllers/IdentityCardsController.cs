@@ -31,7 +31,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/IdentityCards/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<IdentityCard>> GetIdentityCard(int id)
+        public async Task<ActionResult<IdentityCard>> GetIdentityCard(String id)
         {
             var identityCard = await _repo.GetByIDAsync(id);
 
