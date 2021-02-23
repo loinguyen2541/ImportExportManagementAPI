@@ -70,7 +70,7 @@ namespace ImportExportManagementAPI
                 }
             }
 
-            return NoContent();
+            return Ok(goods);
         }
 
         // POST: api/Goods
