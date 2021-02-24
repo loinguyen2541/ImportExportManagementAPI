@@ -15,6 +15,7 @@ namespace ImportExportManagement_API.Models
         [AllowNull]
         public DateTime TimeOut { get; set; }
         public float WeightIn { get; set; }
+        public DateTime CreatedDate { get; set; }
 
         [AllowNull]
         public float WeightOut { get; set; }
