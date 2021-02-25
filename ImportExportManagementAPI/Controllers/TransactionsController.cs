@@ -29,18 +29,43 @@ namespace ImportExportManagementAPI.Controllers
             return Ok(listTransaction);
         }
         //KhanhBDB
-        //add transaction
-        [HttpPost]
-        public async Task<ActionResult<Transaction>> CreateTransaction(Transaction transaction)
+        //get transaction by id
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Transaction>> GetTransaction(int id)
         {
-            _repo.Insert(transaction);
+            var trans = await _repo.GetByIDAsync(id);
+
+            if (trans == null)
+            {
+                return NotFound();
+            }
+
+            return trans;
+        }
+
+        //KhanhBDB
+        //add transaction
+        [HttpPost("manual")]
+        public async Task<ActionResult<Transaction>> CreateTransactionByManual(Transaction transaction)
+        {
+            _repo.CreateTransaction(transaction);
+            await _repo.SaveAsync();
+
+            return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+        }
+        //add transaction
+        [HttpPost("automatic")]
+        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn, DateTime timeIn)
+        {
+            Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing };
+            _repo.CreateTransaction(transaction);
             await _repo.SaveAsync();
 
             return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
         }
         //KhanhBDB
-        //update transaction information
-        [HttpPut("{id}")]
+        //update transaction information => manual
+        [HttpPut("manual/{id}")]
         public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
         {
             if (id != trans.TransactionId)
@@ -69,19 +94,25 @@ namespace ImportExportManagementAPI.Controllers
             return NoContent();
         }
 
-        //KhanhBDB
-        //get transaction by id
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Transaction>> GetTransaction(int id)
+        /*
+         Tìm giá trị id của transaction mới nhất của thẻ đó:
+        + nếu trans ở trạng thái success => bỏ qua
+        + nếu trans ở trạng thái processing => trả về giá trị id trans để update weight lần 2
+         */
+
+        [HttpPut("automatic/{cardId}")]
+        public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut, DateTime timeOut)
         {
-            var trans = await _repo.GetByIDAsync(id);
-
-            if (trans == null)
+            bool check = _repo.UpdateTransScandCard(cardId, weightOut, timeOut);
+            if (check)
             {
-                return NotFound();
+                await _repo.SaveAsync();
             }
-
-            return trans;
+            else
+            {
+                return BadRequest();
+            }
+            return NoContent();
         }
     }
 }

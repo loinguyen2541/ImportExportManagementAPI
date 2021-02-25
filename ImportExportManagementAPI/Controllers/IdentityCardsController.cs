@@ -111,5 +111,29 @@ namespace ImportExportManagementAPI.Controllers
             return NoContent();
         }
 
+        // check exist card
+        [HttpGet("existed/{cardId}")]
+        public async Task<ActionResult<IdentityCard>> CheckCardExisted(String cardId)
+        {
+            if (cardId != null)
+            {
+                var identityCard = await _repo.GetByIDAsync(cardId);
+
+                if (identityCard == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    bool checkCardActive = await _repo.CheckCardActive(identityCard);
+                    if (checkCardActive)
+                    {
+                        return identityCard;
+                    }                    
+                }
+            }
+            return BadRequest();
+        }
+
     }
 }

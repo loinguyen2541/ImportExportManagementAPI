@@ -53,5 +53,20 @@ namespace ImportExportManagementAPI.Repositories
             IdentityCard.IdentityCardStatus = IdentityCardStatus.Block;
             Update(IdentityCard);
         }
+        //kiem ta trang thai card
+
+        public async Task<bool> CheckCardActive(IdentityCard card)
+        {
+            bool checkStatus =  card.IdentityCardStatus.Equals(IdentityCardStatus.Active) ? true : false;
+            if (checkStatus)
+            {
+                var partner = await new PartnersController().GetPartner(card.PartnerId);
+                if (partner == null)
+                {
+                    checkStatus = false;
+                }
+            }
+            return checkStatus;
+        }
     }
 }
