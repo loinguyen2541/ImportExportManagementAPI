@@ -4,14 +4,16 @@ using ImportExportManagement_API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    partial class IEDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210225031731_add-partner-to-transaction")]
+    partial class addpartnertotransaction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,16 +263,16 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("PartnerId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("TimeIn")
+                    b.Property<DateTime>("TimeIn")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("TimeOut")
+                    b.Property<DateTime>("TimeOut")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("TransactionStatus")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TransactionType")
+                    b.Property<int>("TransactionType")
                         .HasColumnType("int");
 
                     b.Property<float>("WeightIn")

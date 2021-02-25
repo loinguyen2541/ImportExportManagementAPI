@@ -25,7 +25,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             if (filter.Name != null && filter.Name.Length > 0)
             {
-                queryable = queryable.Where(p => p.DisplayName.Contains(filter.Name));
+                queryable = queryable.Where(p => p.IdentityCards.Any(i => i.IdentityCardId == "Adasda"));
             }
             if (filter.Email != null && filter.Email.Length > 0)
             {
