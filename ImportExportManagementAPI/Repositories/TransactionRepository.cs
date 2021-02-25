@@ -11,9 +11,13 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class TransactionRepository : BaseRepository<Transaction>
     {
+        public async Task<Transaction> GetByIDIncludePartnerAsync(int id)
+        {
+            return await _dbSet.Include(t => t.Partner).Where(t => t.TransactionId == id).FirstOrDefaultAsync();
+        }
         public async ValueTask<List<Transaction>> GetAllAsync(TransactionFilter filter)
         {
-            List<Transaction> listTransaction = null;
+            List<Transaction> listTransaction = new List<Transaction>();
             IQueryable<Transaction> rawData = null;
             rawData = _dbSet;
             listTransaction = await DoFilter(filter, rawData);
@@ -26,10 +30,10 @@ namespace ImportExportManagementAPI.Repositories
             {
                 queryable = queryable.Where(p => p.IdentityCard.Partner.DisplayName.Contains(filter.PartnerName));
             }
-            if (DateTime.TryParse(filter.DateCreate, out DateTime date) && filter.DateCreate != null)
+            if (DateTime.TryParse(filter.DateCreate, out DateTime date))
             {
                 DateTime dateCreate = DateTime.Parse(filter.DateCreate);
-                queryable = queryable.Where(p => DateTime.Compare(p.TimeIn, dateCreate) == 0);
+                queryable = queryable.Where(p => p.TimeIn == dateCreate);
             }
             if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
             {
