@@ -7,8 +7,8 @@ namespace ImportExportManagementAPI.Models
 {
     public class IdentityCardFilter
     {
-       public String Name { get; set; }
-        public String Role { get; set; }
+       public String PartnerName { get; set; }
+        public String PartnerType { get; set; }
         public String Status { get; set; }
     }
 }
