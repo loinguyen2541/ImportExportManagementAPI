@@ -42,7 +42,7 @@ namespace ImportExportManagementAPI.Repositories
             int count = queryable.Count();
 
             //check giá trị page ban đầu
-            if(count != 0)
+            if (count != 0)
             {
                 if (((paging.Page - 1) * paging.Size) > count)
                 {
@@ -62,23 +62,11 @@ namespace ImportExportManagementAPI.Repositories
             return pagination;
         }
 
-        public bool InsertInventory(Inventory inventory)
-        {
-            bool existed = CheckExistDateRecord(inventory.RecordedDate);
-            if(!existed)
-            {
-                //nếu chưa có => tạo mới
-                Insert(inventory);
-                return true;
-            }
-            return false;
-        }
-
         //check coi này ngày đã có phiếu kiểm kho chưa
-        public bool CheckExistDateRecord(DateTime dateRecord)
+        public Inventory CheckExistDateRecord(DateTime dateRecord)
         {
             //true if existed
-            return _dbSet.Any(i => i.RecordedDate.CompareTo(dateRecord) == 0);
+            return _dbSet.OrderBy(t => t.RecordedDate).Where(i => i.RecordedDate.CompareTo(dateRecord) == 0).LastOrDefault();
         }
     }
 }

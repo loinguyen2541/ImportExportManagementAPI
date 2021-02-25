@@ -97,15 +97,29 @@ namespace ImportExportManagementAPI.Repositories
             return check;
         }
 
-        public void CreateTransaction(Transaction trans)
+        public bool CreateTransaction(Transaction trans, String method)
         {
             DateTime dateTimeNow = DateTime.Now;
-            string formated = dateTimeNow.ToString("dd/Mm/YYYY hh:mm:ss tt", System.Globalization.DateTimeFormatInfo.InvariantInfo);
-            trans.CreatedDate = DateTime.Parse(formated);
-            if(trans.WeightIn != 0 && trans.TimeIn != null)
+            trans.CreatedDate = dateTimeNow;
+            if (trans.WeightIn != 0 && trans.TimeIn != null)
             {
-                Insert(trans);
+                if (method.Equals("manual"))
+                {
+                    if(trans.WeightOut != 0 && trans.TimeOut != null && trans.TransactionStatus.Equals(TransactionStatus.Success))
+                    {
+                        Insert(trans);
+                        return true;
+                    }
+                    return false;
+                }
+                else
+                {
+                    Insert(trans);
+                    return true;
+                }
+
             }
+            return false;
         }
     }
 }

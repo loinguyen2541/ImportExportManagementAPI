@@ -46,19 +46,23 @@ namespace ImportExportManagementAPI.Controllers
         //KhanhBDB
         //add transaction
         [HttpPost("manual")]
-        public async Task<ActionResult<Transaction>> CreateTransactionByManual(Transaction transaction)
+        public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
         {
-            _repo.CreateTransaction(transaction);
+            bool check = _repo.CreateTransaction(transaction, "manual");
+            if (!check)
+            {
+                return BadRequest("Invalid input");
+            }
             await _repo.SaveAsync();
-
             return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
         }
         //add transaction
         [HttpPost("automatic")]
-        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn, DateTime timeIn)
+        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn, int partnerId)
         {
-            Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing };
-            _repo.CreateTransaction(transaction);
+            DateTime timeIn = DateTime.Now;
+            Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId, GoodsId = 1 };
+            _repo.CreateTransaction(transaction,"automatic");
             await _repo.SaveAsync();
 
             return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
@@ -101,8 +105,9 @@ namespace ImportExportManagementAPI.Controllers
          */
 
         [HttpPut("automatic/{cardId}")]
-        public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut, DateTime timeOut)
+        public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut)
         {
+            DateTime timeOut = DateTime.Now;
             bool check = _repo.UpdateTransScandCard(cardId, weightOut, timeOut);
             if (check)
             {

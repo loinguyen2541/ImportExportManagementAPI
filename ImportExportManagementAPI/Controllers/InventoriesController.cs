@@ -2,6 +2,7 @@
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -30,13 +31,23 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateInventory(Inventory inventory)
         {
-            bool insert = _repo.InsertInventory(inventory);
-            if (insert)
+            _repo.Insert(inventory); 
+             await _repo.SaveAsync();
+             return Ok(inventory);
+        }
+
+        //check ngày này có tồn tại phiếu nhập kho chưa
+        [HttpGet("{dateRecord}")]
+        public async Task<ActionResult<IdentityCard>> GetIdentityCard(DateTime dateRecord)
+        {
+            var identityCard = _repo.CheckExistDateRecord(dateRecord);
+
+            if (identityCard == null)
             {
-                await _repo.SaveAsync();
-                return Ok();
+                return NotFound();
             }
-            return BadRequest("Duplicates date record");
+
+            return Ok(identityCard);
         }
     }
 }
