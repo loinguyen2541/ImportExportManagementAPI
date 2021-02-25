@@ -11,6 +11,10 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class TransactionRepository : BaseRepository<Transaction>
     {
+        public async Task<Transaction> GetByIDIncludePartnerAsync(int id)
+        {
+            return await _dbSet.Include(t => t.Partner).Where(t => t.TransactionId == id).FirstOrDefaultAsync();
+        }
         public async ValueTask<List<Transaction>> GetAllAsync(TransactionFilter filter)
         {
             List<Transaction> listTransaction = new List<Transaction>();

@@ -74,7 +74,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Transaction>> GetTransaction(int id)
         {
-            var trans = await _repo.GetByIDAsync(id);
+            Transaction trans = await _repo.GetByIDIncludePartnerAsync(id);
 
             if (trans == null)
             {
