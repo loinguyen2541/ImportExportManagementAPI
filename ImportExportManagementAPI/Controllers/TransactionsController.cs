@@ -23,9 +23,9 @@ namespace ImportExportManagementAPI.Controllers
         //KhanhBDB
         //get transaction
         [HttpGet]
-        public async Task<ActionResult<List<Transaction>>> GetAllTransaction([FromQuery] TransactionFilter filter)
+        public async Task<ActionResult<Pagination<Transaction>>> GetAllTransaction([FromQuery] PaginationParam paging, [FromQuery] TransactionFilter filter)
         {
-            List<Transaction> listTransaction = await _repo.GetAllAsync(filter);
+            Pagination<Transaction> listTransaction = await _repo.GetAllAsync(paging, filter);
             return Ok(listTransaction);
         }
         //KhanhBDB

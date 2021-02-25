@@ -15,17 +15,36 @@ namespace ImportExportManagementAPI.Repositories
         {
             return await _dbSet.Include(t => t.Partner).Where(t => t.TransactionId == id).FirstOrDefaultAsync();
         }
-        public async ValueTask<List<Transaction>> GetAllAsync(TransactionFilter filter)
+        public async ValueTask<Pagination<Transaction>> GetAllAsync(PaginationParam paging, TransactionFilter filter)
         {
-            List<Transaction> listTransaction = new List<Transaction>();
+            Pagination<Transaction> listTransaction = new Pagination<Transaction>();
             IQueryable<Transaction> rawData = null;
             rawData = _dbSet;
-            listTransaction = await DoFilter(filter, rawData);
+            listTransaction = await DoFilter(paging, filter, rawData);
             return listTransaction;
         }
 
-        private async Task<List<Transaction>> DoFilter(TransactionFilter filter, IQueryable<Transaction> queryable)
+        private async Task<Pagination<Transaction>> DoFilter(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)
         {
+            if (paging.Page < 1)
+            {
+                paging.Page = 1;
+            }
+            if (paging.Size < 1)
+            {
+                paging.Size = 1;
+            }
+
+            int count = queryable.Count();
+
+            if (((paging.Page - 1) * paging.Size) > count)
+            {
+                paging.Page = 1;
+            }
+
+            queryable = queryable.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
+
+
             if (filter.PartnerName != null && filter.PartnerName.Length > 0)
             {
                 queryable = queryable.Where(p => p.IdentityCard.Partner.DisplayName.Contains(filter.PartnerName));
@@ -40,7 +59,14 @@ namespace ImportExportManagementAPI.Repositories
                 TransactionType type = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
                 queryable = queryable.Where(p => p.TransactionType == type);
             }
-            return await queryable.ToListAsync();
+
+            Pagination<Transaction> pagination = new Pagination<Transaction>();
+            pagination.Page = paging.Page;
+            pagination.Size = paging.Size;
+            double totalPage = (count * 1.0) / (pagination.Size * 1.0);
+            pagination.TotalPage = (int)Math.Ceiling(totalPage);
+            pagination.Data = await queryable.ToListAsync();
+            return pagination;
         }
     }
 }
