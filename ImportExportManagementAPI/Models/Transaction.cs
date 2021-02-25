@@ -11,18 +11,15 @@ namespace ImportExportManagement_API.Models
         public int TransactionId { get; set; }
 
         public DateTime TimeIn { get; set; }
-
-        [AllowNull]
-        public DateTime TimeOut { get; set; }
+        public DateTime? TimeOut { get; set; }
         public float WeightIn { get; set; }
         public DateTime CreatedDate { get; set; }
 
-        [AllowNull]
         public float WeightOut { get; set; }
-
-        [AllowNull]
-        public TransactionType TransactionType { get; set; }
+        public TransactionType? TransactionType { get; set; }
         public TransactionStatus TransactionStatus { get; set; }
+        public int PartnerId { get; set; }
+        public Partner Partner { get; set; }
 
         public String IdentityCardId { get; set; }
         public IdentityCard IdentityCard { get; set; }
