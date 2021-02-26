@@ -15,27 +15,58 @@ namespace ImportExportManagementAPI.Repositories
         {
             return await _dbSet.Include(t => t.Partner).Where(t => t.TransactionId == id).FirstOrDefaultAsync();
         }
-        public async ValueTask<List<Transaction>> GetAllAsync(TransactionFilter filter)
+        public async ValueTask<Pagination<Transaction>> GetAllAsync(PaginationParam paging, TransactionFilter filter)
         {
-            List<Transaction> listTransaction = new List<Transaction>();
+            Pagination<Transaction> listTransaction = new Pagination<Transaction>();
             IQueryable<Transaction> rawData = null;
             rawData = _dbSet;
-            listTransaction = await DoFilter(filter, rawData);
+            listTransaction = await DoFilter(paging, filter, rawData);
             return listTransaction;
         }
 
-        private async Task<List<Transaction>> DoFilter(TransactionFilter filter, IQueryable<Transaction> queryable)
+        private async Task<Pagination<Transaction>> DoFilter(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)
         {
-            if (filter.partnerName != null && filter.partnerName.Length > 0)
+            if (paging.Page < 1)
             {
-                queryable = queryable.Where(p => p.IdentityCard.Partner.DisplayName.Contains(filter.partnerName));
+                paging.Page = 1;
             }
-            if (DateTime.TryParse(filter.dateCreate, out DateTime date))
+            if (paging.Size < 1)
             {
-                DateTime dateCreate = DateTime.Parse(filter.dateCreate);
-                queryable = queryable.Where(p => p.TimeIn == dateCreate);
+                paging.Size = 1;
             }
-            return await queryable.ToListAsync();
+
+            int count = queryable.Count();
+
+            if (((paging.Page - 1) * paging.Size) > count)
+            {
+                paging.Page = 1;
+            }
+
+            queryable = queryable.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
+
+
+            if (filter.PartnerName != null && filter.PartnerName.Length > 0)
+            {
+                queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
+            }
+            if (DateTime.TryParse(filter.DateCreate, out DateTime date))
+            {
+                DateTime dateCreate = DateTime.Parse(filter.DateCreate);
+                queryable = queryable.Where(p => p.CreatedDate.Date == dateCreate.Date);
+            }
+            if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
+            {
+                TransactionType type = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
+                queryable = queryable.Where(p => p.TransactionType == type);
+            }
+
+            Pagination<Transaction> pagination = new Pagination<Transaction>();
+            pagination.Page = paging.Page;
+            pagination.Size = paging.Size;
+            double totalPage = (count * 1.0) / (pagination.Size * 1.0);
+            pagination.TotalPage = (int)Math.Ceiling(totalPage);
+            pagination.Data = await queryable.ToListAsync();
+            return pagination;
         }
     }
 }
