@@ -47,12 +47,12 @@ namespace ImportExportManagementAPI.Repositories
 
             if (filter.PartnerName != null && filter.PartnerName.Length > 0)
             {
-                queryable = queryable.Where(p => p.IdentityCard.Partner.DisplayName.Contains(filter.PartnerName));
+                queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
             }
             if (DateTime.TryParse(filter.DateCreate, out DateTime date))
             {
                 DateTime dateCreate = DateTime.Parse(filter.DateCreate);
-                queryable = queryable.Where(p => p.TimeIn == dateCreate);
+                queryable = queryable.Where(p => p.CreatedDate.Date == dateCreate.Date);
             }
             if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
             {
