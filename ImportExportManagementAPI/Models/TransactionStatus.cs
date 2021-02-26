@@ -7,6 +7,6 @@ namespace ImportExportManagement_API.Models
 {
     public enum TransactionStatus
     {
-        Pending, Progessing, Success, Cancel
+        Progessing, Success
     }
 }
