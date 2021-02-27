@@ -37,5 +37,45 @@ namespace ImportExportManagementAPI.Repositories
             }
             return await queryable.ToListAsync();
         }
+        public async ValueTask<Pagination<Transaction>> GetTransByPartnerIdAsync(PaginationParam paging, int id)
+        {
+            Pagination<Transaction> listTransaction = new Pagination<Transaction>();
+            IQueryable<Transaction> rawData = null;
+            rawData = _dbSet.Where(t => t.PartnerId == id);
+            listTransaction = await DoPaging(paging, rawData);
+            return listTransaction; ;
+
+        }
+        private async Task<Pagination<Transaction>> DoPaging(PaginationParam paging, IQueryable<Transaction> queryable)
+        {
+
+
+            if (paging.Page < 1)
+            {
+                paging.Page = 1;
+            }
+            if (paging.Size < 1)
+            {
+                paging.Size = 1;
+            }
+
+            int count = queryable.Count();
+
+            if (((paging.Page - 1) * paging.Size) > count)
+            {
+                paging.Page = 1;
+            }
+
+            queryable = queryable.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
+
+            Pagination<Transaction> pagination = new Pagination<Transaction>();
+            pagination.Page = paging.Page;
+            pagination.Size = paging.Size;
+            double totalPage = (count * 1.0) / (pagination.Size * 1.0);
+            pagination.TotalPage = (int)Math.Ceiling(totalPage);
+            pagination.Data = await queryable.ToListAsync();
+
+            return pagination;
+        }
     }
 }

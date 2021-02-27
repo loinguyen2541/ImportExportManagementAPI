@@ -83,5 +83,17 @@ namespace ImportExportManagementAPI.Controllers
 
             return trans;
         }
+        [HttpGet("partners/search")]
+        public async Task<ActionResult<Pagination<Transaction>>> GetTransactionByPartnerId([FromQuery]PaginationParam paging, [FromQuery] int id)
+        {
+            Pagination<Transaction> trans = await _repo.GetTransByPartnerIdAsync(paging,id);
+
+            if (trans == null)
+            {
+                return NotFound();
+            }
+
+            return trans;
+        }
     }
 }

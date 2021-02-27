@@ -104,6 +104,10 @@ namespace ImportExportManagementAPI.Repositories
             _dbContext.Account.Add(account);
             Save();
         }
+        public List<PartnerStatus> GetPartnerStatus()
+        {
+            return Enum.GetValues(typeof(PartnerStatus)).Cast<PartnerStatus>().ToList();
 
+        }
     }
 }

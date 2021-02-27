@@ -109,6 +109,11 @@ namespace ImportExportManagementAPI
 
             return NoContent();
         }
+        [HttpGet("status")]
+        public ActionResult<Object> GetCardStatus()
+        {
+            return Ok(_repo.GetPartnerStatus());
+        }
 
     }
 }
