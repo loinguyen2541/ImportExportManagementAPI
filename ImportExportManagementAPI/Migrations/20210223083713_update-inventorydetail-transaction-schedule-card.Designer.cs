@@ -4,14 +4,16 @@ using ImportExportManagement_API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    partial class IEDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210223083713_update-inventorydetail-transaction-schedule-card")]
+    partial class updateinventorydetailtransactionschedulecard
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -249,45 +251,35 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("GoodsId")
                         .HasColumnType("int");
 
                     b.Property<string>("IdentityCardId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("PartnerId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("TimeIn")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("TimeOut")
+                    b.Property<DateTime>("TimeOut")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("TransactionStatus")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TransactionType")
+                    b.Property<int>("TransactionType")
                         .HasColumnType("int");
 
                     b.Property<float>("WeightIn")
                         .HasColumnType("real");
 
                     b.Property<float>("WeightOut")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("real")
-                        .HasDefaultValue(0f);
+                        .HasColumnType("real");
 
                     b.HasKey("TransactionId");
 
                     b.HasIndex("GoodsId");
 
                     b.HasIndex("IdentityCardId");
-
-                    b.HasIndex("PartnerId");
 
                     b.ToTable("Transaction");
                 });
@@ -392,17 +384,9 @@ namespace ImportExportManagementAPI.Migrations
                         .WithMany("Transactions")
                         .HasForeignKey("IdentityCardId");
 
-                    b.HasOne("ImportExportManagement_API.Models.Partner", "Partner")
-                        .WithMany()
-                        .HasForeignKey("PartnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Goods");
 
                     b.Navigation("IdentityCard");
-
-                    b.Navigation("Partner");
                 });
 
             modelBuilder.Entity("ImportExportManagementAPI.Models.PartnerType", b =>

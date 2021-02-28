@@ -25,5 +25,11 @@ namespace ImportExportManagementAPI.Repositories
            // partner.PartnerStatus = PartnerStatus.Block;
             Update(goods);
         }
+
+        public List<GoodsStatus> GetGoodsStatus()
+        {
+            return Enum.GetValues(typeof(GoodsStatus)).Cast<GoodsStatus>().ToList();
+
+        }
     }
 }

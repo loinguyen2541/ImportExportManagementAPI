@@ -9,7 +9,6 @@ namespace ImportExportManagement_API.Models
     {
         public int InventoryId { get; set; }
         public DateTime RecordedDate { get; set; }
-        public float Weight { get; set; }
 
         public List<InventoryDetail> InventoryDetails { get; set; }
     }

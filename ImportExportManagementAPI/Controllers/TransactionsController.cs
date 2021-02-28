@@ -23,9 +23,9 @@ namespace ImportExportManagementAPI.Controllers
         //KhanhBDB
         //get transaction
         [HttpGet]
-        public async Task<ActionResult<List<Transaction>>> GetAllTransaction([FromQuery] TransactionFilter filter)
+        public async Task<ActionResult<Pagination<Transaction>>> GetAllTransaction([FromQuery] PaginationParam paging, [FromQuery] TransactionFilter filter)
         {
-            List<Transaction> listTransaction = await _repo.GetAllAsync(filter);
+            Pagination<Transaction> listTransaction = await _repo.GetAllAsync(paging, filter);
             return Ok(listTransaction);
         }
         //KhanhBDB
@@ -65,7 +65,7 @@ namespace ImportExportManagementAPI.Controllers
                     throw;
                 }
             }
-
+            //test
             return NoContent();
         }
 
@@ -74,7 +74,19 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Transaction>> GetTransaction(int id)
         {
-            var trans = await _repo.GetByIDAsync(id);
+            Transaction trans = await _repo.GetByIDIncludePartnerAsync(id);
+
+            if (trans == null)
+            {
+                return NotFound();
+            }
+
+            return trans;
+        }
+        [HttpGet("partners/search")]
+        public async Task<ActionResult<Pagination<Transaction>>> GetTransactionByPartnerId([FromQuery]PaginationParam paging, [FromQuery] int id)
+        {
+            Pagination<Transaction> trans = await _repo.GetTransByPartnerIdAsync(paging,id);
 
             if (trans == null)
             {

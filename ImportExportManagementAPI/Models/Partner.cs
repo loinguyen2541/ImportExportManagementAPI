@@ -25,13 +25,15 @@ namespace ImportExportManagement_API.Models
         public PartnerStatus PartnerStatus { get; set; }
 
         public List<IdentityCard> IdentityCards { get; set; }
-        public List<Transaction> Transactions { get; set; }
         public List<Schedule> Schedules { get; set; }
 
         public String Username { get; set; }
         public Account Account { get; set; }
 
+        List<Transaction> Transactions { get; set; }
+
         public List<PartnerType> PartnerTypes { get; set; }
+        public List<PartnerPartnerType> PartnerPartnerTypes { get; set; }
 
     }
 }

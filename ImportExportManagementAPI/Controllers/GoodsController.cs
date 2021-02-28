@@ -70,7 +70,7 @@ namespace ImportExportManagementAPI
                 }
             }
 
-            return NoContent();
+            return Ok(goods);
         }
 
         // POST: api/Goods
@@ -100,6 +100,11 @@ namespace ImportExportManagementAPI
             return NoContent();
         }
 
-     
+        [HttpGet("status")]
+        public ActionResult<Object> GetGoodsStatus()
+        {
+            return Ok(repo.GetGoodsStatus());
+        }
+
     }
 }

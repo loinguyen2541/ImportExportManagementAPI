@@ -16,6 +16,7 @@ namespace ImportExportManagement_API.Models
         public int GoodsId { get; set; }
         public Goods Goods { get; set; }
 
+        public float Weight { get; set; }
         public int InventoryId { get; set; }
         public Inventory Inventory { get; set; }
     }

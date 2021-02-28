@@ -31,10 +31,10 @@ namespace ImportExportManagementAPI
 
         // GET: api/Partners
         [HttpGet("/api/partners/search")]
-        public async Task<ActionResult<IEnumerable<Partner>>> SearchPartnersByFilterAsync([FromQuery] PartnerFilter partnerFilter)
+        public async Task<ActionResult<IEnumerable<Partner>>> SearchPartnersByFilterAsync([FromQuery] PaginationParam paging, [FromQuery] PartnerFilter partnerFilter)
         {
-            List<Partner> schedules = await _repo.GetAllAsync(partnerFilter);
-            return Ok(schedules);
+            Pagination<Partner> partners = await _repo.GetAllAsync(paging, partnerFilter);
+            return Ok(partners);
         }
 
 
@@ -55,7 +55,7 @@ namespace ImportExportManagementAPI
         // PUT: api/Partners/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPartner(int id,Partner partner)
+        public async Task<IActionResult> PutPartner(int id, Partner partner)
         {
             if (id != partner.PartnerId)
             {
@@ -108,6 +108,11 @@ namespace ImportExportManagementAPI
             await _repo.SaveAsync();
 
             return NoContent();
+        }
+        [HttpGet("status")]
+        public ActionResult<Object> GetCardStatus()
+        {
+            return Ok(_repo.GetPartnerStatus());
         }
 
     }
