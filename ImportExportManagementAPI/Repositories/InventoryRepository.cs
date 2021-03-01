@@ -57,7 +57,7 @@ namespace ImportExportManagementAPI.Repositories
             pagination.Size = paging.Size;
             double totalPage = (count * 1.0) / (pagination.Size * 1.0);
             pagination.TotalPage = (int)Math.Ceiling(totalPage);
-            pagination.Data = await queryable.ToListAsync();
+            pagination.Data = await queryable.OrderByDescending(i => i.RecordedDate).ToListAsync();
 
             return pagination;
         }
