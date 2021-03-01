@@ -35,19 +35,33 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<Transaction> listTransaction = await _repo.GetLastIndex(paging);
             return Ok(listTransaction);
         }
-
+        //KhanhBDB
         //add transaction
-        [HttpPost]
-        public async Task<ActionResult<Transaction>> CreateTransaction(Transaction transaction)
+        [HttpPost("manual")]
+        public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
         {
-            _repo.Insert(transaction);
+            bool check = _repo.CreateTransaction(transaction, "manual");
+            if (!check)
+            {
+                return BadRequest("Invalid input");
+            }
+            await _repo.SaveAsync();
+            return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+        }
+        //add transaction
+        [HttpPost("automatic")]
+        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn, int partnerId)
+        {
+            DateTime timeIn = DateTime.Now;
+            Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId, GoodsId = 1 };
+            _repo.CreateTransaction(transaction,"automatic");
             await _repo.SaveAsync();
 
             return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
         }
-        
-        //update transaction information
-        [HttpPut("{id}")]
+        //KhanhBDB
+        //update transaction information => manual
+        [HttpPut("manual/{id}")]
         public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
         {
             if (id != trans.TransactionId)
@@ -75,7 +89,27 @@ namespace ImportExportManagementAPI.Controllers
             return NoContent();
         }
 
-        
+        /*
+         Tìm giá trị id của transaction mới nhất của thẻ đó:
+        + nếu trans ở trạng thái success => bỏ qua
+        + nếu trans ở trạng thái processing => trả về giá trị id trans để update weight lần 2
+         */
+
+        [HttpPut("automatic/{cardId}")]
+        public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut)
+        {
+            DateTime timeOut = DateTime.Now;
+            bool check = _repo.UpdateTransScandCard(cardId, weightOut, timeOut);
+            if (check)
+            {
+                await _repo.SaveAsync();
+            }
+            else
+            {
+                return BadRequest();
+            }
+            return NoContent();
+        }
         //get transaction by id
         [HttpGet("{id}")]
         public async Task<ActionResult<Transaction>> GetTransaction(int id)
@@ -96,10 +130,9 @@ namespace ImportExportManagementAPI.Controllers
 
             if (trans == null)
             {
-                return NotFound();
+                return BadRequest();
             }
-
-            return trans;
+            return NoContent();
         }
         [HttpGet("types")]
         public ActionResult<Object> GetTransType()
