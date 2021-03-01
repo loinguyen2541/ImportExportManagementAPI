@@ -105,7 +105,11 @@ namespace ImportExportManagementAPI.Controllers
                 await _repo.SaveAsync();
             }
             else
-        
+            {
+                return BadRequest();
+            }
+            return NoContent();
+        }
         //get transaction by id
         [HttpGet("{id}")]
         public async Task<ActionResult<Transaction>> GetTransaction(int id)
