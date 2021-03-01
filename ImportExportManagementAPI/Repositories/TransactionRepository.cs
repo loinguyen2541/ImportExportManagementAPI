@@ -24,8 +24,35 @@ namespace ImportExportManagementAPI.Repositories
             return listTransaction;
         }
 
+        public async ValueTask<Pagination<Transaction>> GetLastIndex(PaginationParam paging)
+        {
+            Pagination<Transaction> listTransaction = new Pagination<Transaction>();
+            IQueryable<Transaction> rawData = null;
+            rawData = _dbSet.OrderByDescending(t => t.TransactionId).Where(p=>p.TransactionStatus.Equals(TransactionStatus.Progessing));
+            listTransaction = await DoFilter(paging, null, rawData);
+            return listTransaction;
+        }
+
         private async Task<Pagination<Transaction>> DoFilter(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)
         {
+
+            if (filter != null)
+            {
+                if (filter.PartnerName != null && filter.PartnerName.Length > 0)
+                {
+                    queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
+                }
+                if (DateTime.TryParse(filter.DateCreate, out DateTime date))
+                {
+                    DateTime dateCreate = DateTime.Parse(filter.DateCreate);
+                    queryable = queryable.Where(p => p.CreatedDate.Date == dateCreate.Date);
+                }
+                if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
+                {
+                    TransactionType type = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
+                    queryable = queryable.Where(p => p.TransactionType == type);
+                }
+            }
             if (paging.Page < 1)
             {
                 paging.Page = 1;
@@ -43,23 +70,6 @@ namespace ImportExportManagementAPI.Repositories
             }
 
             queryable = queryable.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
-
-
-            if (filter.PartnerName != null && filter.PartnerName.Length > 0)
-            {
-                queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
-            }
-            if (DateTime.TryParse(filter.DateCreate, out DateTime date))
-            {
-                DateTime dateCreate = DateTime.Parse(filter.DateCreate);
-                queryable = queryable.Where(p => p.CreatedDate.Date == dateCreate.Date);
-            }
-            if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
-            {
-                TransactionType type = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
-                queryable = queryable.Where(p => p.TransactionType == type);
-            }
-
             Pagination<Transaction> pagination = new Pagination<Transaction>();
             pagination.Page = paging.Page;
             pagination.Size = paging.Size;

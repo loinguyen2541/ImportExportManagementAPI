@@ -20,7 +20,6 @@ namespace ImportExportManagementAPI.Controllers
         {
             _repo = new TransactionRepository();
         }
-        //KhanhBDB
         //get transaction
         [HttpGet]
         public async Task<ActionResult<Pagination<Transaction>>> GetAllTransaction([FromQuery] PaginationParam paging, [FromQuery] TransactionFilter filter)
@@ -28,7 +27,15 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<Transaction> listTransaction = await _repo.GetAllAsync(paging, filter);
             return Ok(listTransaction);
         }
-        //KhanhBDB
+
+        //get number of lastest transaction
+        [HttpGet("/api/transactions/last")]
+        public async Task<ActionResult<Pagination<Transaction>>> GetLastTransaction([FromQuery] PaginationParam paging)
+        {
+            Pagination<Transaction> listTransaction = await _repo.GetLastIndex(paging);
+            return Ok(listTransaction);
+        }
+
         //add transaction
         [HttpPost]
         public async Task<ActionResult<Transaction>> CreateTransaction(Transaction transaction)
@@ -38,7 +45,7 @@ namespace ImportExportManagementAPI.Controllers
 
             return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
         }
-        //KhanhBDB
+        
         //update transaction information
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
@@ -65,11 +72,10 @@ namespace ImportExportManagementAPI.Controllers
                     throw;
                 }
             }
-            //test
             return NoContent();
         }
 
-        //KhanhBDB
+        
         //get transaction by id
         [HttpGet("{id}")]
         public async Task<ActionResult<Transaction>> GetTransaction(int id)
