@@ -11,27 +11,112 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class TransactionRepository : BaseRepository<Transaction>
     {
-        public async ValueTask<List<Transaction>> GetAllAsync(TransactionFilter filter)
+        public async Task<Transaction> GetByIDIncludePartnerAsync(int id)
         {
-            List<Transaction> listTransaction = new List<Transaction>();
+            return await _dbSet.Include(t => t.Partner).Where(t => t.TransactionId == id).FirstOrDefaultAsync();
+        }
+        public async ValueTask<Pagination<Transaction>> GetAllAsync(PaginationParam paging, TransactionFilter filter)
+        {
+            Pagination<Transaction> listTransaction = new Pagination<Transaction>();
             IQueryable<Transaction> rawData = null;
             rawData = _dbSet;
-            listTransaction = await DoFilter(filter, rawData);
+            listTransaction = await DoFilter(paging, filter, rawData);
             return listTransaction;
         }
 
-        private async Task<List<Transaction>> DoFilter(TransactionFilter filter, IQueryable<Transaction> queryable)
+        public async ValueTask<Pagination<Transaction>> GetLastIndex(PaginationParam paging)
         {
-            if (filter.partnerName != null && filter.partnerName.Length > 0)
+            Pagination<Transaction> listTransaction = new Pagination<Transaction>();
+            IQueryable<Transaction> rawData = null;
+            rawData = _dbSet.OrderByDescending(t => t.TransactionId).Where(p=>p.TransactionStatus.Equals(TransactionStatus.Progessing));
+            listTransaction = await DoFilter(paging, null, rawData);
+            return listTransaction;
+        }
+
+        private async Task<Pagination<Transaction>> DoFilter(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)
+        {
+
+            if (filter != null)
             {
-                queryable = queryable.Where(p => p.IdentityCard.Partner.DisplayName.Contains(filter.partnerName));
+                if (filter.PartnerName != null && filter.PartnerName.Length > 0)
+                {
+                    queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
+                }
+                if (DateTime.TryParse(filter.DateCreate, out DateTime date))
+                {
+                    DateTime dateCreate = DateTime.Parse(filter.DateCreate);
+                    queryable = queryable.Where(p => p.CreatedDate.Date == dateCreate.Date);
+                }
+                if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
+                {
+                    TransactionType type = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
+                    queryable = queryable.Where(p => p.TransactionType == type);
+                }
             }
-            if (DateTime.TryParse(filter.dateCreate, out DateTime date))
+            if (paging.Page < 1)
             {
-                DateTime dateCreate = DateTime.Parse(filter.dateCreate);
-                queryable = queryable.Where(p => p.TimeIn == dateCreate);
+                paging.Page = 1;
             }
-            return await queryable.ToListAsync();
+            if (paging.Size < 1)
+            {
+                paging.Size = 1;
+            }
+
+            int count = queryable.Count();
+
+            if (((paging.Page - 1) * paging.Size) > count)
+            {
+                paging.Page = 1;
+            }
+
+            queryable = queryable.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
+            Pagination<Transaction> pagination = new Pagination<Transaction>();
+            pagination.Page = paging.Page;
+            pagination.Size = paging.Size;
+            double totalPage = (count * 1.0) / (pagination.Size * 1.0);
+            pagination.TotalPage = (int)Math.Ceiling(totalPage);
+            pagination.Data = await queryable.ToListAsync();
+            return pagination;
+        }
+        public async ValueTask<Pagination<Transaction>> GetTransByPartnerIdAsync(PaginationParam paging, int id)
+        {
+            Pagination<Transaction> listTransaction = new Pagination<Transaction>();
+            IQueryable<Transaction> rawData = null;
+            rawData = _dbSet.Where(t => t.PartnerId == id);
+            listTransaction = await DoPaging(paging, rawData);
+            return listTransaction; ;
+
+        }
+        private async Task<Pagination<Transaction>> DoPaging(PaginationParam paging, IQueryable<Transaction> queryable)
+        {
+
+
+            if (paging.Page < 1)
+            {
+                paging.Page = 1;
+            }
+            if (paging.Size < 1)
+            {
+                paging.Size = 1;
+            }
+
+            int count = queryable.Count();
+
+            if (((paging.Page - 1) * paging.Size) > count)
+            {
+                paging.Page = 1;
+            }
+
+            queryable = queryable.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
+
+            Pagination<Transaction> pagination = new Pagination<Transaction>();
+            pagination.Page = paging.Page;
+            pagination.Size = paging.Size;
+            double totalPage = (count * 1.0) / (pagination.Size * 1.0);
+            pagination.TotalPage = (int)Math.Ceiling(totalPage);
+            pagination.Data = await queryable.ToListAsync();
+
+            return pagination;
         }
 
         //tìm transaction mới nhất của thẻ ở trạng thái processing

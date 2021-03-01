@@ -31,10 +31,10 @@ namespace ImportExportManagementAPI
 
         // GET: api/Partners
         [HttpGet("/api/partners/search")]
-        public async Task<ActionResult<IEnumerable<Partner>>> SearchPartnersByFilterAsync([FromQuery] PartnerFilter partnerFilter)
+        public async Task<ActionResult<IEnumerable<Partner>>> SearchPartnersByFilterAsync([FromQuery] PaginationParam paging, [FromQuery] PartnerFilter partnerFilter)
         {
-            List<Partner> schedules = await _repo.GetAllAsync(partnerFilter);
-            return Ok(schedules);
+            Pagination<Partner> partners = await _repo.GetAllAsync(paging, partnerFilter);
+            return Ok(partners);
         }
 
 
@@ -109,5 +109,11 @@ namespace ImportExportManagementAPI
 
             return NoContent();
         }
+        [HttpGet("status")]
+        public ActionResult<Object> GetCardStatus()
+        {
+            return Ok(_repo.GetPartnerStatus());
+        }
+
     }
 }

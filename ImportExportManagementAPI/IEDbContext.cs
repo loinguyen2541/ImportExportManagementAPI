@@ -60,6 +60,7 @@ namespace ImportExportManagement_API
 
             //Transaction
             modelBuilder.Entity<Transaction>().HasOne(t => t.IdentityCard).WithMany(c => c.Transactions).HasForeignKey(t => t.IdentityCardId);
+            modelBuilder.Entity<Transaction>().Property(t => t.WeightOut).HasDefaultValue(0);
         }
 
         public DbSet<Partner> Partner { get; set; }

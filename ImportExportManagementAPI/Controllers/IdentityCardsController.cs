@@ -12,7 +12,7 @@ using ImportExportManagementAPI.Models;
 
 namespace ImportExportManagementAPI.Controllers
 {
-    [Route("api/card")]
+    [Route("api/cards")]
     [ApiController]
     public class IdentityCardsController : ControllerBase
     {
@@ -32,10 +32,10 @@ namespace ImportExportManagementAPI.Controllers
 
 
         // GET: api/Partners
-        [HttpGet("/searchCard")]
-        public  ActionResult<IEnumerable<IdentityCard>> SearchCardByFilterAsync([FromQuery] IdentityCardFilter partnerFilter)
+        [HttpGet("searchCard")]
+        public async Task<ActionResult<Pagination<IdentityCard>>> SearchCardByFilterAsync([FromQuery] IdentityCardFilter partnerFilter, [FromQuery] PaginationParam paging)
         {
-            List<IdentityCard> identityCards =  _repo.GetAllAsync(partnerFilter);
+            Pagination<IdentityCard> identityCards = await _repo.GetAllAsync(paging, partnerFilter);
             return identityCards;
         }
 
@@ -58,7 +58,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutIdentityCard(String id, IdentityCard identityCard)
         {
-            if (!id.Equals( identityCard.IdentityCardId))
+            if (!id.Equals(identityCard.IdentityCardId))
             {
                 return BadRequest();
             }
@@ -81,7 +81,7 @@ namespace ImportExportManagementAPI.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/IdentityCards
@@ -135,5 +135,10 @@ namespace ImportExportManagementAPI.Controllers
             return BadRequest();
         }
 
+        [HttpGet("status")]
+        public ActionResult<Object> GetCardStatus()
+        {
+            return Ok(_repo.GetCardsStatus());
+        }
     }
 }

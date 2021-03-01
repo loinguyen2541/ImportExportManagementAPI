@@ -20,29 +20,21 @@ namespace ImportExportManagementAPI.Controllers
         {
             _repo = new TransactionRepository();
         }
-        //KhanhBDB
         //get transaction
         [HttpGet]
-        public async Task<ActionResult<List<Transaction>>> GetAllTransaction([FromQuery] TransactionFilter filter)
+        public async Task<ActionResult<Pagination<Transaction>>> GetAllTransaction([FromQuery] PaginationParam paging, [FromQuery] TransactionFilter filter)
         {
-            List<Transaction> listTransaction = await _repo.GetAllAsync(filter);
+            Pagination<Transaction> listTransaction = await _repo.GetAllAsync(paging, filter);
             return Ok(listTransaction);
         }
-        //KhanhBDB
-        //get transaction by id
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Transaction>> GetTransaction(int id)
+
+        //get number of lastest transaction
+        [HttpGet("/api/transactions/last")]
+        public async Task<ActionResult<Pagination<Transaction>>> GetLastTransaction([FromQuery] PaginationParam paging)
         {
-            var trans = await _repo.GetByIDAsync(id);
-
-            if (trans == null)
-            {
-                return NotFound();
-            }
-
-            return trans;
+            Pagination<Transaction> listTransaction = await _repo.GetLastIndex(paging);
+            return Ok(listTransaction);
         }
-
         //KhanhBDB
         //add transaction
         [HttpPost("manual")]
@@ -94,7 +86,6 @@ namespace ImportExportManagementAPI.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -114,10 +105,40 @@ namespace ImportExportManagementAPI.Controllers
                 await _repo.SaveAsync();
             }
             else
+        
+        //get transaction by id
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Transaction>> GetTransaction(int id)
+        {
+            Transaction trans = await _repo.GetByIDIncludePartnerAsync(id);
+
+            if (trans == null)
+            {
+                return NotFound();
+            }
+
+            return trans;
+        }
+        [HttpGet("partners/search")]
+        public async Task<ActionResult<Pagination<Transaction>>> GetTransactionByPartnerId([FromQuery]PaginationParam paging, [FromQuery] int id)
+        {
+            Pagination<Transaction> trans = await _repo.GetTransByPartnerIdAsync(paging,id);
+
+            if (trans == null)
             {
                 return BadRequest();
             }
             return NoContent();
+        }
+        [HttpGet("types")]
+        public ActionResult<Object> GetTransType()
+        {
+            return Ok(Enum.GetValues(typeof(TransactionType)).Cast<TransactionType>().ToList());
+        }
+        [HttpGet("states")]
+        public ActionResult<Object> GetTransState()
+        {
+            return Ok(Enum.GetValues(typeof(TransactionStatus)).Cast<TransactionStatus>().ToList());
         }
     }
 }

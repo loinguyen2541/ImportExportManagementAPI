@@ -100,6 +100,11 @@ namespace ImportExportManagementAPI
             return NoContent();
         }
 
-     
+        [HttpGet("status")]
+        public ActionResult<Object> GetGoodsStatus()
+        {
+            return Ok(repo.GetGoodsStatus());
+        }
+
     }
 }

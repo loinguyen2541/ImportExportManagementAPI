@@ -10,7 +10,7 @@ namespace ImportExportManagement_API.Models
     {
         public int TransactionId { get; set; }
 
-        public DateTime? TimeIn { get; set; }
+        public DateTime TimeIn { get; set; }
         public DateTime? TimeOut { get; set; }
         public float WeightIn { get; set; }
         public DateTime CreatedDate { get; set; }
@@ -26,6 +26,5 @@ namespace ImportExportManagement_API.Models
 
         public int GoodsId { get; set; }
         public Goods Goods { get; set; }
-
     }
 }
