@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImportExportManagementAPI.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace ImportExportManagement_API.Models
 
         public float Weight { get; set; }
         public int InventoryId { get; set; }
+        public InventoryDetailType Type { get; set; }
         public Inventory Inventory { get; set; }
     }
 }
