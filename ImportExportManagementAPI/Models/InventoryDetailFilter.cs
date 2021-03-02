@@ -11,13 +11,8 @@ using System.Threading.Tasks;
 
 namespace ImportExportManagement_API.Models
 {
-    public class InventoryDetail
+    public class InventoryDetailFilter
     {
-        public int GoodsId { get; set; }
-        public Goods Goods { get; set; }
-
-        public float Weight { get; set; }
-        public int InventoryId { get; set; }
-        public Inventory Inventory { get; set; }
+        public String PartnerName { get; set; }
     }
 }

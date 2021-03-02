@@ -187,7 +187,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             DateTime dateTimeNow = DateTime.Now;
             trans.CreatedDate = dateTimeNow;
-            if (trans.WeightIn != 0 && trans.TimeIn != null)
+            if (trans.WeightIn > 0 && trans.TimeIn != null)
             {
                 if (method.Equals("manual"))
                 {
