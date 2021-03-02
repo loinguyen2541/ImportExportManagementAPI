@@ -16,6 +16,34 @@ namespace ImportExportManagementAPI.Repositories
             return await _dbSet.Include(t => t.Partner).Where(t => t.TransactionId == id).FirstOrDefaultAsync();
         }
 
+        //kiểm tra xem các trans đang process có thẻ này không
+        public async Task<bool> CheckProcessingCard(String cardId)
+        {
+            bool check = false;
+
+            int temp = _dbSet.Count();
+            IQueryable<Transaction> rawData = null;
+            List<Transaction> listProcessingTrans = new List<Transaction>();
+            rawData = _dbSet;
+            rawData = rawData.Where(t => t.TransactionStatus.Equals(TransactionStatus.Progessing));
+            listProcessingTrans = await rawData.ToListAsync();
+            if(listProcessingTrans != null && listProcessingTrans.Count != 0)
+            {
+                for (int i = 0; i < listProcessingTrans.Count; i++)
+                {
+                    if (listProcessingTrans[i].IdentityCardId != null)
+                    {
+                        if (listProcessingTrans[i].IdentityCardId.Equals(cardId))
+                        {
+                            check = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            return check;
+        }
+
         public async ValueTask<Pagination<Transaction>> GetAllAsync(PaginationParam paging, TransactionFilter filter)
         {
             Pagination<Transaction> listTransaction = new Pagination<Transaction>();
