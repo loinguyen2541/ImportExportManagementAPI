@@ -15,11 +15,12 @@ namespace ImportExportManagementAPI.Repositories
         {
             return await _dbSet.Include(t => t.Partner).Where(t => t.TransactionId == id).FirstOrDefaultAsync();
         }
+
         public async ValueTask<Pagination<Transaction>> GetAllAsync(PaginationParam paging, TransactionFilter filter)
         {
             Pagination<Transaction> listTransaction = new Pagination<Transaction>();
             IQueryable<Transaction> rawData = null;
-            rawData = _dbSet;
+            rawData = _dbSet.Include(t => t.Partner);
             listTransaction = await DoFilter(paging, filter, rawData);
             return listTransaction;
         }
@@ -28,7 +29,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<Transaction> listTransaction = new Pagination<Transaction>();
             IQueryable<Transaction> rawData = null;
-            rawData = _dbSet.OrderByDescending(t => t.TransactionId).Where(p=>p.TransactionStatus.Equals(TransactionStatus.Progessing));
+            rawData = _dbSet.OrderByDescending(t => t.TransactionId).Where(p => p.TransactionStatus.Equals(TransactionStatus.Progessing));
             listTransaction = await DoFilter(paging, null, rawData);
             return listTransaction;
         }
@@ -190,7 +191,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 if (method.Equals("manual"))
                 {
-                    if(trans.WeightOut != 0 && trans.TimeOut != null && trans.TransactionStatus.Equals(TransactionStatus.Success))
+                    if (trans.WeightOut != 0 && trans.TimeOut != null && trans.TransactionStatus.Equals(TransactionStatus.Success))
                     {
                         Insert(trans);
                         return true;

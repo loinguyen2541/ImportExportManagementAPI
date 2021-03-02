@@ -132,7 +132,7 @@ namespace ImportExportManagementAPI.Controllers
             {
                 return BadRequest();
             }
-            return NoContent();
+            return Ok(trans);
         }
         [HttpGet("types")]
         public ActionResult<Object> GetTransType()
