@@ -91,7 +91,7 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //check scand card
-        public async Task<bool> checkCardAsync(String cardId)
+        public async Task<bool> checkCardAsync(String cardId, String method)
         {
             bool checkCard = false;
             if (cardId != null)
@@ -104,7 +104,7 @@ namespace ImportExportManagementAPI.Repositories
                     bool checkPartner = await CheckPartnerCard(identityCard);
                     //card có đang processing không
                     TransactionRepository transRepo = new TransactionRepository();
-                    bool checkProcessing = await transRepo.CheckProcessingCard(cardId);
+                    bool checkProcessing = await transRepo.CheckProcessingCard(cardId,"CheckCard", 0);
 
                     if(checkPartner == true && checkProcessing == false)
                     {

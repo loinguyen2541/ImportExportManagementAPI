@@ -1,6 +1,7 @@
 ﻿using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -17,28 +18,50 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //kiểm tra xem các trans đang process có thẻ này không
-        public async Task<bool> CheckProcessingCard(String cardId)
+        public async Task<bool> CheckProcessingCard(String cardId, String method, int transId)
         {
             bool check = false;
-
-            int temp = _dbSet.Count();
             IQueryable<Transaction> rawData = null;
             List<Transaction> listProcessingTrans = new List<Transaction>();
             rawData = _dbSet;
             rawData = rawData.Where(t => t.TransactionStatus.Equals(TransactionStatus.Progessing));
             listProcessingTrans = await rawData.ToListAsync();
-            if(listProcessingTrans != null && listProcessingTrans.Count != 0)
+            if (transId == 0)
             {
-                for (int i = 0; i < listProcessingTrans.Count; i++)
+                if (method.Equals("Insert") || method.Equals("CheckCard"))
                 {
-                    if (listProcessingTrans[i].IdentityCardId != null)
+                    //insert
+                    check = await DisableProcessingTransInInsert(listProcessingTrans, cardId);
+                }
+                else if (method.Equals("Update"))
+                {
+                    //update by arduino
+                    check = await DisableProcessingTransInUpdate(listProcessingTrans, cardId, transId);
+                }
+            }
+            else
+            {
+                check = await DisableProcessingTransInUpdate(listProcessingTrans, cardId, transId);
+            }
+            return check;
+        }
+        //insert method => disable all transation processing in 
+        public async Task<bool> DisableProcessingTransInInsert(List<Transaction> listDisable, String cardId)
+        {
+            bool check = false;
+            if (listDisable != null && listDisable.Count != 0)
+            {
+                for (int i = 0; i < listDisable.Count; i++)
+                {
+                    if (listDisable[i].IdentityCardId != null)
                     {
-                        if (listProcessingTrans[i].IdentityCardId.Equals(cardId))
+                        //insert => disable all processing transaction
+                        if (listDisable[i].IdentityCardId.Equals(cardId))
                         {
                             check = true;
                             if (check)
                             {
-                                check = await UpdateStatusProcessingTransactionAsync(listProcessingTrans[i]);
+                                check = await UpdateStatusProcessingTransactionAsync(listDisable[i]);
                                 if (check)
                                 {
                                     check = false;
@@ -50,8 +73,35 @@ namespace ImportExportManagementAPI.Repositories
             }
             return check;
         }
-
-        //disable processing transaction
+        //update method => disable transations processing in expect last
+        public async Task<bool> DisableProcessingTransInUpdate(List<Transaction> listDisable, String cardId, int transId)
+        {
+            bool check = false;
+            if (listDisable != null && listDisable.Count != 0)
+            {
+                for (int i = 0; i < listDisable.Count; i++)
+                {
+                    if (listDisable[i].IdentityCardId != null)
+                    {
+                        //insert => disable all processing transaction
+                        if (listDisable[i].IdentityCardId.Equals(cardId) && (listDisable[i].TransactionId != transId) && (i!=(listDisable.Count - 1)))
+                        {
+                            check = true;
+                            if (check)
+                            {
+                                check = await UpdateStatusProcessingTransactionAsync(listDisable[i]);
+                                if (check)
+                                {
+                                    check = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return check;
+        }
+        //disable status processing transaction
         private async Task<bool> UpdateStatusProcessingTransactionAsync(Transaction trans)
         {
             bool update = true;
@@ -192,38 +242,42 @@ namespace ImportExportManagementAPI.Repositories
          * update date weight in weight out
          */
 
-        public bool UpdateTransScandCard(String cardId, float weightOut, DateTime timeOut)
+        public async Task<bool> UpdateTransScandCardAsync(String cardId, float weightOut, DateTime timeOut)
         {
             bool check = false;
-            var trans = FindTransToWeightOut(cardId);
-
-            if (trans != null)
+            bool checkProcessingCard = await CheckProcessingCard(cardId, "Update", 0);
+            if (!checkProcessingCard)
             {
-                if (trans.TimeIn == null || trans.WeightIn == null || trans.WeightIn == 0)
+                var trans = FindTransToWeightOut(cardId);
+                if (trans != null)
                 {
-                    check = false;
-                }
-                else
-                {
-                    if (weightOut != 0 && timeOut != null)
+                    if (trans.TimeIn == null || trans.WeightIn == null || trans.WeightIn == 0)
                     {
-                        //set type
-                        SetTransactionType(trans, weightOut);
-                        //set time out
-                        trans.TimeOut = timeOut;
-                        //set weight out
-                        trans.WeightOut = weightOut;
-                        //change status
-                        trans.TransactionStatus = TransactionStatus.Success;
-                        //update transaction
-                        try
+                        check = false;
+                    }
+                    else
+                    {
+                        if (weightOut != 0 && timeOut != null)
                         {
-                            Update(trans);
-                            check = true;
-                        }
-                        catch
-                        {
-                            check = false;
+                            //set type
+                            SetTransactionType(trans, weightOut);
+                            //set time out
+                            trans.TimeOut = timeOut;
+                            //set weight out
+                            trans.WeightOut = weightOut;
+                            //change status
+                            trans.TransactionStatus = TransactionStatus.Success;
+                            //update transaction
+                            try
+                            {
+                                Update(trans);
+                                await SaveAsync();
+                                check = true;
+                            }
+                            catch
+                            {
+                                check = false;
+                            }
                         }
                     }
                 }
@@ -251,9 +305,9 @@ namespace ImportExportManagementAPI.Repositories
         {
             DateTime dateTimeNow = DateTime.Now;
             trans.CreatedDate = dateTimeNow;
-            if(trans.IdentityCardId != null)
+            if (trans.IdentityCardId != null)
             {
-                bool checkProcessingCard = await CheckProcessingCard(trans.IdentityCardId);
+                bool checkProcessingCard = await CheckProcessingCard(trans.IdentityCardId, "Insert", 0);
                 if (!checkProcessingCard)
                 {
                     if (trans.WeightIn > 0 && trans.TimeIn != null)
@@ -278,6 +332,44 @@ namespace ImportExportManagementAPI.Repositories
                 }
             }
             return false;
+        }
+
+        //update transaction
+        public async Task<String> UpdateTransaction(Transaction trans, int id)
+        {
+            String checkUpdate = "";
+            if (id != trans.TransactionId)
+            {
+                checkUpdate = "Invalid input";
+            }
+
+            bool checkProcessingCard = await CheckProcessingCard(trans.IdentityCardId,"Update", trans.TransactionId);
+
+            if (checkProcessingCard)
+            {
+                checkUpdate = "Update processing transactions failed";
+            }
+            else
+            {
+                Update(trans);
+                try
+                {
+                    await SaveAsync();
+                }
+                catch (Exception e)
+                {
+                    if (GetByID(trans.TransactionId) == null)
+                    {
+                        checkUpdate = "Transaction is not exist";
+                    }
+                    else
+                    {
+                        checkUpdate = e.Message;
+                    }
+                }
+            }
+
+            return checkUpdate;
         }
     }
 }
