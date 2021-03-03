@@ -207,18 +207,8 @@ namespace ImportExportManagementAPI.Repositories
                 {
                     if (weightOut != 0 && timeOut != null)
                     {
-                        //check type
-                        float totalWeight = trans.WeightIn - weightOut;
-                        if (totalWeight > 0)
-                        {
-                            //nhập kho
-                            trans.TransactionType = TransactionType.Import;
-                        }
-                        else
-                        {
-                            //xuất kho
-                            trans.TransactionType = TransactionType.Export;
-                        }
+                        //set type
+                        SetTransactionType(trans, weightOut);
                         //set time out
                         trans.TimeOut = timeOut;
                         //set weight out
@@ -241,6 +231,22 @@ namespace ImportExportManagementAPI.Repositories
             return check;
         }
 
+        //identity transaction type
+        public void SetTransactionType(Transaction trans, float weightOut)
+        {
+            float totalWeight = trans.WeightIn - weightOut;
+            if (totalWeight > 0)
+            {
+                //nhập kho
+                trans.TransactionType = TransactionType.Import;
+            }
+            else
+            {
+                //xuất kho
+                trans.TransactionType = TransactionType.Export;
+            }
+        }
+
         public async Task<bool> CreateTransactionAsync(Transaction trans, String method)
         {
             DateTime dateTimeNow = DateTime.Now;
@@ -256,6 +262,7 @@ namespace ImportExportManagementAPI.Repositories
                         {
                             if (trans.WeightOut != 0 && trans.TimeOut != null && trans.TransactionStatus.Equals(TransactionStatus.Success))
                             {
+                                SetTransactionType(trans, trans.WeightOut);
                                 Insert(trans);
                                 return true;
                             }
