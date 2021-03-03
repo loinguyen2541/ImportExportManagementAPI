@@ -36,7 +36,14 @@ namespace ImportExportManagementAPI.Repositories
                         if (listProcessingTrans[i].IdentityCardId.Equals(cardId))
                         {
                             check = true;
-                            break;
+                            if (check)
+                            {
+                                check = await UpdateStatusProcessingTransactionAsync(listProcessingTrans[i]);
+                                if (check)
+                                {
+                                    check = false;
+                                }
+                            }
                         }
                     }
                 }
@@ -44,6 +51,29 @@ namespace ImportExportManagementAPI.Repositories
             return check;
         }
 
+        //disable processing transaction
+        private async Task<bool> UpdateStatusProcessingTransactionAsync(Transaction trans)
+        {
+            bool update = true;
+            if (trans != null)
+            {
+                trans.TransactionStatus = TransactionStatus.Disable;
+                Update(trans);
+                try
+                {
+                    await SaveAsync();
+                }
+                catch
+                {
+                    update = false;
+                }
+            }
+            else
+            {
+                update = false;
+            }
+            return update;
+        }
         public async ValueTask<Pagination<Transaction>> GetAllAsync(PaginationParam paging, TransactionFilter filter)
         {
             Pagination<Transaction> listTransaction = new Pagination<Transaction>();
