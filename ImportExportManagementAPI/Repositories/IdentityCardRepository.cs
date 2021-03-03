@@ -91,9 +91,8 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //check scand card
-        public async Task<bool> checkCardAsync(String cardId, String method)
+        public async Task<IdentityCard> checkCardAsync(String cardId)
         {
-            bool checkCard = false;
             if (cardId != null)
             {
                 //card có nằm trong hệ thống không
@@ -101,18 +100,18 @@ namespace ImportExportManagementAPI.Repositories
                 if (identityCard != null && identityCard.IdentityCardStatus.Equals(IdentityCardStatus.Active))
                 {
                     //card có thuộc về partner nào không
-                    bool checkPartner = await CheckPartnerCard(identityCard);
+                    Task<bool> checkPartner = CheckPartnerCard(identityCard);
                     //card có đang processing không
                     TransactionRepository transRepo = new TransactionRepository();
-                    bool checkProcessing = await transRepo.CheckProcessingCard(cardId,"CheckCard", 0);
-
-                    if(checkPartner == true && checkProcessing == false)
+                    Task<bool> checkProcessing = transRepo.CheckProcessingCard(cardId,"CheckCard", 0);
+                    await Task.WhenAll(checkPartner, checkProcessing);
+                    if(checkPartner.Result == true && checkProcessing.Result == false)
                     {
-                        checkCard = true;
+                        return identityCard;
                     }
                 }
             }
-            return checkCard;
+            return null;
         }
         public List<IdentityCardStatus> GetCardsStatus()
         {
