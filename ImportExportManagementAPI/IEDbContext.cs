@@ -30,7 +30,7 @@ namespace ImportExportManagement_API
             modelBuilder.Entity<Account>().HasKey(a => a.Username);
 
             //InventoryDetail
-            modelBuilder.Entity<InventoryDetail>().HasKey(p => new { p.GoodsId, p.InventoryId });
+            modelBuilder.Entity<InventoryDetail>().HasKey(p => p.InventoryDetailId);
 
             //Partner
             modelBuilder.Entity<Partner>().HasOne(p => p.Account).WithOne(a => a.Partner).HasForeignKey<Partner>(p => p.Username);

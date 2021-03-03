@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ImportExportManagement_API.Models
+namespace ImportExportManagementAPI.Models
 {
-    public enum TransactionStatus
+    public enum InventoryDetailType
     {
-        Progessing, Success, Disable
+        Import, Export
     }
 }
