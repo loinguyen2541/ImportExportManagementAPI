@@ -241,27 +241,34 @@ namespace ImportExportManagementAPI.Repositories
             return check;
         }
 
-        public bool CreateTransaction(Transaction trans, String method)
+        public async Task<bool> CreateTransactionAsync(Transaction trans, String method)
         {
             DateTime dateTimeNow = DateTime.Now;
             trans.CreatedDate = dateTimeNow;
-            if (trans.WeightIn > 0 && trans.TimeIn != null)
+            if(trans.IdentityCardId != null)
             {
-                if (method.Equals("manual"))
+                bool checkProcessingCard = await CheckProcessingCard(trans.IdentityCardId);
+                if (!checkProcessingCard)
                 {
-                    if (trans.WeightOut != 0 && trans.TimeOut != null && trans.TransactionStatus.Equals(TransactionStatus.Success))
+                    if (trans.WeightIn > 0 && trans.TimeIn != null)
                     {
-                        Insert(trans);
-                        return true;
-                    }
-                    return false;
-                }
-                else
-                {
-                    Insert(trans);
-                    return true;
-                }
+                        if (method.Equals("manual"))
+                        {
+                            if (trans.WeightOut != 0 && trans.TimeOut != null && trans.TransactionStatus.Equals(TransactionStatus.Success))
+                            {
+                                Insert(trans);
+                                return true;
+                            }
+                            return false;
+                        }
+                        else
+                        {
+                            Insert(trans);
+                            return true;
+                        }
 
+                    }
+                }
             }
             return false;
         }

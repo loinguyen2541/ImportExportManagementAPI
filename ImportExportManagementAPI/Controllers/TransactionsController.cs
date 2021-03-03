@@ -40,7 +40,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost("manual")]
         public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
         {
-            bool check = _repo.CreateTransaction(transaction, "manual");
+            bool check = await _repo.CreateTransactionAsync(transaction, "manual");
             if (!check)
             {
                 return BadRequest("Invalid input");
@@ -54,7 +54,7 @@ namespace ImportExportManagementAPI.Controllers
         {
             DateTime timeIn = DateTime.Now;
             Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId, GoodsId = 1 };
-            _repo.CreateTransaction(transaction,"automatic");
+            await _repo.CreateTransactionAsync(transaction,"automatic");
             await _repo.SaveAsync();
 
             return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
