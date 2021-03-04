@@ -17,12 +17,11 @@ namespace ImportExportManagementAPI.Controllers
         {
             _repo = new InventoryDetailRepository();
         }
-        [HttpPost]
-        public async Task<ActionResult> CreateInventoryDetail(DateTime dateRecord, Transaction trans)
+        [HttpGet]
+        public async Task<ActionResult<IdentityCard>> GetInventoryDetail([FromQuery] PaginationParam paging, [FromQuery] InventoryDetailFilter filter)
         {
-             _repo.UpdateInventoryDetail(dateRecord, trans);
-            await _repo.SaveAsync();
-            return Ok();
+            Pagination<InventoryDetail> listInventoryDetail = await _repo.GetInventoryDetail(paging, filter);
+            return Ok(listInventoryDetail);
         }
     }
 }

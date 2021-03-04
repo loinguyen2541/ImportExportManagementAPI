@@ -25,17 +25,6 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<Inventory> listInventory = await _repo.GetAllInventory(paging, filter);
             return Ok(listInventory);
         }
-
-        //tạo phiếu nhập kho
-        //hàm này chỉ được chạy tự động, khi transaction ở trạng thái success
-        [HttpPost]
-        public async Task<ActionResult> CreateInventory(Inventory inventory)
-        {
-            _repo.Insert(inventory);
-            await _repo.SaveAsync();
-            return Ok(inventory);
-        }
-
         //check ngày này có tồn tại phiếu nhập kho chưa
         [HttpGet("{dateRecord}")]
         public async Task<ActionResult<IdentityCard>> GetIdentityCard(DateTime dateRecord)
@@ -48,6 +37,15 @@ namespace ImportExportManagementAPI.Controllers
             }
 
             return Ok(identityCard);
+        }
+        //tạo phiếu nhập kho
+        //hàm này chỉ được chạy tự động, khi transaction ở trạng thái success
+        [HttpPost]
+        public async Task<ActionResult> CreateInventory(Inventory inventory)
+        {
+            _repo.Insert(inventory);
+            await _repo.SaveAsync();
+            return Ok(inventory);
         }
 
     }

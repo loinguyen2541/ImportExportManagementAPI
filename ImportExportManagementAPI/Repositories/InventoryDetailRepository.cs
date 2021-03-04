@@ -11,7 +11,7 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class InventoryDetailRepository : BaseRepository<InventoryDetail>
     {
-        public async ValueTask<Pagination<InventoryDetail>> GetAllInventory(PaginationParam paging, InventoryDetailFilter filter)
+        public async ValueTask<Pagination<InventoryDetail>> GetInventoryDetail(PaginationParam paging, InventoryDetailFilter filter)
         {
             Pagination<InventoryDetail> listInventoryDetails = new Pagination<InventoryDetail>();
             IQueryable<InventoryDetail> rawData = null;
@@ -26,7 +26,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 if (filter.PartnerName != null && filter.PartnerName.Length > 0)
                 {
-
+                    queryable = queryable.Where(i => i.Partner.DisplayName.Contains(filter.PartnerName));
                 }
             }
 
