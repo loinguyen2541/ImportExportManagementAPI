@@ -4,6 +4,7 @@ using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Controllers
@@ -22,6 +23,11 @@ namespace ImportExportManagementAPI.Controllers
         {
             Pagination<InventoryDetail> listInventoryDetail = await _repo.GetInventoryDetail(paging, filter);
             return Ok(listInventoryDetail);
+        }
+        [HttpGet("types")]
+        public ActionResult<Object> GetTransType()
+        {
+            return Ok(Enum.GetValues(typeof(InventoryDetailType)).Cast<InventoryDetailType>().ToList());
         }
     }
 }
