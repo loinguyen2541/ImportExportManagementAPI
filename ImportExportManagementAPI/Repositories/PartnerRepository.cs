@@ -108,6 +108,12 @@ namespace ImportExportManagementAPI.Repositories
         {
             return Enum.GetValues(typeof(PartnerStatus)).Cast<PartnerStatus>().ToList();
 
+
+        }
+
+        public async Task<Partner> GetCards(int id)
+        {
+            return await _dbSet.Where(p => p.PartnerId == id).Include(p => p.IdentityCards).SingleOrDefaultAsync();
         }
     }
 }
