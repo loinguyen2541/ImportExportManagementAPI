@@ -19,7 +19,13 @@ namespace ImportExportManagementAPI.Controllers
             _repo = new InventoryDetailRepository();
         }
         [HttpGet]
-        public async Task<ActionResult<IdentityCard>> GetInventoryDetail([FromQuery] PaginationParam paging, [FromQuery] InventoryDetailFilter filter)
+        public async Task<ActionResult<IdentityCard>> GetInventoryDetails([FromQuery] PaginationParam paging, [FromQuery] InventoryDetailFilter filter)
+        {
+            Pagination<InventoryDetail> listInventoryDetail = await _repo.GetInventoryDetail(paging, filter);
+            return Ok(listInventoryDetail);
+        }
+        [HttpGet("inventoryid")]
+        public async Task<ActionResult<IdentityCard>> GetInventoryDetailByInventory([FromQuery] PaginationParam paging, [FromQuery] InventoryDetailFilter filter)
         {
             Pagination<InventoryDetail> listInventoryDetail = await _repo.GetInventoryDetail(paging, filter);
             return Ok(listInventoryDetail);

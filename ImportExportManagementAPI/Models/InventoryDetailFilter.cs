@@ -14,6 +14,7 @@ namespace ImportExportManagement_API.Models
 {
     public class InventoryDetailFilter
     {
+        public int InventoryId { get; set; }
         public String PartnerName { get; set; }
     }
 }
