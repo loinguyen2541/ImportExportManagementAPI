@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ImportExportManagementAPI.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace ImportExportManagement_API
 {
@@ -31,6 +32,11 @@ namespace ImportExportManagement_API
 
             //InventoryDetail
             modelBuilder.Entity<InventoryDetail>().HasKey(p => p.InventoryDetailId);
+
+            //Inventory
+            modelBuilder.Entity<Inventory>()
+                    .Property(e => e.RecordedDate)
+                    .HasColumnType("Date");
 
             //Partner
             modelBuilder.Entity<Partner>().HasOne(p => p.Account).WithOne(a => a.Partner).HasForeignKey<Partner>(p => p.Username);
