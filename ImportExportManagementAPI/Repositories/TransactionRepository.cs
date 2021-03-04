@@ -263,10 +263,10 @@ namespace ImportExportManagementAPI.Repositories
                             try
                             {
                                 Update(trans);
-                                await SaveAsync();
-                                check = true;
+                                Task saveDB = SaveAsync();
                                 //tạo inventory detail
-                                AddInventory(trans);
+                                Task updateDetail = UpdateInventoryDetail(trans);
+                                check = true;
                             }
                             catch
                             {
@@ -320,7 +320,7 @@ namespace ImportExportManagementAPI.Repositories
                                 Insert(trans);
                                 checkCreate = true;
                                 //tạo transaction thành công => tạo inventory detail
-                                AddInventory(trans);
+                                await UpdateInventoryDetail(trans);
                             }
                             else
                             {
@@ -380,10 +380,10 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //tao inventory detail
-        private void AddInventory(Transaction trans)
+        private async Task UpdateInventoryDetail(Transaction trans)
         {
             InventoryDetailRepository detailRepo = new InventoryDetailRepository();
-            detailRepo.InsertInventoryDetailAsync(trans.CreatedDate, trans);
+            await detailRepo.UpdateInventoryDetail(trans.CreatedDate, trans);
         }
     }
 }

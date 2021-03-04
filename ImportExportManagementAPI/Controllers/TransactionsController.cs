@@ -50,14 +50,20 @@ namespace ImportExportManagementAPI.Controllers
         }
         //add transaction
         [HttpPost("automatic")]
-        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn, int partnerId)
+        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn)
         {
-            DateTime timeIn = DateTime.Now;
-            Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId, GoodsId = 1 };
-            await _repo.CreateTransactionAsync(transaction, "automatic");
-            await _repo.SaveAsync();
+            IdentityCardRepository cardRepo = new IdentityCardRepository();
+            IdentityCard checkCard = await cardRepo.checkCardAsync(cardId);
+            if (checkCard != null)
+            {
+                DateTime timeIn = DateTime.Now;
+                Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing, PartnerId = checkCard.PartnerId, GoodsId = 1 };
+                await _repo.CreateTransactionAsync(transaction, "automatic");
+                await _repo.SaveAsync();
 
-            return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+                return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+            }
+            return BadRequest("Card is not exised");
         }
         //KhanhBDB
         //update transaction information => manual

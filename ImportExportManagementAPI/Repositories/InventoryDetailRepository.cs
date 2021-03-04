@@ -64,23 +64,53 @@ namespace ImportExportManagementAPI.Repositories
             return pagination;
         }
 
-        public bool InsertInventoryDetailAsync(DateTime recordDate, Transaction trans)
+        public async Task<bool> UpdateInventoryDetail(DateTime recordDate, Transaction trans)
         {
             InventoryRepository inventRepo = new InventoryRepository();
             var date = recordDate.Date;
-            Task<Inventory> existed = inventRepo.CheckExistDateRecordAsync(date);
-            if (existed.Result != null)
+            int transType = (int)trans.TransactionType;
+
+            //check da co phieu nhao kho vao ngay chua va detail cua type nay da co chua
+            Task<Inventory> checkInventoryExisted = inventRepo.CheckExistDateRecord(date);
+            Task<InventoryDetail> checkTypeExisted = CheckExistedDetailType(trans.PartnerId, transType);
+            await Task.WhenAll(checkInventoryExisted, checkTypeExisted);
+            //neu inven da co && type chua co => tao moi
+            if ((checkInventoryExisted.Result != null) && (checkTypeExisted.Result == null))
             {
                 //nếu chưa có => tạo mới
-                AddNewInventoryDetailAsync(trans, existed.Result);
+                AddNewInventoryDetail(trans, checkInventoryExisted.Result);
+                return true;
+            }
+            else if ((checkInventoryExisted.Result != null) && (checkTypeExisted.Result != null))
+            {
+                //neu inventory da co && type da co roi => update weight
+                UpdateInventoryDetailByType(trans, checkTypeExisted.Result);
                 return true;
             }
             return false;
         }
 
-        private async void AddNewInventoryDetailAsync(Transaction trans, Inventory inventory)
+        private async Task<InventoryDetail> CheckExistedDetailType(int partnerId, int type)
         {
-            InventoryDetail detail = new InventoryDetail { GoodsId = 1, InventoryId = inventory.InventoryId };
+            //get list detail of partner
+            List<InventoryDetail> listDetailOfPartner = await GetPartnerInventoryDetail(partnerId);
+            if(listDetailOfPartner!= null && listDetailOfPartner.Count > 0)
+            {
+                foreach (var item in listDetailOfPartner)
+                {
+                    if ((int)item.Type == type)
+                    {
+                        //co roi
+                        return item;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private async void AddNewInventoryDetail(Transaction trans, Inventory inventory)
+        {
+            InventoryDetail detail = new InventoryDetail { GoodsId = 1, InventoryId = inventory.InventoryId, PartnerId = trans.PartnerId };
             if (trans.TransactionType.Equals(TransactionType.Import))
             {
                 detail.Type = InventoryDetailType.Import;
@@ -102,6 +132,29 @@ namespace ImportExportManagementAPI.Repositories
             {
                 throw;
             }
+        }
+
+        private async void UpdateInventoryDetailByType(Transaction trans, InventoryDetail detail)
+        {
+            float totalWeight = trans.WeightIn - trans.WeightOut;
+            if (totalWeight < 0) totalWeight = totalWeight * -1;
+            detail.Weight = detail.Weight + totalWeight;
+            Update(detail);
+            try
+            {
+                await SaveAsync();
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+        }
+
+        private async Task<List<InventoryDetail>> GetPartnerInventoryDetail(int partnerId)
+        {
+            List<InventoryDetail> details = new List<InventoryDetail>();
+            details = await _dbSet.Where(d => d.PartnerId == partnerId).ToListAsync();
+            return details;
         }
     }
 }

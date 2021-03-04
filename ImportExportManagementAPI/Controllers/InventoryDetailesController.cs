@@ -20,7 +20,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateInventoryDetail(DateTime dateRecord, Transaction trans)
         {
-             _repo.InsertInventoryDetailAsync(dateRecord, trans);
+             _repo.UpdateInventoryDetail(dateRecord, trans);
             await _repo.SaveAsync();
             return Ok();
         }
