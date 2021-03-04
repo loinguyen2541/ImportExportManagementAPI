@@ -40,7 +40,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("{dateRecord}")]
         public async Task<ActionResult<IdentityCard>> GetIdentityCard(DateTime dateRecord)
         {
-            var identityCard = _repo.CheckExistDateRecord(dateRecord);
+            var identityCard = _repo.CheckExistDateRecordAsync(dateRecord);
 
             if (identityCard == null)
             {
@@ -49,5 +49,6 @@ namespace ImportExportManagementAPI.Controllers
 
             return Ok(identityCard);
         }
+
     }
 }

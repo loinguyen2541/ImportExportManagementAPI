@@ -234,12 +234,15 @@ namespace ImportExportManagementAPI.Repositories
         public async Task<bool> UpdateTransScandCardAsync(String cardId, float weightOut, DateTime timeOut)
         {
             bool check = false;
+            //disable những transaction của thẻ này trước đó đang ở trạng thái processing => trừ cái mới nhất để update
             bool checkProcessingCard = await CheckProcessingCard(cardId, "Update", 0);
             if (!checkProcessingCard)
             {
+                //tìm transaction gần nhất của thẻ ở trạng thái processing
                 var trans = FindTransToWeightOut(cardId);
                 if (trans != null)
                 {
+                    //tìm thấy trans nhưng weightIn = 0 => transaction ko hợp lệ
                     if (trans.WeightIn == 0)
                     {
                         check = false;
@@ -262,6 +265,8 @@ namespace ImportExportManagementAPI.Repositories
                                 Update(trans);
                                 await SaveAsync();
                                 check = true;
+                                //tạo inventory detail
+                                AddInventory(trans);
                             }
                             catch
                             {
@@ -292,10 +297,14 @@ namespace ImportExportManagementAPI.Repositories
 
         public async Task<bool> CreateTransactionAsync(Transaction trans, String method)
         {
+            bool checkCreate = false;
             DateTime dateTimeNow = DateTime.Now;
             trans.CreatedDate = dateTimeNow;
+            //tạo bằng arduino => mã thẻ quẹt
+            //tạo bằng tay => thẻ của bv
             if (trans.IdentityCardId != null)
             {
+                //disable hết các transaction của thẻ này mà đang status processing
                 bool checkProcessingCard = await CheckProcessingCard(trans.IdentityCardId, "Insert", 0);
                 if (!checkProcessingCard)
                 {
@@ -303,24 +312,32 @@ namespace ImportExportManagementAPI.Repositories
                     {
                         if (method.Equals("manual"))
                         {
+                            //tạo bằng tay => yêu cầu nhập cả time in, time out và status phải là success
                             if (trans.WeightOut != 0 && trans.TimeOut != null && trans.TransactionStatus.Equals(TransactionStatus.Success))
                             {
+                                //check hợp lệ => tạo transaction
                                 SetTransactionType(trans, trans.WeightOut);
                                 Insert(trans);
-                                return true;
+                                checkCreate = true;
+                                //tạo transaction thành công => tạo inventory detail
+                                AddInventory(trans);
                             }
-                            return false;
+                            else
+                            {
+                                checkCreate = false;
+                            }
                         }
                         else
                         {
+                            //tạo bằng arduino => xác phải có vật trên cân
                             Insert(trans);
-                            return true;
+                            checkCreate = true;
                         }
 
                     }
                 }
             }
-            return false;
+            return checkCreate;
         }
 
         //update transaction
@@ -344,6 +361,7 @@ namespace ImportExportManagementAPI.Repositories
                 try
                 {
                     await SaveAsync();
+                    //chưa tạo detail
                 }
                 catch (Exception e)
                 {
@@ -359,6 +377,13 @@ namespace ImportExportManagementAPI.Repositories
             }
 
             return checkUpdate;
+        }
+
+        //tao inventory detail
+        private void AddInventory(Transaction trans)
+        {
+            InventoryDetailRepository detailRepo = new InventoryDetailRepository();
+            detailRepo.InsertInventoryDetailAsync(trans.CreatedDate, trans);
         }
     }
 }

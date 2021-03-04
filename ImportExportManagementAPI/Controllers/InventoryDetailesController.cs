@@ -12,11 +12,17 @@ namespace ImportExportManagementAPI.Controllers
     [ApiController]
     public class InventoryDetailsController : ControllerBase
     {
-        InventoryRepository _repo;
+        InventoryDetailRepository _repo;
         public InventoryDetailsController()
         {
-            _repo = new InventoryRepository();
+            _repo = new InventoryDetailRepository();
         }
-
+        [HttpPost]
+        public async Task<ActionResult> CreateInventoryDetail(DateTime dateRecord, Transaction trans)
+        {
+             _repo.InsertInventoryDetailAsync(dateRecord, trans);
+            await _repo.SaveAsync();
+            return Ok();
+        }
     }
 }

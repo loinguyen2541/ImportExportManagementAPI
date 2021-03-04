@@ -11,21 +11,23 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class InventoryDetailRepository : BaseRepository<InventoryDetail>
     {
-        public async ValueTask<Pagination<Inventory>> GetAllInventory(PaginationParam paging, InventoryDetailFilter filter)
+        public async ValueTask<Pagination<InventoryDetail>> GetAllInventory(PaginationParam paging, InventoryDetailFilter filter)
         {
-            Pagination<Inventory> listInventory = new Pagination<Inventory>();
-            IQueryable<Inventory> rawData = null;
+            Pagination<InventoryDetail> listInventoryDetails = new Pagination<InventoryDetail>();
+            IQueryable<InventoryDetail> rawData = null;
             rawData = _dbSet;
-            listInventory = await DoFilter(paging, filter, rawData);
-            return listInventory;
+            listInventoryDetails = await DoFilter(paging, filter, rawData);
+            return listInventoryDetails;
         }
 
-        private async Task<Pagination<Inventory>> DoFilter(PaginationParam paging, InventoryFilter filter, IQueryable<Inventory> queryable)
+        private async Task<Pagination<InventoryDetail>> DoFilter(PaginationParam paging, InventoryDetailFilter filter, IQueryable<InventoryDetail> queryable)
         {
-            if (DateTime.TryParse(filter.RecordedDate, out DateTime date))
+            if (filter != null)
             {
-                DateTime recoredDate = DateTime.Parse(filter.RecordedDate);
-                queryable = queryable.Where(p => p.RecordedDate == recoredDate.Date);
+                if (filter.PartnerName != null && filter.PartnerName.Length > 0)
+                {
+
+                }
             }
 
             //check giá trị page client truyền
@@ -52,7 +54,7 @@ namespace ImportExportManagementAPI.Repositories
 
             queryable = queryable.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
 
-            Pagination<Inventory> pagination = new Pagination<Inventory>();
+            Pagination<InventoryDetail> pagination = new Pagination<InventoryDetail>();
             pagination.Page = paging.Page;
             pagination.Size = paging.Size;
             double totalPage = (count * 1.0) / (pagination.Size * 1.0);
@@ -62,23 +64,44 @@ namespace ImportExportManagementAPI.Repositories
             return pagination;
         }
 
-        //public bool InsertInventory(Inventory inventory)
-        //{
-        //    bool existed = CheckExistDateRecord(inventory.RecordedDate);
-        //    if(!existed)
-        //    {
-        //        //nếu chưa có => tạo mới
-        //        Insert(inventory);
-        //        return true;
-        //    }
-        //    return false;
-        //}
+        public bool InsertInventoryDetailAsync(DateTime recordDate, Transaction trans)
+        {
+            InventoryRepository inventRepo = new InventoryRepository();
+            var date = recordDate.Date;
+            Task<Inventory> existed = inventRepo.CheckExistDateRecordAsync(date);
+            if (existed.Result != null)
+            {
+                //nếu chưa có => tạo mới
+                AddNewInventoryDetailAsync(trans, existed.Result);
+                return true;
+            }
+            return false;
+        }
 
-        ////check coi này ngày đã có phiếu kiểm kho chưa
-        //public bool CheckExistDateRecord(DateTime dateRecord)
-        //{
-        //    //true if existed
-        //    return _dbSet.Any(i => i.RecordedDate.CompareTo(dateRecord) == 0);
-        //}
+        private async void AddNewInventoryDetailAsync(Transaction trans, Inventory inventory)
+        {
+            InventoryDetail detail = new InventoryDetail { GoodsId = 1, InventoryId = inventory.InventoryId };
+            if (trans.TransactionType.Equals(TransactionType.Import))
+            {
+                detail.Type = InventoryDetailType.Import;
+            }
+            else
+            {
+                detail.Type = InventoryDetailType.Export;
+            }
+
+            float totalWeight = trans.WeightIn - trans.WeightOut;
+            if (totalWeight < 0) totalWeight = totalWeight * -1;
+            detail.Weight = totalWeight;
+            Insert(detail);
+            try
+            {
+                await SaveAsync();
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+        }
     }
 }
