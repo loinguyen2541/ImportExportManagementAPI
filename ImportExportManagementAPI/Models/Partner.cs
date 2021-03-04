@@ -30,10 +30,12 @@ namespace ImportExportManagement_API.Models
         public String Username { get; set; }
         public Account Account { get; set; }
 
-        List<Transaction> Transactions { get; set; }
+        public List<Transaction> Transactions { get; set; }
 
         public List<PartnerType> PartnerTypes { get; set; }
         public List<PartnerPartnerType> PartnerPartnerTypes { get; set; }
+
+        public List<InventoryDetail> InventoryDetails { get; set; }
 
     }
 }
