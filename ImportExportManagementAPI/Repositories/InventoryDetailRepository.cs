@@ -15,7 +15,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<InventoryDetail> listInventoryDetails = new Pagination<InventoryDetail>();
             IQueryable<InventoryDetail> rawData = null;
-            rawData = _dbSet;
+            rawData = _dbSet.Include(i => i.Inventory).Include(i => i.Goods).Include(i => i.Partner);
             listInventoryDetails = await DoFilter(paging, filter, rawData);
             return listInventoryDetails;
         }
@@ -32,6 +32,7 @@ namespace ImportExportManagementAPI.Repositories
                 {
                     queryable = queryable.Where(i => i.Partner.DisplayName.Contains(filter.PartnerName));
                 }
+                queryable = queryable.Where(i => i.GoodsId == 1);
             }
 
             //check giá trị page client truyền

@@ -19,7 +19,7 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         // GET: api/inventories
-        [HttpGet("/api/inventories")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<Inventory>>> SearchInventory([FromQuery] PaginationParam paging, [FromQuery] InventoryFilter filter)
         {
             Pagination<Inventory> listInventory = await _repo.GetAllInventory(paging, filter);
@@ -29,7 +29,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("{dateRecord}")]
         public async Task<ActionResult<IdentityCard>> GetIdentityCard(DateTime dateRecord)
         {
-            var identityCard = _repo.CheckExistDateRecord(dateRecord);
+            var identityCard = await _repo.CheckExistDateRecord(dateRecord);
 
             if (identityCard == null)
             {
