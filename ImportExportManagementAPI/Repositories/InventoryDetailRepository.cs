@@ -115,7 +115,7 @@ namespace ImportExportManagementAPI.Repositories
 
         private async void AddNewInventoryDetail(Transaction trans, Inventory inventory)
         {
-            InventoryDetail detail = new InventoryDetail { GoodsId = 1, InventoryId = inventory.InventoryId, PartnerId = trans.PartnerId };
+            InventoryDetail detail = new InventoryDetail { GoodsId = 2, InventoryId = inventory.InventoryId, PartnerId = trans.PartnerId };
             if (trans.TransactionType.Equals(TransactionType.Import))
             {
                 detail.Type = InventoryDetailType.Import;
@@ -155,10 +155,18 @@ namespace ImportExportManagementAPI.Repositories
             }
         }
 
+        //get list detail by partner
         private async Task<List<InventoryDetail>> GetPartnerInventoryDetail(int partnerId)
         {
             List<InventoryDetail> details = new List<InventoryDetail>();
             details = await _dbSet.Where(d => d.PartnerId == partnerId).ToListAsync();
+            return details;
+        }
+        //get list detail by datetime and type
+        public async Task<List<InventoryDetail>> GetDateInventoryDetail(int inventoryId, int detailType)
+        {
+            List<InventoryDetail> details = new List<InventoryDetail>();
+            details = await _dbSet.Where(d => d.InventoryId == inventoryId && (int)d.Type == detailType).ToListAsync();
             return details;
         }
     }

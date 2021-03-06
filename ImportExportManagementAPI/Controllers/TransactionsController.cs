@@ -57,7 +57,7 @@ namespace ImportExportManagementAPI.Controllers
             if (checkCard != null)
             {
                 DateTime timeIn = DateTime.Now;
-                Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing, PartnerId = checkCard.PartnerId, GoodsId = 1 };
+                Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing, PartnerId = checkCard.PartnerId, GoodsId = 2 };
                 await _repo.CreateTransactionAsync(transaction, "automatic");
                 await _repo.SaveAsync();
 
@@ -84,7 +84,8 @@ namespace ImportExportManagementAPI.Controllers
         + nếu trans ở trạng thái processing => trả về giá trị id trans để update weight lần 2
          */
 
-        [HttpPut("automatic/{cardId}")]
+        //update
+        [HttpPost("automatic/post")]
         public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut)
         {
             DateTime timeOut = DateTime.Now;
