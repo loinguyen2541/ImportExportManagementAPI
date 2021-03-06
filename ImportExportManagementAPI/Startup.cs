@@ -50,7 +50,11 @@ namespace ImportExportManagementAPI
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ImportExportManagementAPI v1"));
+                app.UseSwaggerUI(c =>
+                {
+                    c.RoutePrefix = "swagger/v1";
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ImportExportManagementAPI v1");
+                });
             }
 
             app.UseHttpsRedirection();

@@ -78,5 +78,27 @@ namespace ImportExportManagementAPI.Repositories
             return inventory.Result;
         }
 
+        public async Task<string> TotalWeightInventory(DateTime dateRecord, int type)
+        {
+            String total = "0.0 KG";
+            //check ngày này có inventory chưa
+            Inventory inventory = await CheckExistDateRecord(dateRecord);
+            if(inventory!= null)
+            {
+                //get list detail
+                float weightTotal = 0;
+                InventoryDetailRepository detailRepo = new InventoryDetailRepository();
+                List<InventoryDetail> listDetail = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, type);
+                if(listDetail!=null && listDetail.Count > 0)
+                {
+                    foreach (var item in listDetail)
+                    {
+                        weightTotal += item.Weight;
+                    }
+                }
+                total = weightTotal.ToString() + " KG";
+            }
+            return total;
+        }
     }
 }
