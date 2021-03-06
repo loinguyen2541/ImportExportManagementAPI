@@ -40,7 +40,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost("manual")]
         public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
         {
-            bool check = _repo.CreateTransaction(transaction, "manual");
+            bool check = await _repo.CreateTransactionAsync(transaction, "manual");
             if (!check)
             {
                 return BadRequest("Invalid input");
@@ -50,43 +50,32 @@ namespace ImportExportManagementAPI.Controllers
         }
         //add transaction
         [HttpPost("automatic")]
-        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn, int partnerId)
+        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn)
         {
-            DateTime timeIn = DateTime.Now;
-            Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId, GoodsId = 1 };
-            _repo.CreateTransaction(transaction,"automatic");
-            await _repo.SaveAsync();
+            IdentityCardRepository cardRepo = new IdentityCardRepository();
+            IdentityCard checkCard = await cardRepo.checkCardAsync(cardId);
+            if (checkCard != null)
+            {
+                DateTime timeIn = DateTime.Now;
+                Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing, PartnerId = checkCard.PartnerId, GoodsId = 1 };
+                await _repo.CreateTransactionAsync(transaction, "automatic");
+                await _repo.SaveAsync();
 
-            return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+                return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+            }
+            return BadRequest("Card is not exised");
         }
         //KhanhBDB
         //update transaction information => manual
         [HttpPut("manual/{id}")]
         public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
         {
-            if (id != trans.TransactionId)
+            String checkUpdate = await _repo.UpdateTransaction(trans, id);
+            if (checkUpdate.Length == 0)
             {
-                return BadRequest();
+                return NoContent();
             }
-
-            _repo.Update(trans);
-
-            try
-            {
-                await _repo.SaveAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (_repo.GetByID(id) == null)
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            return NoContent();
+            return BadRequest(checkUpdate);
         }
 
         /*
@@ -99,16 +88,15 @@ namespace ImportExportManagementAPI.Controllers
         public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut)
         {
             DateTime timeOut = DateTime.Now;
-            bool check = _repo.UpdateTransScandCard(cardId, weightOut, timeOut);
+            bool check = await _repo.UpdateTransScandCardAsync(cardId, weightOut, timeOut);
             if (check)
             {
-                await _repo.SaveAsync();
+                return NoContent();
             }
             else
             {
                 return BadRequest();
             }
-            return NoContent();
         }
         //get transaction by id
         [HttpGet("{id}")]
@@ -124,9 +112,9 @@ namespace ImportExportManagementAPI.Controllers
             return trans;
         }
         [HttpGet("partners/search")]
-        public async Task<ActionResult<Pagination<Transaction>>> GetTransactionByPartnerId([FromQuery]PaginationParam paging, [FromQuery] int id)
+        public async Task<ActionResult<Pagination<Transaction>>> GetTransactionByPartnerId([FromQuery] PaginationParam paging, [FromQuery] int id)
         {
-            Pagination<Transaction> trans = await _repo.GetTransByPartnerIdAsync(paging,id);
+            Pagination<Transaction> trans = await _repo.GetTransByPartnerIdAsync(paging, id);
 
             if (trans == null)
             {
