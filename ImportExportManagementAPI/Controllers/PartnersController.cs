@@ -115,5 +115,12 @@ namespace ImportExportManagementAPI
             return Ok(_repo.GetPartnerStatus());
         }
 
+        [HttpGet("{id}/cards")]
+        public async Task<ActionResult<Partner>> GetCards([FromQuery] PaginationParam paging, int id)
+        {
+            Partner partner = await _repo.GetCards(id);
+            return Ok(partner);
+        }
+
     }
 }
