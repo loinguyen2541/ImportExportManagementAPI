@@ -77,20 +77,41 @@ namespace ImportExportManagementAPI.Repositories
             IdentityCard.IdentityCardStatus = IdentityCardStatus.Block;
             Update(IdentityCard);
         }
-        //kiem ta trang thai card
 
-        public async Task<bool> CheckCardActive(IdentityCard card)
+        //kiem ta trang thai card
+        public async Task<bool> CheckPartnerCard(IdentityCard card)
         {
-            bool checkStatus =  card.IdentityCardStatus.Equals(IdentityCardStatus.Active) ? true : false;
-            if (checkStatus)
+            bool checkStatus = true;
+            var partner = await new PartnersController().GetPartner(card.PartnerId);
+            if (partner == null || partner.Value.PartnerStatus.Equals(PartnerStatus.Block))
             {
-                var partner = await new PartnersController().GetPartner(card.PartnerId);
-                if (partner == null)
-                {
-                    checkStatus = false;
-                }
+                checkStatus = false;
             }
             return checkStatus;
+        }
+
+        //check scand card
+        public async Task<IdentityCard> checkCardAsync(String cardId)
+        {
+            if (cardId != null)
+            {
+                //card có nằm trong hệ thống không
+                var identityCard = await GetByIDAsync(cardId);
+                if (identityCard != null && identityCard.IdentityCardStatus.Equals(IdentityCardStatus.Active))
+                {
+                    //card có thuộc về partner nào không
+                    Task<bool> checkPartner = CheckPartnerCard(identityCard);
+                    //card có đang processing không
+                    TransactionRepository transRepo = new TransactionRepository();
+                    Task<bool> checkProcessing = transRepo.CheckProcessingCard(cardId,"CheckCard", 0);
+                    await Task.WhenAll(checkPartner, checkProcessing);
+                    if(checkPartner.Result == true && checkProcessing.Result == false)
+                    {
+                        return identityCard;
+                    }
+                }
+            }
+            return null;
         }
         public List<IdentityCardStatus> GetCardsStatus()
         {

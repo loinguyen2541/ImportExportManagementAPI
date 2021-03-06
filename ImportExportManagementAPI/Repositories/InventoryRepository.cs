@@ -63,10 +63,42 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //check coi này ngày đã có phiếu kiểm kho chưa
-        public Inventory CheckExistDateRecord(DateTime dateRecord)
+        public async Task<Inventory> CheckExistDateRecord(DateTime dateRecord)
         {
-            //true if existed
-            return _dbSet.OrderBy(t => t.RecordedDate).Where(i => i.RecordedDate.CompareTo(dateRecord) == 0).LastOrDefault();
+            Task<Inventory> inventory = _dbSet.Where(i => i.RecordedDate.Equals(dateRecord)).FirstOrDefaultAsync();
+            if (inventory.Result == null)
+            {
+                //chua co thi tao moi
+                Inventory newInventory = new Inventory { RecordedDate = dateRecord};
+                Insert(newInventory);
+                await SaveAsync();
+                return newInventory;
+            }
+            //co roi thi tra ve
+            return inventory.Result;
+        }
+
+        public async Task<string> TotalWeightInventory(DateTime dateRecord, int type)
+        {
+            String total = "0.0 KG";
+            //check ngày này có inventory chưa
+            Inventory inventory = await CheckExistDateRecord(dateRecord);
+            if(inventory!= null)
+            {
+                //get list detail
+                float weightTotal = 0;
+                InventoryDetailRepository detailRepo = new InventoryDetailRepository();
+                List<InventoryDetail> listDetail = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, type);
+                if(listDetail!=null && listDetail.Count > 0)
+                {
+                    foreach (var item in listDetail)
+                    {
+                        weightTotal += item.Weight;
+                    }
+                }
+                total = weightTotal.ToString() + " KG";
+            }
+            return total;
         }
     }
 }
