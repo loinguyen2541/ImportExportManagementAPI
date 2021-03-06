@@ -85,7 +85,7 @@ namespace ImportExportManagementAPI.Controllers
          */
 
         //update
-        [HttpPost("automatic/post")]
+        [HttpPut("automatic/{cardId}")]
         public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut)
         {
             DateTime timeOut = DateTime.Now;
