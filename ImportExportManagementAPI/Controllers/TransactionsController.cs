@@ -27,9 +27,16 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<Transaction> listTransaction = await _repo.GetAllAsync(paging, filter);
             return Ok(listTransaction);
         }
+        //get transaction
+        [HttpGet("inventorydetail")]
+        public async Task<ActionResult<List<Transaction>>> GetTransactionByInventoryDetail(int inventoryDetailId)
+        {
+            List<Transaction> listTransaction = await _repo.GetTransactionByInventoryDetail(inventoryDetailId);
+            return Ok(listTransaction);
+        }
 
         //get number of lastest transaction
-        [HttpGet("/api/transactions/last")]
+        [HttpGet("last")]
         public async Task<ActionResult<Pagination<Transaction>>> GetLastTransaction([FromQuery] PaginationParam paging)
         {
             Pagination<Transaction> listTransaction = await _repo.GetLastIndex(paging);
@@ -40,7 +47,8 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost("manual")]
         public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
         {
-            bool check = await _repo.CreateTransactionAsync(transaction, "manual");
+            bool check = true;
+            //check = await _repo.CreateTransactionAsync(transaction, "manual");
             if (!check)
             {
                 return BadRequest("Invalid input");
@@ -52,16 +60,12 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost("automatic")]
         public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn)
         {
-            IdentityCardRepository cardRepo = new IdentityCardRepository();
-            IdentityCard checkCard = await cardRepo.checkCardAsync(cardId);
-            if (checkCard != null)
+            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing};
+            Transaction check = await _repo.CreateTransaction(trans, "Insert");
+            if (check != null)
             {
-                DateTime timeIn = DateTime.Now;
-                Transaction transaction = new Transaction() { IdentityCardId = cardId, TimeIn = timeIn, WeightIn = weightIn, TransactionStatus = TransactionStatus.Progessing, PartnerId = checkCard.PartnerId, GoodsId = 2 };
-                await _repo.CreateTransactionAsync(transaction, "automatic");
                 await _repo.SaveAsync();
-
-                return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+                return CreatedAtAction("GetTransaction", new { id = check.TransactionId }, check);
             }
             return BadRequest("Card is not exist");
         }
@@ -70,12 +74,12 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPut("manual/{id}")]
         public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
         {
-            String checkUpdate = await _repo.UpdateTransaction(trans, id);
-            if (checkUpdate.Length == 0)
+            bool checkUpdate = await _repo.UpdateTransactionByManual(trans, id);
+            if (checkUpdate)
             {
                 return NoContent();
             }
-            return BadRequest(checkUpdate);
+            return BadRequest();
         }
 
         /*
@@ -88,8 +92,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPut("automatic/{cardId}")]
         public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut)
         {
-            DateTime timeOut = DateTime.Now;
-            bool check = await _repo.UpdateTransScandCardAsync(cardId, weightOut, timeOut);
+            bool check = await _repo.UpdateTransactionArduino(cardId, weightOut, "UpdateArduino");
             if (check)
             {
                 return NoContent();
