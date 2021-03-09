@@ -32,7 +32,7 @@ namespace ImportExportManagementAPI.Repositories
                 {
                     queryable = queryable.Where(i => i.Partner.DisplayName.Contains(filter.PartnerName));
                 }
-                queryable = queryable.Where(i => i.GoodsId == 1);
+                queryable = queryable.Where(i => i.GoodsId == 2);
             }
 
             //check giá trị page client truyền
@@ -76,17 +76,16 @@ namespace ImportExportManagementAPI.Repositories
             int transType = (int)trans.TransactionType;
 
             //check da co phieu nhao kho vao ngay chua va detail cua type nay da co chua
-            Task<Inventory> checkInventoryExisted = inventRepo.CheckExistDateRecord(date);
-            Task<InventoryDetail> checkTypeExisted = CheckExistedDetailType(trans.PartnerId, transType);
-            await Task.WhenAll(checkInventoryExisted, checkTypeExisted);
+            Inventory checkInventoryExisted = await inventRepo.CheckExistDateRecord(date);
+            Task<InventoryDetail> checkTypeExisted = CheckExistedDetailType(trans.PartnerId, transType, checkInventoryExisted.InventoryId);
             //neu inven da co && type chua co => tao moi
-            if ((checkInventoryExisted.Result != null) && (checkTypeExisted.Result == null))
+            if (checkTypeExisted.Result == null)
             {
                 //nếu chưa có => tạo mới
-                AddNewInventoryDetail(trans, checkInventoryExisted.Result);
+                AddNewInventoryDetail(trans, checkInventoryExisted);
                 return true;
             }
-            else if ((checkInventoryExisted.Result != null) && (checkTypeExisted.Result != null))
+            else if (checkTypeExisted.Result != null)
             {
                 //neu inventory da co && type da co roi => update weight
                 UpdateInventoryDetailByType(trans, checkTypeExisted.Result);
@@ -95,10 +94,10 @@ namespace ImportExportManagementAPI.Repositories
             return false;
         }
 
-        private async Task<InventoryDetail> CheckExistedDetailType(int partnerId, int type)
+        private async Task<InventoryDetail> CheckExistedDetailType(int partnerId, int type, int inventoryId)
         {
             //get list detail of partner
-            List<InventoryDetail> listDetailOfPartner = await GetPartnerInventoryDetail(partnerId);
+            List<InventoryDetail> listDetailOfPartner = await GetPartnerInventoryDetail(partnerId, inventoryId);
             if(listDetailOfPartner!= null && listDetailOfPartner.Count > 0)
             {
                 foreach (var item in listDetailOfPartner)
@@ -115,7 +114,7 @@ namespace ImportExportManagementAPI.Repositories
 
         private async void AddNewInventoryDetail(Transaction trans, Inventory inventory)
         {
-            InventoryDetail detail = new InventoryDetail { GoodsId = 2, InventoryId = inventory.InventoryId, PartnerId = trans.PartnerId };
+            InventoryDetail detail = new InventoryDetail { GoodsId = trans.GoodsId, InventoryId = inventory.InventoryId, PartnerId = trans.PartnerId };
             if (trans.TransactionType.Equals(TransactionType.Import))
             {
                 detail.Type = InventoryDetailType.Import;
@@ -156,10 +155,10 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //get list detail by partner
-        private async Task<List<InventoryDetail>> GetPartnerInventoryDetail(int partnerId)
+        private async Task<List<InventoryDetail>> GetPartnerInventoryDetail(int partnerId, int inventoryId)
         {
             List<InventoryDetail> details = new List<InventoryDetail>();
-            details = await _dbSet.Where(d => d.PartnerId == partnerId).ToListAsync();
+            details = await _dbSet.Where(d => d.PartnerId == partnerId &&  d.InventoryId == inventoryId).ToListAsync();
             return details;
         }
         //get list detail by datetime and type
