@@ -24,10 +24,6 @@ namespace ImportExportManagementAPI.Repositories
         {
             if (filter != null)
             {
-                if (filter.InventoryId != 0)
-                {
-                    queryable = queryable.Where(i => i.InventoryId == filter.InventoryId);
-                }
                 if (filter.PartnerName != null && filter.PartnerName.Length > 0)
                 {
                     queryable = queryable.Where(i => i.Partner.DisplayName.Contains(filter.PartnerName));

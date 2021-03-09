@@ -63,7 +63,7 @@ namespace ImportExportManagementAPI.Controllers
 
                 return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
             }
-            return BadRequest("Card is not exised");
+            return BadRequest("Card is not exist");
         }
         //KhanhBDB
         //update transaction information => manual
