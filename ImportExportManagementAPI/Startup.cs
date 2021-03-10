@@ -41,9 +41,8 @@ namespace ImportExportManagementAPI
             });
             services.AddDistributedMemoryCache();
             services.AddSession(o => {
-                o.IdleTimeout = TimeSpan.FromSeconds(30 * 60);
-            });
-
+                 o.IdleTimeout = TimeSpan.FromSeconds(30 * 60);
+             });
 
         }
 
