@@ -1,3 +1,4 @@
+using ImportExportManagementAPI.Workers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -40,6 +41,7 @@ namespace ImportExportManagementAPI
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ImportExportManagementAPI", Version = "v1" });
             });
+            services.AddHostedService<TimedGenerateScheduleService>();
 
         }
 
