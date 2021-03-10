@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Controllers
@@ -17,6 +18,18 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet]
         public IActionResult GetCaptcha(string mailOfManager)
         {
+            bool checkIsValidMail = true;
+            Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
+            Match match = regex.Match(mailOfManager);
+            if (!match.Success)
+            {
+                checkIsValidMail = false;
+            }
+
+            if (mailOfManager == null || mailOfManager.Length == 0 || !checkIsValidMail)
+            {
+                return NotFound();
+            }
             if (HttpContext.Session.IsAvailable)
             {
                 string captchaCode = Captcha.GenerateCaptchaCode();
@@ -39,17 +52,17 @@ namespace ImportExportManagementAPI.Controllers
                 }
                 return Ok(captchaCode);
             }
-            return NotFound();
+            return Unauthorized();
 
         }
         [HttpGet("check")]
-        public IActionResult CheckCaptcha(string usercaptcha)
+        public IActionResult CheckCaptcha([FromQuery] string usercaptcha)
         {
             if (HttpContext.Session.IsAvailable)
             {
                 byte[] code;
                 HttpContext.Session.TryGetValue("captcha", out code);
-                if (usercaptcha.Length != 6)
+                if (usercaptcha == null || usercaptcha.Length != 6)
                 {
                     return Unauthorized();
                 }
@@ -61,7 +74,11 @@ namespace ImportExportManagementAPI.Controllers
                         return Ok();
                     }
                 }
-                return Unauthorized();
+                else
+                {
+                    return NotFound();
+                }
+
             }
             return Unauthorized();
         }
