@@ -11,13 +11,13 @@ using System.Threading.Tasks;
 * @date - 3/11/2021 11:06:25 AM 
 */
 
-namespace ImportExportManagementAPI
+namespace ImportExportManagementAPI.Models
 {
     public class TimeTemplateItem
     {
         public int TimeTemplateItemId { get; set; }
         public float Capacity { get; set; }
-        public DateTime ScheduleTime { get; set; }
+        public TimeSpan ScheduleTime { get; set; }
 
         public List<Schedule> Schedules { get; set; }
 
