@@ -9,6 +9,7 @@ using ImportExportManagement_API;
 using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
+using ImportExportManagementAPI.Repositories;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -17,10 +18,13 @@ namespace ImportExportManagementAPI.Controllers
     public class SchedulesController : ControllerBase
     {
         private readonly ScheduleRepository _repo;
-
+        private readonly TimeTemplateItemRepository _timeTemplateItemRepo;
+        private readonly GoodsRepository _goodsRepository;
         public SchedulesController()
         {
             _repo = new ScheduleRepository();
+            _timeTemplateItemRepo = new TimeTemplateItemRepository();
+            _goodsRepository = new GoodsRepository();
         }
 
         // GET: api/Schedules
@@ -81,8 +85,15 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Schedule>> PostSchedule(Schedule schedule)
         {
-            _repo.Insert(schedule);
-            await _repo.SaveAsync();
+
+            if (_timeTemplateItemRepo.CheckCapacity(schedule.RegisteredWeight, schedule.TimeTemplateItemId))
+            {
+               // float quantityOfInventory = _goodsRepository.GetGoodCapacity(schedule.GoodsId);
+                _timeTemplateItemRepo.UpdateSchedule(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
+                _repo.Insert(schedule);
+                await _repo.SaveAsync();
+            }
+
 
             return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
         }

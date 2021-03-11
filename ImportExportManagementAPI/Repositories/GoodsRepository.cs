@@ -20,9 +20,9 @@ namespace ImportExportManagementAPI.Repositories
             return _dbSet.Any(e => e.GoodsId == id);
         }
 
-        public void DeleteGoods(Goods  goods)
+        public void DeleteGoods(Goods goods)
         {
-           // partner.PartnerStatus = PartnerStatus.Block;
+            // partner.PartnerStatus = PartnerStatus.Block;
             Update(goods);
         }
 
@@ -30,6 +30,11 @@ namespace ImportExportManagementAPI.Repositories
         {
             return Enum.GetValues(typeof(GoodsStatus)).Cast<GoodsStatus>().ToList();
 
+        }
+
+        public float GetGoodCapacity(int id)
+        {
+            return _dbSet.Find(id).QuantityOfInventory;
         }
     }
 }
