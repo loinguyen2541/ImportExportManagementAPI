@@ -37,10 +37,10 @@ namespace ImportExportManagementAPI.Controllers
                 HttpContext.Session.Set("captcha", code);
                 using (MailMessage mail = new MailMessage())
                 {
-                    mail.From = new MailAddress("tanntse63184@fpt.edu.vn", "Automatic Sacle App", System.Text.Encoding.UTF8);
+                    mail.From = new MailAddress("tanntse63184@fpt.edu.vn", "ICAN Automatic Mailer ", System.Text.Encoding.UTF8);
                     mail.To.Add(mailOfManager);
                     mail.Subject = "Request Captcha";
-                    mail.Body = "Your Captcha is " + captchaCode;
+                    mail.Body = "<h1>Your Captcha is " + captchaCode +"</h1>";
                     mail.IsBodyHtml = true;
                     using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
                     {
