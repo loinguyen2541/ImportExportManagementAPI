@@ -78,20 +78,20 @@ namespace ImportExportManagementAPI.Repositories
             Update(IdentityCard);
         }
 
-        //kiem ta trang thai card
-        public async Task<bool> CheckPartnerCard(IdentityCard card)
+        //lay provider cua card
+        public async Task<Partner> GetPartnerCard(int partnerId)
         {
-            bool checkStatus = true;
-            var partner = await new PartnersController().GetPartner(card.PartnerId);
-            if (partner == null || partner.Value.PartnerStatus.Equals(PartnerStatus.Block))
+            PartnerRepository partnerRepo = new PartnerRepository();
+            var partner = await partnerRepo.GetByIDAsync(partnerId);
+            if (partner == null || partner.PartnerStatus.Equals(PartnerStatus.Block))
             {
-                checkStatus = false;
+                return null;
             }
-            return checkStatus;
+            return partner;
         }
 
         //check scand card
-        public async Task<IdentityCard> checkCardAsync(String cardId)
+        public async Task<IdentityCard> checkCard(String cardId)
         {
             if (cardId != null)
             {
@@ -99,16 +99,7 @@ namespace ImportExportManagementAPI.Repositories
                 var identityCard = await GetByIDAsync(cardId);
                 if (identityCard != null && identityCard.IdentityCardStatus.Equals(IdentityCardStatus.Active))
                 {
-                    //card có thuộc về partner nào không
-                    Task<bool> checkPartner = CheckPartnerCard(identityCard);
-                    //card có đang processing không
-                    TransactionRepository transRepo = new TransactionRepository();
-                    Task<bool> checkProcessing = transRepo.CheckProcessingCard(cardId,"CheckCard", 0);
-                    await Task.WhenAll(checkPartner, checkProcessing);
-                    if(checkPartner.Result == true && checkProcessing.Result == false)
-                    {
-                        return identityCard;
-                    }
+                    return identityCard;
                 }
             }
             return null;

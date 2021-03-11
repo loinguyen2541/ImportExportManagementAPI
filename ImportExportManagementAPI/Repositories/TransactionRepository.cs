@@ -18,32 +18,97 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //kiểm tra xem các trans đang process có thẻ này không
-        public async Task<bool> CheckProcessingCard(String cardId, String method, int transId)
+        public async Task<bool> CheckProcessingCard(String cardId, String method)
         {
             bool check = false;
             List<Transaction> listProcessingTrans = new List<Transaction>();
             listProcessingTrans = _dbSet.Where(t => t.TransactionStatus.Equals(TransactionStatus.Progessing)).ToList();
-            if (transId == 0)
+            if(listProcessingTrans!= null && listProcessingTrans.Count != 0)
             {
-                if (method.Equals("Insert") || method.Equals("CheckCard"))
+                if (method.Equals("Insert"))
                 {
                     //insert
                     check = await DisableProcessingTransInInsert(listProcessingTrans, cardId);
                 }
-                else if (method.Equals("Update"))
+                else if (method.Equals("UpdateArduino"))
                 {
                     //update by arduino
-                    check = await DisableProcessingTransInUpdate(listProcessingTrans, cardId, transId);
+                    check = await DisableProcessingInUpdateByArduino(listProcessingTrans, cardId);
                 }
-            }
-            else
-            {
-                check = await DisableProcessingTransInUpdate(listProcessingTrans, cardId, transId);
             }
             return check;
         }
+        public async Task<bool> UpdateTransScandCardAsync(String cardId, float weightOut, DateTime timeOut)
+        {
+            bool check = false;
+            //disable những transaction của thẻ này trước đó đang ở trạng thái processing => trừ cái mới nhất để update
+            bool checkProcessingCard = await CheckProcessingCard(cardId, "Update");
+            if (!checkProcessingCard)
+            {
+                //tìm transaction gần nhất của thẻ ở trạng thái processing
+                var trans = FindTransToWeightOut(cardId);
+                if (trans != null)
+                {
+                    //tìm thấy trans nhưng weightIn = 0 => transaction ko hợp lệ
+                    if (trans.WeightIn == 0)
+                    {
+                        check = false;
+                    }
+                    else
+                    {
+                        if (weightOut != 0)
+                        {
+                            //set type
+                            SetTransactionType(trans, weightOut);
+                            //set time out
+                            trans.TimeOut = timeOut;
+                            //set weight out
+                            trans.WeightOut = weightOut;
+                            //change status
+                            trans.TransactionStatus = TransactionStatus.Success;
+                            //update transaction
+                            try
+                            {
+                                Update(trans);
+                                Task saveDB = SaveAsync();
+                                //tạo inventory detail
+                                Task updateDetail = UpdateInventoryDetail(trans);
+                                check = true;
+                            }
+                            catch
+                            {
+                                check = false;
+                            }
+                        }
+                    }
+                }
+            }
+            return check;
+        }
+
         //insert method => disable all transation processing in 
         public async Task<bool> DisableProcessingTransInInsert(List<Transaction> listDisable, String cardId)
+        {
+            bool check = false;
+            for (int i = 0; i < listDisable.Count; i++)
+            {
+                if (listDisable[i].IdentityCardId != null)
+                {
+                    //insert => disable all processing transaction
+                    if (listDisable[i].IdentityCardId.Equals(cardId))
+                    {
+                        check = await UpdateStatusProcessingTransactionAsync(listDisable[i]);
+                        if (check)
+                        {
+                            check = false;
+                        }
+                    }
+                }
+            }
+            return check;
+        }
+        //update method => disable transations processing in expect last
+        public async Task<bool> DisableProcessingTransInUpdateManual(List<Transaction> listDisable, String cardId, int transId)
         {
             bool check = false;
             if (listDisable != null && listDisable.Count != 0)
@@ -52,8 +117,8 @@ namespace ImportExportManagementAPI.Repositories
                 {
                     if (listDisable[i].IdentityCardId != null)
                     {
-                        //insert => disable all processing transaction
-                        if (listDisable[i].IdentityCardId.Equals(cardId))
+                        //update => disable all processing transaction except it
+                        if (listDisable[i].IdentityCardId.Equals(cardId) && (listDisable[i].TransactionId != transId))
                         {
                             check = await UpdateStatusProcessingTransactionAsync(listDisable[i]);
                             if (check)
@@ -67,7 +132,7 @@ namespace ImportExportManagementAPI.Repositories
             return check;
         }
         //update method => disable transations processing in expect last
-        public async Task<bool> DisableProcessingTransInUpdate(List<Transaction> listDisable, String cardId, int transId)
+        public async Task<bool> DisableProcessingInUpdateByArduino(List<Transaction> listDisable, String cardId)
         {
             bool check = false;
             if (listDisable != null && listDisable.Count != 0)
@@ -77,7 +142,7 @@ namespace ImportExportManagementAPI.Repositories
                     if (listDisable[i].IdentityCardId != null)
                     {
                         //update => disable all processing transaction except it
-                        if (listDisable[i].IdentityCardId.Equals(cardId) && (listDisable[i].TransactionId != transId) && (i!=(listDisable.Count - 1)))
+                        if (listDisable[i].IdentityCardId.Equals(cardId) && (i != (listDisable.Count - 1)))
                         {
                             check = await UpdateStatusProcessingTransactionAsync(listDisable[i]);
                             if (check)
@@ -112,6 +177,18 @@ namespace ImportExportManagementAPI.Repositories
                 update = false;
             }
             return update;
+        }
+
+        public async Task<List<Transaction>> GetTransactionByInventoryDetail(int detailId)
+        {
+            List<Transaction> listTransaction = new List<Transaction>();
+            IQueryable<Transaction> rawData = null;
+            InventoryDetail detail = (InventoryDetail)_dbContext.InventoryDetail.Find(detailId);
+            Inventory inventory = (Inventory)_dbContext.Inventory.Find(detail.InventoryId);
+            rawData = _dbSet.Include(t => t.Partner);
+            rawData = _dbSet.Where(t => t.CreatedDate.CompareTo(inventory.RecordedDate) == 0 && t.PartnerId == detail.PartnerId && t.TransactionType.Equals(detail.Type));
+            listTransaction = await rawData.ToListAsync();
+            return listTransaction;
         }
         public async ValueTask<Pagination<Transaction>> GetAllAsync(PaginationParam paging, TransactionFilter filter)
         {
@@ -231,53 +308,6 @@ namespace ImportExportManagementAPI.Repositories
          * update date weight in weight out
          */
 
-        public async Task<bool> UpdateTransScandCardAsync(String cardId, float weightOut, DateTime timeOut)
-        {
-            bool check = false;
-            //disable những transaction của thẻ này trước đó đang ở trạng thái processing => trừ cái mới nhất để update
-            bool checkProcessingCard = await CheckProcessingCard(cardId, "Update", 0);
-            if (!checkProcessingCard)
-            {
-                //tìm transaction gần nhất của thẻ ở trạng thái processing
-                var trans = FindTransToWeightOut(cardId);
-                if (trans != null)
-                {
-                    //tìm thấy trans nhưng weightIn = 0 => transaction ko hợp lệ
-                    if (trans.WeightIn == 0)
-                    {
-                        check = false;
-                    }
-                    else
-                    {
-                        if (weightOut != 0)
-                        {
-                            //set type
-                            SetTransactionType(trans, weightOut);
-                            //set time out
-                            trans.TimeOut = timeOut;
-                            //set weight out
-                            trans.WeightOut = weightOut;
-                            //change status
-                            trans.TransactionStatus = TransactionStatus.Success;
-                            //update transaction
-                            try
-                            {
-                                Update(trans);
-                                Task saveDB = SaveAsync();
-                                //tạo inventory detail
-                                Task updateDetail = UpdateInventoryDetail(trans);
-                                check = true;
-                            }
-                            catch
-                            {
-                                check = false;
-                            }
-                        }
-                    }
-                }
-            }
-            return check;
-        }
 
         //identity transaction type
         public void SetTransactionType(Transaction trans, float weightOut)
@@ -295,83 +325,134 @@ namespace ImportExportManagementAPI.Repositories
             }
         }
 
-        public async Task<bool> CreateTransactionAsync(Transaction trans, String method)
-        {
-            bool checkCreate = false;
-            DateTime dateTimeNow = DateTime.Now;
-            trans.CreatedDate = dateTimeNow;
-            //tạo bằng arduino => mã thẻ quẹt
-            //tạo bằng tay => thẻ của bv
-            if (trans.IdentityCardId != null)
-            {
-                //disable hết các transaction của thẻ này mà đang status processing
-                bool checkProcessingCard = await CheckProcessingCard(trans.IdentityCardId, "Insert", 0);
-                if (!checkProcessingCard)
-                {
-                    if (trans.WeightIn > 0)
-                    {
-                        if (method.Equals("manual"))
-                        {
-                            //tạo bằng tay => yêu cầu nhập cả time in, time out và status phải là success
-                            if (trans.WeightOut != 0 && trans.TimeOut != null && trans.TransactionStatus.Equals(TransactionStatus.Success))
-                            {
-                                //check hợp lệ => tạo transaction
-                                SetTransactionType(trans, trans.WeightOut);
-                                Insert(trans);
-                                checkCreate = true;
-                                //tạo transaction thành công => tạo inventory detail
-                                await UpdateInventoryDetail(trans);
-                            }
-                            else
-                            {
-                                checkCreate = false;
-                            }
-                        }
-                        else
-                        {
-                            //tạo bằng arduino => xác phải có vật trên cân
-                            Insert(trans);
-                            checkCreate = true;
-                        }
+        //public async Task<bool> CreateTransactionAsync(Transaction trans, String method)
+        //{
+        //    bool checkCreate = false;
+        //    DateTime dateTimeNow = DateTime.Now;
+        //    trans.CreatedDate = dateTimeNow;
+        //    //tạo bằng arduino => mã thẻ quẹt
+        //    //tạo bằng tay => thẻ của bv
+        //    if (trans.IdentityCardId != null)
+        //    {
+        //        //disable hết các transaction của thẻ này mà đang status processing
+        //        bool checkProcessingCard = await CheckProcessingCard(trans.IdentityCardId, "Insert");
+        //        if (!checkProcessingCard)
+        //        {
+        //            if (trans.WeightIn > 0)
+        //            {
+        //                if (method.Equals("manual"))
+        //                {
+        //                    //tạo bằng tay => yêu cầu nhập cả time in, time out và status phải là success
+        //                    if (trans.WeightOut != 0 && trans.TimeOut != null && trans.TransactionStatus.Equals(TransactionStatus.Success))
+        //                    {
+        //                        //check hợp lệ => tạo transaction
+        //                        SetTransactionType(trans, trans.WeightOut);
+        //                        Insert(trans);
+        //                        checkCreate = true;
+        //                        //tạo transaction thành công => tạo inventory detail
+        //                        await UpdateInventoryDetail(trans);
+        //                    }
+        //                    else
+        //                    {
+        //                        checkCreate = false;
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    //tạo bằng arduino => xác phải có vật trên cân
+        //                    Insert(trans);
+        //                    checkCreate = true;
+        //                }
 
-                    }
-                }
-            }
-            return checkCreate;
-        }
+        //            }
+        //        }
+        //    }
+        //    return checkCreate;
+        //}
 
         //update transaction
-        public async Task<String> UpdateTransaction(Transaction trans, int id)
+        public async Task<bool> UpdateTransactionByManual(Transaction trans, int id)
         {
-            String checkUpdate = "";
-            if (id != trans.TransactionId)
+            bool checkUpdate = true;
+            if(id!= trans.TransactionId)
             {
-                checkUpdate = "Invalid input";
+                return checkUpdate = false;
             }
-
-            bool checkProcessingCard = await CheckProcessingCard(trans.IdentityCardId,"Update", trans.TransactionId);
-
-            if (checkProcessingCard)
+            Update(trans);
+            try
             {
-                checkUpdate = "Update processing transactions failed";
+                await SaveAsync();
+            }
+            catch(Exception e)
+            {
+                checkUpdate = false;
+            }
+            return checkUpdate;
+        }
+        public async Task<bool> UpdateTransactionArduino(String cardId, float weightOut, String method)
+        {
+            bool checkUpdate = true;
+            Partner partner;
+            if (cardId!= null && cardId.Length > 0) //insert by arduino
+            {
+                //find provider and check card status
+                IdentityCardRepository cardRepo = new IdentityCardRepository();
+                Task<IdentityCard> checkCard = cardRepo.checkCard(cardId);
+                if (checkCard.Result == null)
+                {
+                    //card not available
+                    return checkUpdate = false;
+                }
+                partner = cardRepo.GetPartnerCard(checkCard.Result.PartnerId).Result;
             }
             else
             {
+                return checkUpdate = false;
+            }
+            //get partner failed
+            if (partner == null)
+            {
+                return checkUpdate = false;
+            }
+
+
+            bool checkProcessingCard = await CheckProcessingCard(cardId, method); ;
+
+            if (checkProcessingCard)
+            {
+                return checkUpdate = false;
+            }
+            else
+            {
+                if (weightOut <= 0) return checkUpdate = false;
+                var trans = FindTransToWeightOut(cardId);
+                if (trans.WeightIn <= 0) return checkUpdate = false;
+
+                //set type
+                SetTransactionType(trans, weightOut);
+                //set time out
+                trans.TimeOut = DateTime.Now;
+                //set weight out
+                trans.WeightOut = weightOut;
+                //change status
+                trans.TransactionStatus = TransactionStatus.Success;
+                //update transaction
                 Update(trans);
                 try
                 {
                     await SaveAsync();
-                    //chưa tạo detail
+                    //update transaction thành công => tạo inventory detail
+                    await UpdateInventoryDetail(trans);
                 }
                 catch (Exception e)
                 {
                     if (GetByID(trans.TransactionId) == null)
                     {
-                        checkUpdate = "Transaction is not exist";
+                        return checkUpdate = false;
                     }
                     else
                     {
-                        checkUpdate = e.Message;
+                        return checkUpdate = false;
                     }
                 }
             }
@@ -384,6 +465,62 @@ namespace ImportExportManagementAPI.Repositories
         {
             InventoryDetailRepository detailRepo = new InventoryDetailRepository();
             await detailRepo.UpdateInventoryDetail(trans.CreatedDate, trans);
+        }
+
+        //tạo transaction
+        public async Task<Transaction> CreateTransaction(Transaction trans, String method)
+        {
+            //check validate weight in weight out
+            if (trans.WeightIn <= 0)
+            {
+                return null;
+            }
+            if (method.Equals("manual"))
+            {
+                if (trans.WeightOut <= 0)
+                {
+                    return null;
+                }
+            }
+
+            //check card || provider
+            Partner partner;
+            if (trans.IdentityCardId != null) //insert by arduino
+            {
+                //find provider and check card status
+                IdentityCardRepository cardRepo = new IdentityCardRepository();
+                Task<IdentityCard> checkCard = cardRepo.checkCard(trans.IdentityCardId);
+                if (checkCard.Result == null)
+                {
+                    //card not available
+                    return null;
+                }
+                partner = cardRepo.GetPartnerCard(checkCard.Result.PartnerId).Result;
+            }
+            else
+            {
+                partner = (Partner)_dbContext.Partner.Where(p => p.PartnerId == trans.PartnerId && p.PartnerStatus.Equals(PartnerStatus.Active));
+            }
+            //get partner failed
+            if (partner == null)
+            {
+                return null;
+            }
+
+            bool checkProceesingCard = await CheckProcessingCard(trans.IdentityCardId, "Insert");
+            if (checkProceesingCard) return null;
+
+            //check hợp lệ => tạo transaction
+            trans.PartnerId = partner.PartnerId;
+            trans.GoodsId = _dbContext.Goods.First().GoodsId;
+            SetTransactionType(trans, trans.WeightOut);
+            Insert(trans);
+            if (trans.TransactionStatus.Equals(TransactionStatus.Success))
+            {
+                //tạo transaction thành công => tạo inventory detail
+                await UpdateInventoryDetail(trans);
+            }
+            return trans;
         }
     }
 }

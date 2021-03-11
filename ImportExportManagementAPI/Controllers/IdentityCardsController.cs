@@ -115,11 +115,11 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("existed/{cardId}")]
         public async Task<ActionResult<IdentityCard>> CheckCardExisted(String cardId)
         {
-            IdentityCard checkCard = await _repo.checkCardAsync(cardId);
-            if (checkCard != null)
-            {
-                return Ok(checkCard);
-            }
+            //String checkCard = await _repo.checkCard(cardId);
+            //if (checkCard != null)
+            //{
+            //    return Ok(checkCard);
+            //}
             return BadRequest();
         }
 
