@@ -50,10 +50,17 @@ namespace ImportExportManagementAPI.Repositories
             account.Status = AccountStatus.Block;
             Update(account);
         }
-        public async Task<Account> Login(Account accountToLogin, AppSettings _appSettings)
+        private Account WithoutPassword(Account account)
         {
-            Account account = await GetByIDAsync(accountToLogin.Username);
-            if (account.Password.Equals(accountToLogin.Password) && account.Status.Equals(AccountStatus.Active))
+            if (account == null) return null;
+
+            account.Password = null;
+            return account;
+        }
+        public async Task<Account> Login(AuthenticateModel model, AppSettings _appSettings)
+        {
+            Account account = _dbSet.Include(a => a.Role).Where(a => a.Username.Equals(model.Username)).First();
+            if (account.Password.Equals(model.Password) && account.Status.Equals(AccountStatus.Active))
             {
                 //authenticate success
                 if (account.Token == null)
@@ -90,7 +97,7 @@ namespace ImportExportManagementAPI.Repositories
                         return null;
                     }
                 }
-                return account.WithoutPassword(account);
+                return WithoutPassword(account);
             }
             return null;
         }
