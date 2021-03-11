@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ImportExportManagementAPI;
+using ImportExportManagementAPI.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,6 +21,9 @@ namespace ImportExportManagement_API.Models
 
         public int GoodsId { get; set; }
         public Goods Goods { get; set; }
+
+        public int TimeTemplateItemId { get; set; }
+        public TimeTemplateItem TimeTemplateItem { get; set; }
 
     }
 }
