@@ -14,7 +14,7 @@ namespace ImportExportManagementAPI.Models
     public class TimeTemplate
     {
         public int TimeTemplateId { get; set; }
-        public int TimeTemplateName { get; set; }
+        public String TimeTemplateName { get; set; }
         public TimeTemplateStatus TimeTemplateStatus { get; set; }
         public List<TimeTemplateItem> TimeTemplateItems { get; set; }
     }
