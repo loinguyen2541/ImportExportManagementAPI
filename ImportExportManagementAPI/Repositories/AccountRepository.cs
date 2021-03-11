@@ -59,45 +59,48 @@ namespace ImportExportManagementAPI.Repositories
         }
         public async Task<Account> Login(AuthenticateModel model, AppSettings _appSettings)
         {
-            Account account = _dbSet.Include(a => a.Role).Where(a => a.Username.Equals(model.Username)).First();
-            if (account.Password.Equals(model.Password) && account.Status.Equals(AccountStatus.Active))
+            Account account = GetByID(model.Username);
+            if (account != null)
             {
-                //authenticate success
-                if (account.Token == null)
+                if (account.Password.Equals(model.Password) && account.Status.Equals(AccountStatus.Active))
                 {
-                    string role = "Manager";
-                    if (account.Role.RoleName.Equals("Staff")) role = "Manager";
-                    else if (account.Role.RoleName.Equals("Partner")) role = "Partner";
-                    //generate token and return it
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-                    var validIssuer = _appSettings.Issuer;
-                    var validAudience = _appSettings.Audience;
-                    var tokenDescriptor = new SecurityTokenDescriptor
+                    //authenticate success
+                    if (account.Token == null || account.Token.Length == 0)
                     {
-                        Subject = new ClaimsIdentity(new Claim[]
+                        string role = "Manager";
+                        if (account.RoleId == 2) role = "Staff";
+                        else if (account.RoleId == 3) role = "Partner";
+                        //generate token and return it
+                        var tokenHandler = new JwtSecurityTokenHandler();
+                        var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+                        var validIssuer = _appSettings.Issuer;
+                        var validAudience = _appSettings.Audience;
+                        var tokenDescriptor = new SecurityTokenDescriptor
                         {
+                            Subject = new ClaimsIdentity(new Claim[]
+                            {
                     new Claim(ClaimTypes.Name, account.Username.ToString()),
                     new Claim(ClaimTypes.Role, role)
-                        }),
-                        Audience = validAudience,
-                        Issuer = validIssuer,
-                        Expires = DateTime.UtcNow.AddMinutes(30),
-                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                    };
-                    var token = tokenHandler.CreateToken(tokenDescriptor);
-                    account.Token = tokenHandler.WriteToken(token);
-                    try
-                    {
-                        Update(account);
-                        await SaveAsync();
+                            }),
+                            Audience = validAudience,
+                            Issuer = validIssuer,
+                            Expires = DateTime.UtcNow.AddMinutes(30),
+                            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                        };
+                        var token = tokenHandler.CreateToken(tokenDescriptor);
+                        account.Token = tokenHandler.WriteToken(token);
+                        try
+                        {
+                            Update(account);
+                            await SaveAsync();
+                        }
+                        catch
+                        {
+                            return null;
+                        }
                     }
-                    catch
-                    {
-                        return null;
-                    }
+                    return WithoutPassword(account);
                 }
-                return WithoutPassword(account);
             }
             return null;
         }

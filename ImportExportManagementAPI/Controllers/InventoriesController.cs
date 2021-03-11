@@ -1,6 +1,7 @@
 ﻿using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/inventories
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Inventory>>> SearchInventory([FromQuery] PaginationParam paging, [FromQuery] InventoryFilter filter)
         {
             Pagination<Inventory> listInventory = await _repo.GetAllInventory(paging, filter);
@@ -27,7 +29,7 @@ namespace ImportExportManagementAPI.Controllers
         }
         //check ngày này có tồn tại phiếu nhập kho chưa
         [HttpGet("{dateRecord}")]
-        public async Task<ActionResult<IdentityCard>> GetIdentityCard(DateTime dateRecord)
+        public async Task<ActionResult<IdentityCard>> GetDateRecord(DateTime dateRecord)
         {
             var identityCard = await _repo.CheckExistDateRecord(dateRecord);
 
@@ -41,6 +43,7 @@ namespace ImportExportManagementAPI.Controllers
         //tạo phiếu nhập kho
         //hàm này chỉ được chạy tự động, khi transaction ở trạng thái success
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult> CreateInventory(Inventory inventory)
         {
             _repo.Insert(inventory);
@@ -50,6 +53,7 @@ namespace ImportExportManagementAPI.Controllers
 
         //lấy tổng khối lượng nhập/xuất theo ngày
         [HttpGet("total")]
+        [AllowAnonymous]
         public ActionResult<String> GetTotalByDateType(DateTime date, int type)
         {
             Task<String> total =  _repo.TotalWeightInventory(date, type);

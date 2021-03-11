@@ -1,6 +1,7 @@
 ﻿using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace ImportExportManagementAPI.Controllers
         }
         //get transaction
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<Pagination<Transaction>>> GetAllTransaction([FromQuery] PaginationParam paging, [FromQuery] TransactionFilter filter)
         {
             Pagination<Transaction> listTransaction = await _repo.GetAllAsync(paging, filter);
@@ -29,6 +31,7 @@ namespace ImportExportManagementAPI.Controllers
         }
         //get transaction
         [HttpGet("inventorydetail")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<Transaction>>> GetTransactionByInventoryDetail(int inventoryDetailId)
         {
             List<Transaction> listTransaction = await _repo.GetTransactionByInventoryDetail(inventoryDetailId);
@@ -37,6 +40,7 @@ namespace ImportExportManagementAPI.Controllers
 
         //get number of lastest transaction
         [HttpGet("last")]
+        [AllowAnonymous]
         public async Task<ActionResult<Pagination<Transaction>>> GetLastTransaction([FromQuery] PaginationParam paging)
         {
             Pagination<Transaction> listTransaction = await _repo.GetLastIndex(paging);
@@ -45,6 +49,7 @@ namespace ImportExportManagementAPI.Controllers
         //KhanhBDB
         //add transaction
         [HttpPost("manual")]
+        [AllowAnonymous]
         public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
         {
             bool check = true;
@@ -58,6 +63,7 @@ namespace ImportExportManagementAPI.Controllers
         }
         //add transaction
         [HttpPost("automatic")]
+        [AllowAnonymous]
         public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn)
         {
             Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing};
@@ -72,6 +78,7 @@ namespace ImportExportManagementAPI.Controllers
         //KhanhBDB
         //update transaction information => manual
         [HttpPut("manual/{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
         {
             bool checkUpdate = await _repo.UpdateTransactionByManual(trans, id);
@@ -90,6 +97,7 @@ namespace ImportExportManagementAPI.Controllers
 
         //update
         [HttpPut("automatic/{cardId}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut)
         {
             bool check = await _repo.UpdateTransactionArduino(cardId, weightOut, "UpdateArduino");
@@ -104,6 +112,7 @@ namespace ImportExportManagementAPI.Controllers
         }
         //get transaction by id
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Transaction>> GetTransaction(int id)
         {
             Transaction trans = await _repo.GetByIDIncludePartnerAsync(id);
@@ -116,6 +125,7 @@ namespace ImportExportManagementAPI.Controllers
             return trans;
         }
         [HttpGet("partners/search")]
+        [AllowAnonymous]
         public async Task<ActionResult<Pagination<Transaction>>> GetTransactionByPartnerId([FromQuery] PaginationParam paging, [FromQuery] int id)
         {
             Pagination<Transaction> trans = await _repo.GetTransByPartnerIdAsync(paging, id);
@@ -127,11 +137,13 @@ namespace ImportExportManagementAPI.Controllers
             return Ok(trans);
         }
         [HttpGet("types")]
+        [AllowAnonymous]
         public ActionResult<Object> GetTransType()
         {
             return Ok(Enum.GetValues(typeof(TransactionType)).Cast<TransactionType>().ToList());
         }
         [HttpGet("states")]
+        [AllowAnonymous]
         public ActionResult<Object> GetTransState()
         {
             return Ok(Enum.GetValues(typeof(TransactionStatus)).Cast<TransactionStatus>().ToList());

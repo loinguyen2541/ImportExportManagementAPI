@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ImportExportManagement_API;
 using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ImportExportManagementAPI
 {
@@ -24,6 +25,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Goods
         [HttpGet]
+        [Authorize(Roles = "Staff")]
         public ActionResult<List<Goods>> GetGoods()
         {
             return repo.GetGoods();
@@ -46,6 +48,7 @@ namespace ImportExportManagementAPI
         // PUT: api/Goods/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> PutGoods(int id, Goods goods)
         {
             if (id != goods.GoodsId)
@@ -76,6 +79,7 @@ namespace ImportExportManagementAPI
         // POST: api/Goods
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Staff")]
         public async Task<ActionResult<Goods>> PostGoods(Goods goods)
         {
             repo.Insert(goods);
@@ -86,6 +90,7 @@ namespace ImportExportManagementAPI
 
         // DELETE: api/Goods/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> DeleteGoods(int id)
         {
             var goods = await repo.GetByIDAsync(id);
@@ -101,6 +106,7 @@ namespace ImportExportManagementAPI
         }
 
         [HttpGet("status")]
+        [Authorize(Roles = "Staff")]
         public ActionResult<Object> GetGoodsStatus()
         {
             return Ok(repo.GetGoodsStatus());

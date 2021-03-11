@@ -9,6 +9,7 @@ using ImportExportManagement_API;
 using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -25,6 +26,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/Schedules
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<Pagination<Schedule>>> GetSchedule([FromQuery] PaginationParam paging, [FromQuery] ScheduleFilterParam filter)
         {
             Pagination<Schedule> schedules = await _repo.GetAllAsync(paging, filter);
@@ -33,6 +35,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/Schedules/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Schedule>> GetSchedule(int id)
         {
             var schedule = await _repo.GetByIDAsync(id);
@@ -48,6 +51,7 @@ namespace ImportExportManagementAPI.Controllers
         // PUT: api/Schedules/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> PutSchedule(int id, Schedule schedule)
         {
             if (id != schedule.ScheduleId)
@@ -79,6 +83,7 @@ namespace ImportExportManagementAPI.Controllers
         // POST: api/Schedules
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<Schedule>> PostSchedule(Schedule schedule)
         {
             _repo.Insert(schedule);
@@ -89,6 +94,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // DELETE: api/Schedules/5
         [HttpDelete("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeleteSchedule(int id)
         {
             var schedule = await _repo.GetByIDAsync(id);
@@ -104,6 +110,7 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpGet("types")]
+        [AllowAnonymous]
         public ActionResult<Object> GetTransType()
         {
             return Ok(Enum.GetValues(typeof(TransactionType)).Cast<TransactionType>().ToList());

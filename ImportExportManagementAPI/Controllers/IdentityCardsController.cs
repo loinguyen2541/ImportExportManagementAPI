@@ -9,6 +9,7 @@ using ImportExportManagement_API;
 using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Repositories;
 using ImportExportManagementAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -33,6 +34,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/Partners
         [HttpGet("searchCard")]
+        [Authorize(Roles = "Staff")]
         public async Task<ActionResult<Pagination<IdentityCard>>> SearchCardByFilterAsync([FromQuery] IdentityCardFilter partnerFilter, [FromQuery] PaginationParam paging)
         {
             Pagination<IdentityCard> identityCards = await _repo.GetAllAsync(paging, partnerFilter);
@@ -41,6 +43,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/IdentityCards/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Staff")]
         public async Task<ActionResult<IdentityCard>> GetIdentityCard(String id)
         {
             var identityCard = await _repo.GetByIDAsync(id);
@@ -56,6 +59,7 @@ namespace ImportExportManagementAPI.Controllers
         // PUT: api/IdentityCards/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> PutIdentityCard(String id, IdentityCard identityCard)
         {
             if (!id.Equals(identityCard.IdentityCardId))
@@ -87,6 +91,7 @@ namespace ImportExportManagementAPI.Controllers
         // POST: api/IdentityCards
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Staff")]
         public async Task<ActionResult<IdentityCard>> PostIdentityCard(IdentityCard identityCard)
         {
             _repo.Insert(identityCard);
@@ -97,6 +102,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // DELETE: api/IdentityCards/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> DeleteIdentityCard(String id)
         {
             var identityCard = await _repo.GetByIDAsync(id);
@@ -111,19 +117,8 @@ namespace ImportExportManagementAPI.Controllers
             return NoContent();
         }
 
-        // check exist card
-        [HttpGet("existed/{cardId}")]
-        public async Task<ActionResult<IdentityCard>> CheckCardExisted(String cardId)
-        {
-            //String checkCard = await _repo.checkCard(cardId);
-            //if (checkCard != null)
-            //{
-            //    return Ok(checkCard);
-            //}
-            return BadRequest();
-        }
-
         [HttpGet("status")]
+        [Authorize(Roles = "Staff")]
         public ActionResult<Object> GetCardStatus()
         {
             return Ok(_repo.GetCardsStatus());
