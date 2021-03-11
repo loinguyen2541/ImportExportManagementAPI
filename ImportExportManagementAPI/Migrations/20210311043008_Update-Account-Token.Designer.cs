@@ -4,14 +4,16 @@ using ImportExportManagement_API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    partial class IEDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210311043008_Update-Account-Token")]
+    partial class UpdateAccountToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,8 +58,8 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("TimeTemplateName")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("TimeTemplateName")
+                        .HasColumnType("int");
 
                     b.Property<int>("TimeTemplateStatus")
                         .HasColumnType("int");
@@ -67,7 +69,7 @@ namespace ImportExportManagementAPI.Migrations
                     b.ToTable("TimeTemplate");
                 });
 
-            modelBuilder.Entity("ImportExportManagementAPI.Models.TimeTemplateItem", b =>
+            modelBuilder.Entity("ImportExportManagementAPI.TimeTemplateItem", b =>
                 {
                     b.Property<int>("TimeTemplateItemId")
                         .ValueGeneratedOnAdd()
@@ -77,8 +79,8 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<float>("Capacity")
                         .HasColumnType("real");
 
-                    b.Property<TimeSpan>("ScheduleTime")
-                        .HasColumnType("time");
+                    b.Property<DateTime>("ScheduleTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("TimeTemplateId")
                         .HasColumnType("int");
@@ -378,7 +380,7 @@ namespace ImportExportManagementAPI.Migrations
                     b.Navigation("PartnerType");
                 });
 
-            modelBuilder.Entity("ImportExportManagementAPI.Models.TimeTemplateItem", b =>
+            modelBuilder.Entity("ImportExportManagementAPI.TimeTemplateItem", b =>
                 {
                     b.HasOne("ImportExportManagementAPI.Models.TimeTemplate", "TimeTemplate")
                         .WithMany("TimeTemplateItems")
@@ -461,7 +463,7 @@ namespace ImportExportManagementAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ImportExportManagementAPI.Models.TimeTemplateItem", "TimeTemplateItem")
+                    b.HasOne("ImportExportManagementAPI.TimeTemplateItem", "TimeTemplateItem")
                         .WithMany("Schedules")
                         .HasForeignKey("TimeTemplateItemId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -509,7 +511,7 @@ namespace ImportExportManagementAPI.Migrations
                     b.Navigation("TimeTemplateItems");
                 });
 
-            modelBuilder.Entity("ImportExportManagementAPI.Models.TimeTemplateItem", b =>
+            modelBuilder.Entity("ImportExportManagementAPI.TimeTemplateItem", b =>
                 {
                     b.Navigation("Schedules");
                 });
