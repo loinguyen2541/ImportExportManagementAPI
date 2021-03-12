@@ -18,6 +18,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet]
         public IActionResult GetCaptcha(string mailOfManager)
         {
+            if (mailOfManager == null || mailOfManager.Length == 0) return NotFound();
             bool checkIsValidMail = true;
             Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
             Match match = regex.Match(mailOfManager);
@@ -26,7 +27,7 @@ namespace ImportExportManagementAPI.Controllers
                 checkIsValidMail = false;
             }
 
-            if (mailOfManager == null || mailOfManager.Length == 0 || !checkIsValidMail)
+            if ( !checkIsValidMail)
             {
                 return NotFound();
             }
@@ -37,10 +38,10 @@ namespace ImportExportManagementAPI.Controllers
                 HttpContext.Session.Set("captcha", code);
                 using (MailMessage mail = new MailMessage())
                 {
-                    mail.From = new MailAddress("tanntse63184@fpt.edu.vn", "Automatic Sacle App", System.Text.Encoding.UTF8);
+                    mail.From = new MailAddress("tanntse63184@fpt.edu.vn", "ICAN Automatic Mailer ", System.Text.Encoding.UTF8);
                     mail.To.Add(mailOfManager);
                     mail.Subject = "Request Captcha";
-                    mail.Body = "Your Captcha is " + captchaCode;
+                    mail.Body = "<h1>Your Captcha is " + captchaCode +"</h1>";
                     mail.IsBodyHtml = true;
                     using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
                     {
