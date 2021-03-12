@@ -18,6 +18,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet]
         public IActionResult GetCaptcha(string mailOfManager)
         {
+            if (mailOfManager == null || mailOfManager.Length == 0) return NotFound();
             bool checkIsValidMail = true;
             Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
             Match match = regex.Match(mailOfManager);
@@ -26,7 +27,7 @@ namespace ImportExportManagementAPI.Controllers
                 checkIsValidMail = false;
             }
 
-            if (mailOfManager == null || mailOfManager.Length == 0 || !checkIsValidMail)
+            if ( !checkIsValidMail)
             {
                 return NotFound();
             }

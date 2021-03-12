@@ -80,5 +80,7 @@ namespace ImportExportManagement_API
         public DbSet<Role> Role { get; set; }
         public DbSet<ImportExportManagementAPI.Models.PartnerType> PartnerType { get; set; }
         public DbSet<ImportExportManagementAPI.Models.PartnerPartnerType> PartnerPartnerType { get; set; }
+        public DbSet<TimeTemplate> TimeTemplate { get; set; }
+        public DbSet<TimeTemplateItem> TimeTemplateItem { get; set; }
     }
 }
