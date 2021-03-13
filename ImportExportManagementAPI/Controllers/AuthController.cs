@@ -33,14 +33,14 @@ namespace ImportExportManagementAPI.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult<String>> Login([FromBody] AuthenticateModel model)
+        public async Task<ActionResult<Account>> Login([FromBody] AuthenticateModel model)
         {
             var user = await _repo.Login(model, _appSettings);
 
             if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
-            return Ok(user.Token);
+            return Ok(user);
         }
     }
 }
