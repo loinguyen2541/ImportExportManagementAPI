@@ -213,6 +213,13 @@ namespace ImportExportManagementAPI.Repositories
 
             if (filter != null)
             {
+                
+                if ((DateTime.TryParse(filter.DateFrom, out DateTime dateFrom) && (DateTime.TryParse(filter.DateTo, out DateTime dateTo) )))
+                {
+                    DateTime fromDate = DateTime.Parse(filter.DateFrom);
+                    DateTime toDate = DateTime.Parse(filter.DateTo);
+                    queryable = queryable.Where(p => p.CreatedDate.Date > fromDate && p.CreatedDate.Date < toDate);
+                }
                 if (filter.PartnerName != null && filter.PartnerName.Length > 0)
                 {
                     queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
