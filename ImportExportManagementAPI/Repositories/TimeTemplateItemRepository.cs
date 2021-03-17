@@ -42,12 +42,12 @@ namespace ImportExportManagementAPI.Repositories
             {
                 if (type == TransactionType.Export)
                 {
-                    targetItemCapacity = timeTemplateItem.Capacity + registeredWeight;
+                    targetItemCapacity = timeTemplateItem.Inventory - registeredWeight;
                     UpdateCapacityExport(timeTemplateItems, timeTemplateItem.ScheduleTime, targetItemCapacity, registeredWeight);
                 }
                 else
                 {
-                    targetItemCapacity = timeTemplateItem.Capacity - registeredWeight;
+                    targetItemCapacity = timeTemplateItem.Inventory + registeredWeight;
                     UpdateCapacityImport(timeTemplateItems, timeTemplateItem.ScheduleTime, targetItemCapacity, registeredWeight);
                 }
                 await _dbContext.SaveChangesAsync();
@@ -101,14 +101,18 @@ namespace ImportExportManagementAPI.Repositories
         {
             bool checkCancel = false;
             TimeTemplateItem timeTemplateItem = await _dbSet.FindAsync(schedule.TimeTemplateItemId);
-            List<TimeTemplateItem> timeTemplateItems = null;
+            List<TimeTemplateItem> timeTemplateItems = new List<TimeTemplateItem>();
             if (timeTemplateItem != null)
             {
-                timeTemplateItems = await _dbSet
+                if (CheckValidTime(timeTemplateItem))
+                {
+                    timeTemplateItems = await _dbSet
                 .Where(i => i.TimeTemplateId == timeTemplateItem.TimeTemplateId)
                 .OrderBy(p => p.ScheduleTime).ToListAsync();
+                    RedefineByTimeClick(timeTemplateItems);
+                }
             }
-            if (timeTemplateItems != null || timeTemplateItems.Count > 0)
+            if (timeTemplateItems != null && timeTemplateItems.Count > 0)
             {
                 if (schedule.TransactionType.Equals(TransactionType.Import))
                 {
@@ -118,16 +122,17 @@ namespace ImportExportManagementAPI.Repositories
                 {
                     CancelExport(timeTemplateItems, timeTemplateItem.ScheduleTime, schedule.RegisteredWeight);
                 }
+                try
+                {
+                    await _dbContext.SaveChangesAsync();
+                    checkCancel = true;
+                }
+                catch
+                {
+                    checkCancel = false;
+                }
             }
-            try
-            {
-                await _dbContext.SaveChangesAsync();
-                checkCancel = true;
-            }
-            catch
-            {
-                checkCancel = false;
-            }
+            
             return checkCancel;
         }
         public void CancelImport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float registeredWeight)
@@ -136,7 +141,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 if (item.ScheduleTime >= targetTime)
                 {
-                    item.Capacity = item.Capacity + registeredWeight;
+                    item.Inventory = item.Inventory + registeredWeight;
                 }
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
@@ -147,11 +152,46 @@ namespace ImportExportManagementAPI.Repositories
             {
                 if (item.ScheduleTime >= targetTime)
                 {
-                    item.Capacity = item.Capacity - registeredWeight;
+                    //ko xuất kho, tồn kho tăng lên
+                    item.Inventory = item.Inventory + registeredWeight;
                 }
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
 
+        }
+
+        public Boolean CheckValidTime(TimeTemplateItem scheduleTime)
+        {
+            bool check = false;
+            TimeSpan current = DateTime.Now.TimeOfDay;
+            TimeSpan scheduleDate = scheduleTime.ScheduleTime;
+            TimeSpan result = current.Subtract(scheduleDate);
+            if(current >= scheduleDate)
+            {
+
+            }
+            else
+            {
+                if ((int)result.TotalMinutes <= 30)
+                {
+                    check = true;
+                }
+            }
+            return check;
+        }
+
+        public List<TimeTemplateItem> RedefineByTimeClick(List<TimeTemplateItem> listTime)
+        {
+            List<TimeTemplateItem> listTemp = new List<TimeTemplateItem>();
+            TimeSpan current = DateTime.Now.TimeOfDay;
+            foreach (var item in listTime)
+            {
+                if (current < item.ScheduleTime)
+                {
+                    listTemp.Add(item);
+                }
+            }
+            return listTemp;
         }
     }
 }
