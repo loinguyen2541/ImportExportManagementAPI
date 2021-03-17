@@ -123,10 +123,34 @@ namespace ImportExportManagementAPI.Controllers
             return NoContent();
         }
 
-        [HttpGet("types")]
-        public ActionResult<Object> GetTransType()
+       [HttpPut("cancel")]
+        public async Task<ActionResult<Schedule>> CancelSchedule(int id, String username)
         {
-            return Ok(Enum.GetValues(typeof(TransactionType)).Cast<TransactionType>().ToList());
+            Schedule schedule = _repo.GetByID(id);
+            if (schedule != null)
+            {
+                if(schedule.IsCanceled == false)
+                {
+                    bool checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule);
+                    if (checkCancel)
+                    {
+                        schedule.IsCanceled = true;
+                        schedule.UpdatedBy = username;
+                        _repo.Update(schedule);
+                    }
+                    try
+                    {
+                        await _repo.SaveAsync();
+                    }
+                    catch
+                    {
+                        return BadRequest();
+                    }
+
+                    return NoContent();
+                }
+            }
+            return BadRequest();
         }
 
         [HttpGet("time")]

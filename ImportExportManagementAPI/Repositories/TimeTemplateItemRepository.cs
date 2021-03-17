@@ -31,20 +31,27 @@ namespace ImportExportManagementAPI.Repositories
         {
             TimeTemplateItem timeTemplateItem = await _dbSet.FindAsync(id);
             float targetItemCapacity = 0;
-            List<TimeTemplateItem> timeTemplateItems = await _dbSet
+            List<TimeTemplateItem> timeTemplateItems = null;
+            if (timeTemplateItem != null)
+            {
+                timeTemplateItems = await _dbSet
                 .Where(i => i.TimeTemplateId == timeTemplateItem.TimeTemplateId)
                 .OrderBy(p => p.ScheduleTime).ToListAsync();
-            if (type == TransactionType.Export)
-            {
-                targetItemCapacity = timeTemplateItem.Inventory - registeredWeight;
-                UpdateCapacityExport(timeTemplateItems, timeTemplateItem.ScheduleTime, targetItemCapacity, registeredWeight);
             }
-            else
+            if (timeTemplateItems != null || timeTemplateItems.Count > 0)
             {
-                targetItemCapacity = timeTemplateItem.Inventory + registeredWeight;
-                UpdateCapacityImport(timeTemplateItems, timeTemplateItem.ScheduleTime, targetItemCapacity, registeredWeight);
+                if (type == TransactionType.Export)
+                {
+                    targetItemCapacity = timeTemplateItem.Capacity + registeredWeight;
+                    UpdateCapacityExport(timeTemplateItems, timeTemplateItem.ScheduleTime, targetItemCapacity, registeredWeight);
+                }
+                else
+                {
+                    targetItemCapacity = timeTemplateItem.Capacity - registeredWeight;
+                    UpdateCapacityImport(timeTemplateItems, timeTemplateItem.ScheduleTime, targetItemCapacity, registeredWeight);
+                }
+                await _dbContext.SaveChangesAsync();
             }
-            await _dbContext.SaveChangesAsync();
         }
 
         public void UpdateCapacityImport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float targetInventory, float registeredWeight)
@@ -88,6 +95,63 @@ namespace ImportExportManagementAPI.Repositories
         public async Task<List<TimeTemplateItem>> GetAppliedItem()
         {
             return await _dbSet.Include(i => i.Schedules.Where(s => s.IsCanceled == false)).Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).ToListAsync();
+        }
+
+        public async Task<bool> CancelSchedule(Schedule schedule)
+        {
+            bool checkCancel = false;
+            TimeTemplateItem timeTemplateItem = await _dbSet.FindAsync(schedule.TimeTemplateItemId);
+            List<TimeTemplateItem> timeTemplateItems = null;
+            if (timeTemplateItem != null)
+            {
+                timeTemplateItems = await _dbSet
+                .Where(i => i.TimeTemplateId == timeTemplateItem.TimeTemplateId)
+                .OrderBy(p => p.ScheduleTime).ToListAsync();
+            }
+            if (timeTemplateItems != null || timeTemplateItems.Count > 0)
+            {
+                if (schedule.TransactionType.Equals(TransactionType.Import))
+                {
+                    CancelImport(timeTemplateItems, timeTemplateItem.ScheduleTime, schedule.RegisteredWeight);
+                }
+                else if (schedule.TransactionType.Equals(TransactionType.Export))
+                {
+                    CancelExport(timeTemplateItems, timeTemplateItem.ScheduleTime, schedule.RegisteredWeight);
+                }
+            }
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+                checkCancel = true;
+            }
+            catch
+            {
+                checkCancel = false;
+            }
+            return checkCancel;
+        }
+        public void CancelImport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float registeredWeight)
+        {
+            foreach (var item in timeTemplateItems)
+            {
+                if (item.ScheduleTime >= targetTime)
+                {
+                    item.Capacity = item.Capacity + registeredWeight;
+                }
+                _dbContext.Entry(item).State = EntityState.Modified;
+            }
+        }
+        public void CancelExport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float registeredWeight)
+        {
+            foreach (var item in timeTemplateItems)
+            {
+                if (item.ScheduleTime >= targetTime)
+                {
+                    item.Capacity = item.Capacity - registeredWeight;
+                }
+                _dbContext.Entry(item).State = EntityState.Modified;
+            }
+
         }
     }
 }
