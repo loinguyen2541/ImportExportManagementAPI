@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,8 +16,14 @@ namespace ImportExportManagementAPI.Models
     public class TimeTemplate
     {
         public int TimeTemplateId { get; set; }
+
         public String TimeTemplateName { get; set; }
+
+        [Column(TypeName = "Date")]
+        public DateTime? ApplyingDate { get; set; }
+
         public TimeTemplateStatus TimeTemplateStatus { get; set; }
+
         public List<TimeTemplateItem> TimeTemplateItems { get; set; }
     }
 }
