@@ -390,7 +390,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 await SaveAsync();
             }
-            catch(Exception e)
+            catch(Exception )
             {
                 checkUpdate = false;
             }
@@ -451,7 +451,7 @@ namespace ImportExportManagementAPI.Repositories
                     //update transaction thành công => tạo inventory detail
                     await UpdateInventoryDetail(trans);
                 }
-                catch (Exception e)
+                catch (Exception )
                 {
                     if (GetByID(trans.TransactionId) == null)
                     {

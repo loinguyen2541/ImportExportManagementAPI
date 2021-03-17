@@ -52,7 +52,7 @@ namespace ImportExportManagementAPI.Repositories
                     mail.From = new MailAddress("tanntse63184@fpt.edu.vn", "ICAN Automatic Mailer ", System.Text.Encoding.UTF8);
                     mail.To.Add(mailOfManager);
                     mail.Subject = "Request Captcha";
-                    mail.Body = "<h1>Your Captcha is " + captchaCode + "</h1>" +
+                    mail.Body = "<h1>Your Captcha is " + captcha + "</h1>" +
                         "<h2>This Captcha will expire within 5 minutes</h2>";
                     mail.IsBodyHtml = true;
                     using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
@@ -69,7 +69,6 @@ namespace ImportExportManagementAPI.Repositories
             {
                 return false;
             }
-            return false;
         }
         //send mail service
     }
