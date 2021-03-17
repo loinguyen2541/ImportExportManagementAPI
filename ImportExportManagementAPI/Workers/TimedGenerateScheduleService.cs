@@ -39,7 +39,7 @@ namespace ImportExportManagementAPI.Workers
             _logger.LogInformation("Timed Hosted Service running.");
 
             DateTime now = DateTime.Now;
-            DateTime firstRun = new DateTime(now.Year, now.Month, now.Day, 13, 02, 0, 0);
+            DateTime firstRun = new DateTime(now.Year, now.Month, now.Day, 9, 02, 0, 0);
             //if (now > firstRun)
             //{
             //    firstRun = firstRun.AddDays(1);
@@ -52,7 +52,7 @@ namespace ImportExportManagementAPI.Workers
             }
 
             _timer = new Timer(DoWork, null, timeToGo,
-                TimeSpan.FromDays(5));
+                TimeSpan.FromSeconds(5));
 
             return Task.CompletedTask;
         }
@@ -63,9 +63,13 @@ namespace ImportExportManagementAPI.Workers
 
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
-            float capacity = _goodsRepository.GetGoodCapacity(2);
-            _timeTemplateRepository.ResetSchedule(capacity);
-            _scheduleRepository.DisableAll();
+            //float capacity = _goodsRepository.GetGoodCapacity(2);
+            //_timeTemplateRepository.ResetSchedule(capacity);
+            //_scheduleRepository.DisableAll();
+            if (count == 1)
+            {
+                _timer?.Change(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(1));
+            }
         }
 
         public Task StopAsync(CancellationToken stoppingToken)

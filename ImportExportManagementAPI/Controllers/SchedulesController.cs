@@ -128,5 +128,11 @@ namespace ImportExportManagementAPI.Controllers
         {
             return Ok(Enum.GetValues(typeof(TransactionType)).Cast<TransactionType>().ToList());
         }
+
+        [HttpGet("time")]
+        public ActionResult<Object> ChangeTime()
+        {
+            return Ok(Enum.GetValues(typeof(TransactionType)).Cast<TransactionType>().ToList());
+        }
     }
 }

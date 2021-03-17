@@ -67,6 +67,20 @@ namespace ImportExportManagement_API
             //Transaction
             modelBuilder.Entity<Transaction>().HasOne(t => t.IdentityCard).WithMany(c => c.Transactions).HasForeignKey(t => t.IdentityCardId);
             modelBuilder.Entity<Transaction>().Property(t => t.WeightOut).HasDefaultValue(0);
+
+            //SystemConfig
+            modelBuilder.Entity<SystemConfig>().HasKey(s => s.AttributeKey);
+
+            SystemConfig storgeCapcacity = new SystemConfig();
+            storgeCapcacity.AttributeKey = AttributeKey.StorageCapacity.ToString();
+            storgeCapcacity.AttributeValue = "0";
+
+            SystemConfig autoSchedule = new SystemConfig();
+            autoSchedule.AttributeKey = AttributeKey.AutoSchedule.ToString();
+            autoSchedule.AttributeValue = "0";
+
+            modelBuilder.Entity<SystemConfig>().HasData(storgeCapcacity);
+            modelBuilder.Entity<SystemConfig>().HasData(autoSchedule);
         }
 
         public DbSet<Partner> Partner { get; set; }
@@ -82,5 +96,6 @@ namespace ImportExportManagement_API
         public DbSet<ImportExportManagementAPI.Models.PartnerPartnerType> PartnerPartnerType { get; set; }
         public DbSet<TimeTemplate> TimeTemplate { get; set; }
         public DbSet<TimeTemplateItem> TimeTemplateItem { get; set; }
+        public DbSet<SystemConfig> SystemConfig { get; set; }
     }
 }
