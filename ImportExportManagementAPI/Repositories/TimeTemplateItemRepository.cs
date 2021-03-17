@@ -19,7 +19,7 @@ namespace ImportExportManagementAPI.Repositories
     {
         public bool CheckCapacity(float registeredWeight, int id)
         {
-            float capacity = _dbSet.Find(id).Capacity;
+            float capacity = _dbSet.Find(id).Inventory;
             if (capacity > registeredWeight)
             {
                 return true;
@@ -36,50 +36,50 @@ namespace ImportExportManagementAPI.Repositories
                 .OrderBy(p => p.ScheduleTime).ToListAsync();
             if (type == TransactionType.Export)
             {
-                targetItemCapacity = timeTemplateItem.Capacity + registeredWeight;
+                targetItemCapacity = timeTemplateItem.Inventory - registeredWeight;
                 UpdateCapacityExport(timeTemplateItems, timeTemplateItem.ScheduleTime, targetItemCapacity, registeredWeight);
             }
             else
             {
-                targetItemCapacity = timeTemplateItem.Capacity - registeredWeight;
+                targetItemCapacity = timeTemplateItem.Inventory + registeredWeight;
                 UpdateCapacityImport(timeTemplateItems, timeTemplateItem.ScheduleTime, targetItemCapacity, registeredWeight);
             }
             await _dbContext.SaveChangesAsync();
         }
 
-        public void UpdateCapacityImport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float targetCapacity, float registeredWeight)
+        public void UpdateCapacityImport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float targetInventory, float registeredWeight)
         {
             foreach (var item in timeTemplateItems)
             {
                 if (item.ScheduleTime < targetTime)
                 {
-                    if (item.Capacity > targetCapacity)
+                    if (item.Inventory > targetInventory)
                     {
-                        item.Capacity = targetCapacity;
+                        item.Inventory = targetInventory;
                     }
                 }
                 else if (item.ScheduleTime == targetTime)
                 {
-                    item.Capacity = targetCapacity;
+                    item.Inventory = targetInventory;
                 }
                 else
                 {
-                    item.Capacity -= registeredWeight;
+                    item.Inventory -= registeredWeight;
                 }
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
         }
-        public void UpdateCapacityExport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float targetCapacity, float registeredWeight)
+        public void UpdateCapacityExport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float targetInventory, float registeredWeight)
         {
             foreach (var item in timeTemplateItems)
             {
                 if (item.ScheduleTime == targetTime)
                 {
-                    item.Capacity = targetCapacity;
+                    item.Inventory = targetInventory;
                 }
                 else if (item.ScheduleTime > targetTime)
                 {
-                    item.Capacity += registeredWeight;
+                    item.Inventory += registeredWeight;
                 }
                 _dbContext.Entry(item).State = EntityState.Modified;
             }

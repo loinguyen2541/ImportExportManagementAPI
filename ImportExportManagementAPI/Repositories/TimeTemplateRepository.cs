@@ -16,14 +16,14 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class TimeTemplateRepository : BaseRepository<TimeTemplate>
     {
-        public async void ResetSchedule(float capacity)
+        public async void ResetSchedule(float inventory)
         {
 
             TimeTemplate timeTemplate = await _dbSet.Include(t => t.TimeTemplateItems)
                 .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Applied).SingleAsync();
             foreach (var item in timeTemplate.TimeTemplateItems)
             {
-                item.Capacity = capacity;
+                item.Inventory = inventory;
             }
 
             _dbContext.Entry(timeTemplate).State = EntityState.Modified;

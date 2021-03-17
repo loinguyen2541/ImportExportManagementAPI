@@ -14,14 +14,16 @@ namespace ImportExportManagement_API
     public class IEDbContext : DbContext
     {
         public static readonly ILoggerFactory MyLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+        private IConfigurationRoot configuration;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             //optionsBuilder.UseLoggerFactory(MyLoggerFactory)
             //    .UseSqlServer(@"Data Source =.\; Initial Catalog = ExportImportManagement; Integrated Security = True")
-            IConfigurationRoot configuration = new ConfigurationBuilder().SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+            configuration = new ConfigurationBuilder().SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .Build();
+
             optionsBuilder.UseLoggerFactory(MyLoggerFactory).UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         }
 
@@ -73,11 +75,11 @@ namespace ImportExportManagement_API
 
             SystemConfig storgeCapcacity = new SystemConfig();
             storgeCapcacity.AttributeKey = AttributeKey.StorageCapacity.ToString();
-            storgeCapcacity.AttributeValue = "0";
+            storgeCapcacity.AttributeValue = configuration.GetValue<String>("SystemConfigs:StorageCapacity");
 
             SystemConfig autoSchedule = new SystemConfig();
             autoSchedule.AttributeKey = AttributeKey.AutoSchedule.ToString();
-            autoSchedule.AttributeValue = "0";
+            autoSchedule.AttributeValue = configuration.GetValue<String>("SystemConfigs:AutoSchedule"); ;
 
             modelBuilder.Entity<SystemConfig>().HasData(storgeCapcacity);
             modelBuilder.Entity<SystemConfig>().HasData(autoSchedule);
