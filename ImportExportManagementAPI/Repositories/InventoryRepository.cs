@@ -28,6 +28,7 @@ namespace ImportExportManagementAPI.Repositories
                 queryable = queryable.Where(p => p.RecordedDate == recoredDate.Date);
             }
 
+
             //check giá trị page client truyền
             if (paging.Page < 1)
             {
@@ -69,7 +70,7 @@ namespace ImportExportManagementAPI.Repositories
             if (inventory.Result == null)
             {
                 //chua co thi tao moi
-                Inventory newInventory = new Inventory { RecordedDate = dateRecord};
+                Inventory newInventory = new Inventory { RecordedDate = dateRecord };
                 Insert(newInventory);
                 await SaveAsync();
                 return newInventory;
@@ -83,13 +84,13 @@ namespace ImportExportManagementAPI.Repositories
             String total = "0.0 KG";
             //check ngày này có inventory chưa
             Inventory inventory = await CheckExistDateRecord(dateRecord);
-            if(inventory!= null)
+            if (inventory != null)
             {
                 //get list detail
                 float weightTotal = 0;
                 InventoryDetailRepository detailRepo = new InventoryDetailRepository();
                 List<InventoryDetail> listDetail = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, type);
-                if(listDetail!=null && listDetail.Count > 0)
+                if (listDetail != null && listDetail.Count > 0)
                 {
                     foreach (var item in listDetail)
                     {

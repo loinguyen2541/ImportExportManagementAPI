@@ -35,5 +35,14 @@ namespace ImportExportManagementAPI.Controllers
         {
             return Ok(Enum.GetValues(typeof(InventoryDetailType)).Cast<InventoryDetailType>().ToList());
         }
+
+        [HttpGet("report")]
+        public async Task<ActionResult<IEnumerable<InventoryDetail>>> Search([FromQuery] PaginationParam paging, [FromQuery] InventoryFilter filter)
+        {
+            Pagination<InventoryDetail> listInventory = await _repo.GetDataPartner(paging, filter);
+            return Ok(listInventory);
+        }
+
+
     }
 }
