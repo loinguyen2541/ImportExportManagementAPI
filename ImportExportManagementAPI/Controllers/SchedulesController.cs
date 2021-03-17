@@ -27,9 +27,16 @@ namespace ImportExportManagementAPI.Controllers
             _goodsRepository = new GoodsRepository();
         }
 
-        // GET: api/Schedules
         [HttpGet]
-        public async Task<ActionResult<Pagination<Schedule>>> GetSchedule([FromQuery] PaginationParam paging, [FromQuery] ScheduleFilterParam filter)
+        public async Task<ActionResult<Pagination<Schedule>>> GetScheduleByPartnerId(int partnerId)
+        {
+            List<Schedule> schedules = await _repo.GetByPartnerId(partnerId);
+            return Ok(schedules);
+        }
+
+        // GET: api/Schedules/search
+        [HttpGet("search")]
+        public async Task<ActionResult<Pagination<Schedule>>> SearchSchedule([FromQuery] PaginationParam paging, [FromQuery] ScheduleFilterParam filter)
         {
             Pagination<Schedule> schedules = await _repo.GetAllAsync(paging, filter);
             return Ok(schedules);
@@ -88,13 +95,15 @@ namespace ImportExportManagementAPI.Controllers
 
             if (_timeTemplateItemRepo.CheckCapacity(schedule.RegisteredWeight, schedule.TimeTemplateItemId))
             {
-               // float quantityOfInventory = _goodsRepository.GetGoodCapacity(schedule.GoodsId);
+                // float quantityOfInventory = _goodsRepository.GetGoodCapacity(schedule.GoodsId);
                 _timeTemplateItemRepo.UpdateSchedule(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
-                _repo.Insert(schedule);
+                schedule.IsCanceled = false;
+                if (!_repo.TryToUpdate(schedule))
+                {
+                    _repo.Insert(schedule);
+                }
                 await _repo.SaveAsync();
             }
-
-
             return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
         }
 

@@ -77,12 +77,17 @@ namespace ImportExportManagementAPI.Repositories
                 {
                     item.Capacity = targetCapacity;
                 }
-                else if(item.ScheduleTime > targetTime)
+                else if (item.ScheduleTime > targetTime)
                 {
                     item.Capacity += registeredWeight;
                 }
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
+        }
+
+        public async Task<List<TimeTemplateItem>> GetAppliedItem()
+        {
+            return await _dbSet.Include(i => i.Schedules.Where(s => s.IsCanceled == false)).Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).ToListAsync();
         }
     }
 }

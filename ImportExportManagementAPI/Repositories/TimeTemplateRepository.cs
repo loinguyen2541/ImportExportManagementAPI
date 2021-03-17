@@ -30,5 +30,14 @@ namespace ImportExportManagementAPI.Repositories
 
             await SaveAsync();
         }
+
+        public async Task<TimeTemplate> GetCurrentTimeTemplateAsync(int partnerId)
+        {
+            TimeTemplate timeTemplate = await _dbSet.
+                Where(t => t.TimeTemplateStatus == TimeTemplateStatus.Applied)
+                .Include(t => t.TimeTemplateItems).ThenInclude(t => t.Schedules.Where(p => p.PartnerId == partnerId && p.IsCanceled == false))
+                .SingleOrDefaultAsync();
+            return timeTemplate;
+        }
     }
 }

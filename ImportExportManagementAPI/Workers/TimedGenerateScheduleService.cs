@@ -1,4 +1,5 @@
-﻿using ImportExportManagementAPI.Models;
+﻿using ImportExportManagement_API.Repositories;
+using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -23,12 +24,14 @@ namespace ImportExportManagementAPI.Workers
         private Timer _timer;
         private TimeTemplateRepository _timeTemplateRepository;
         private GoodsRepository _goodsRepository;
+        private ScheduleRepository _scheduleRepository;
 
         public TimedGenerateScheduleService(ILogger<TimedGenerateScheduleService> logger)
         {
             _logger = logger;
             _timeTemplateRepository = new TimeTemplateRepository();
             _goodsRepository = new GoodsRepository();
+            _scheduleRepository = new ScheduleRepository();
         }
 
         public Task StartAsync(CancellationToken stoppingToken)
@@ -36,7 +39,7 @@ namespace ImportExportManagementAPI.Workers
             _logger.LogInformation("Timed Hosted Service running.");
 
             DateTime now = DateTime.Now;
-            DateTime firstRun = new DateTime(now.Year, now.Month, now.Day, 14, 37, 0, 0);
+            DateTime firstRun = new DateTime(now.Year, now.Month, now.Day, 13, 02, 0, 0);
             //if (now > firstRun)
             //{
             //    firstRun = firstRun.AddDays(1);
@@ -62,6 +65,7 @@ namespace ImportExportManagementAPI.Workers
                 "Timed Hosted Service is working. Count: {Count}", count);
             float capacity = _goodsRepository.GetGoodCapacity(2);
             _timeTemplateRepository.ResetSchedule(capacity);
+            _scheduleRepository.DisableAll();
         }
 
         public Task StopAsync(CancellationToken stoppingToken)
