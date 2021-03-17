@@ -64,7 +64,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 else
                 {
-                    item.Inventory -= registeredWeight;
+                    item.Inventory += registeredWeight;
                 }
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
@@ -79,7 +79,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 else if (item.ScheduleTime > targetTime)
                 {
-                    item.Inventory += registeredWeight;
+                    item.Inventory -= registeredWeight;
                 }
                 _dbContext.Entry(item).State = EntityState.Modified;
             }

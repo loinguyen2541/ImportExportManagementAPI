@@ -26,12 +26,15 @@ namespace ImportExportManagementAPI.Workers
         private GoodsRepository _goodsRepository;
         private ScheduleRepository _scheduleRepository;
 
+        private SystemConfigRepository _systemConfigRepository;
+
         public TimedGenerateScheduleService(ILogger<TimedGenerateScheduleService> logger)
         {
             _logger = logger;
             _timeTemplateRepository = new TimeTemplateRepository();
             _goodsRepository = new GoodsRepository();
             _scheduleRepository = new ScheduleRepository();
+            _systemConfigRepository = new SystemConfigRepository();
         }
 
         public Task StartAsync(CancellationToken stoppingToken)
@@ -39,7 +42,18 @@ namespace ImportExportManagementAPI.Workers
             _logger.LogInformation("Timed Hosted Service running.");
 
             DateTime now = DateTime.Now;
-            DateTime firstRun = new DateTime(now.Year, now.Month, now.Day, 9, 02, 0, 0);
+
+            SystemConfig autoSchedule = _systemConfigRepository.GetByID(AttributeKey.AutoSchedule.ToString());
+            TimeSpan ts;
+            if (TimeSpan.TryParse(autoSchedule.AttributeValue, out ts))
+            {
+                _logger.LogInformation(ts.Hours + "");
+            }
+            else
+            {
+                ts = new TimeSpan();
+            }
+            DateTime firstRun = new DateTime(now.Year, now.Month, now.Day, ts.Hours, ts.Minutes, 0, 0);
             //if (now > firstRun)
             //{
             //    firstRun = firstRun.AddDays(1);
