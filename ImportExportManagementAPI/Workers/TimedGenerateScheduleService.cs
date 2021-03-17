@@ -22,11 +22,10 @@ namespace ImportExportManagementAPI.Workers
         private int executionCount = 0;
         private readonly ILogger<TimedGenerateScheduleService> _logger;
         private Timer _timer;
-        private TimeTemplateRepository _timeTemplateRepository;
-        private GoodsRepository _goodsRepository;
-        private ScheduleRepository _scheduleRepository;
-
-        private SystemConfigRepository _systemConfigRepository;
+        private readonly TimeTemplateRepository _timeTemplateRepository;
+        private readonly GoodsRepository _goodsRepository;
+        private readonly ScheduleRepository _scheduleRepository;
+        private readonly SystemConfigRepository _systemConfigRepository;
 
         public TimedGenerateScheduleService(ILogger<TimedGenerateScheduleService> logger)
         {
@@ -54,6 +53,7 @@ namespace ImportExportManagementAPI.Workers
                 ts = new TimeSpan();
             }
             DateTime firstRun = new DateTime(now.Year, now.Month, now.Day, ts.Hours, ts.Minutes, 0, 0);
+
             //if (now > firstRun)
             //{
             //    firstRun = firstRun.AddDays(1);

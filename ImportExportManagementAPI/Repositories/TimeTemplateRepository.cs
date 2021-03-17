@@ -19,16 +19,42 @@ namespace ImportExportManagementAPI.Repositories
         public async void ResetSchedule(float inventory)
         {
 
-            TimeTemplate timeTemplate = await _dbSet.Include(t => t.TimeTemplateItems)
-                .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Applied).SingleAsync();
+            TimeTemplate timeTemplateApplied = await _dbSet.Include(t => t.TimeTemplateItems)
+                .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Applied).SingleOrDefaultAsync();
+
+            TimeTemplate timeTemplatePending = await _dbSet.Include(t => t.TimeTemplateItems)
+                .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Pending).SingleOrDefaultAsync();
+
+            if (timeTemplatePending == null)
+            {
+                //Update current applied template
+                UpdateInventory(timeTemplateApplied, inventory);
+                _dbContext.Entry(timeTemplateApplied).State = EntityState.Modified;
+            }
+            else
+            {
+                //Change current pending template to applied and update it's items
+                timeTemplatePending.TimeTemplateStatus = TimeTemplateStatus.Applied;
+                UpdateInventory(timeTemplatePending, inventory);
+                _dbContext.Entry(timeTemplatePending).State = EntityState.Modified;
+
+                //Disable current applied template
+                if (timeTemplateApplied != null)
+                {
+                    timeTemplateApplied.TimeTemplateStatus = TimeTemplateStatus.Disabled;
+                    _dbContext.Entry(timeTemplateApplied).State = EntityState.Modified;
+                }
+            }
+
+            await SaveAsync();
+        }
+
+        private void UpdateInventory(TimeTemplate timeTemplate, float inventory)
+        {
             foreach (var item in timeTemplate.TimeTemplateItems)
             {
                 item.Inventory = inventory;
             }
-
-            _dbContext.Entry(timeTemplate).State = EntityState.Modified;
-
-            await SaveAsync();
         }
 
         public async Task<TimeTemplate> GetCurrentTimeTemplateAsync(int partnerId)
