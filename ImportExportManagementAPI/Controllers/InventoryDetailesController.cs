@@ -43,6 +43,15 @@ namespace ImportExportManagementAPI.Controllers
             return Ok(listInventory);
         }
 
+        [HttpGet("reportIventoryDetail")]
+        public async Task<ActionResult<IEnumerable<InventoryDetail>>> report([FromQuery] ReportFilter filter)
+        {
+            List<InventoryDetail> listInventory = await _repo.getDataReportInventoryDetail(filter);
+            return Ok(listInventory);
+        }
+
+
+
 
     }
 }

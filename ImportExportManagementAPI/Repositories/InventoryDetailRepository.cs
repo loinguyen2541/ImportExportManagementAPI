@@ -128,7 +128,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 await SaveAsync();
             }
-            catch (Exception )
+            catch (Exception)
             {
                 throw;
             }
@@ -174,7 +174,28 @@ namespace ImportExportManagementAPI.Repositories
             listInventory = await DoFilterDataPartner(paging, filter, rawData);
             return listInventory;
         }
+        public async Task<List<InventoryDetail>> getDataReportInventoryDetail(ReportFilter filter)
+        {
+            List<InventoryDetail> listInventory = new List<InventoryDetail>();
+            IQueryable<InventoryDetail> rawData = null;
+            rawData = _dbSet.Include(p => p.Goods);
+            rawData = rawData.Include(p => p.Inventory);
+            listInventory = await doFilterReportInventory(filter, rawData);
+            return listInventory;
 
+        }
+        private async Task<List<InventoryDetail>> doFilterReportInventory(ReportFilter filter, IQueryable<InventoryDetail> queryable)
+        {
+            if (DateTime.TryParse(filter.dateFrom, out DateTime FromDate) && DateTime.TryParse(filter.dateTo, out DateTime ToDate))
+            {
+                DateTime dateFrom = DateTime.Parse(filter.dateFrom);
+                DateTime dateTo = DateTime.Parse(filter.dateTo);
+                queryable = queryable.Where(p => p.Inventory.RecordedDate >= dateFrom && p.Inventory.RecordedDate <= dateTo);
+            }
+            return await queryable.ToListAsync();
+
+
+        }
 
         private async Task<Pagination<InventoryDetail>> DoFilterDataPartner(PaginationParam paging, InventoryFilter filter, IQueryable<InventoryDetail> queryable)
         {
