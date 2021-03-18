@@ -41,6 +41,12 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<Schedule> schedules = await _repo.GetAllAsync(paging, filter);
             return Ok(schedules);
         }
+        [HttpGet("schedulehistory")]
+        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule([FromQuery] ScheduleFilterParam filter)
+        {
+            List<Schedule> schedules = await _repo.GetHistory(filter);
+            return Ok(schedules);
+        }
 
         // GET: api/Schedules/5
         [HttpGet("{id}")]
@@ -60,28 +66,6 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPut("changeschedule/{id}")]
         public async Task<IActionResult> ChangeSchedule(int id, int time)
         {
-            //if (id != schedule.ScheduleId)
-            //{
-            //    return BadRequest();
-            //}
-
-            //_repo.Update(schedule);
-
-            //try
-            //{
-            //    await _repo.SaveAsync();
-            //}
-            //catch (DbUpdateConcurrencyException)
-            //{
-            //    if (!_repo.Exist(id))
-            //    {
-            //        return NotFound();
-            //    }
-            //    else
-            //    {
-            //        throw;
-            //    }
-            //}
             Schedule scheduleBefore = _repo.GetByID(id);
             Schedule scheduleUpdate = _repo.GetByID(id);
             if (scheduleBefore != null)
