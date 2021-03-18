@@ -10,6 +10,7 @@ namespace ImportExportManagement_API.Models
     public class Inventory
     {
         public int InventoryId { get; set; }
+        public float? OpeningStock { get; set; }
 
         [DataType(DataType.Date)]
         public DateTime RecordedDate { get; set; }
