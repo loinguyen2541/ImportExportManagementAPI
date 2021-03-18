@@ -71,14 +71,14 @@ namespace ImportExportManagementAPI.Workers
 
         /// <summary>
         ///    This method calculates launch time of timer. <para/>
-        ///    1. If the current date is less than the scheduled date <para/>
+        ///    1. If the current date is less than the applied date <para/>
         ///                    => executes the timer at the scheduled time of the next day.<para/>
-        ///    2. If the current date is equal to the scheduled date <para/>
+        ///    2. If the current date is equal to the applied date <para/>
         ///                     2.1 If current time is greater than or equal to scheduled time <para/>
         ///                     => executes the timer immediately.<para/>
         ///                     2.2 Else <para/>
         ///                     => excute the timer at scheduled time.<para/>
-        ///    3. If the current date is greater than the scheduled date<para/>
+        ///    3. If the current date is greater than the applied date<para/>
         ///                     => executes the timer immediately.<para/>
         /// </summary>
         /// <param name="scheduleTime"> daily launch time. </param>
