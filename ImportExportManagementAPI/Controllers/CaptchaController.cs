@@ -15,46 +15,30 @@ namespace ImportExportManagementAPI.Controllers
     [ApiController]
     public class CaptchaController : Controller
     {
+        CaptchaRepository repo;
+        public CaptchaController()
+        {
+            repo = new CaptchaRepository();
+        }
+
+        // provide random captcha
         [HttpGet]
         public IActionResult GetCaptcha(string mailOfManager)
-        {
-            if (mailOfManager == null || mailOfManager.Length == 0) return NotFound();
-            bool checkIsValidMail = true;
-            Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
-            Match match = regex.Match(mailOfManager);
-            if (!match.Success)
-            {
-                checkIsValidMail = false;
-            }
-
-            if ( !checkIsValidMail)
+        {    
+            if ( !repo.checkFormatMail(mailOfManager))
             {
                 return NotFound();
             }
             if (HttpContext.Session.IsAvailable)
             {
-                string captchaCode = Captcha.GenerateCaptchaCode();
+                string captchaCode = repo.GenerateCaptchaCode();
                 byte[] code = Encoding.ASCII.GetBytes(captchaCode);
                 HttpContext.Session.Set("captcha", code);
-                using (MailMessage mail = new MailMessage())
-                {
-                    mail.From = new MailAddress("tanntse63184@fpt.edu.vn", "Automatic Sacle App", System.Text.Encoding.UTF8);
-                    mail.To.Add(mailOfManager);
-                    mail.Subject = "Request Captcha";
-                    mail.Body = "Your Captcha is " + captchaCode;
-                    mail.IsBodyHtml = true;
-                    using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
-                    {
-                        smtp.Credentials = new NetworkCredential("tanntse63184@fpt.edu.vn", "thanhtan1998");
-                        smtp.EnableSsl = true;
-                        smtp.UseDefaultCredentials = false;
-                        smtp.Send(mail);
-                    }
-                }
+                bool isSendMail = repo.sendMail(mailOfManager, captchaCode);
+                if(isSendMail)
                 return Ok(captchaCode);
             }
             return Unauthorized();
-
         }
         [HttpGet("check")]
         public IActionResult CheckCaptcha([FromQuery] string usercaptcha)
@@ -79,11 +63,8 @@ namespace ImportExportManagementAPI.Controllers
                 {
                     return NotFound();
                 }
-
             }
             return Unauthorized();
         }
-
-
     }
 }

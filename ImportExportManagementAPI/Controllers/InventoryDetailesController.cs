@@ -24,7 +24,7 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<InventoryDetail> listInventoryDetail = await _repo.GetInventoryDetail(paging, filter);
             return Ok(listInventoryDetail);
         }
-        [HttpGet("inventoryid")]
+        [HttpGet("{Inventoryid}")]
         public async Task<ActionResult<IdentityCard>> GetInventoryDetailByInventory([FromQuery] PaginationParam paging, [FromQuery] InventoryDetailFilter filter)
         {
             Pagination<InventoryDetail> listInventoryDetail = await _repo.GetInventoryDetail(paging, filter);
