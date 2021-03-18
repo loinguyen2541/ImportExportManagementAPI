@@ -25,6 +25,13 @@ namespace ImportExportManagement_API.Repositories
             return schedules;
         }
 
+        public async Task<List<Schedule>> GetByPartnerId(int partnerId)
+        {
+            List<Schedule> schedules = await _dbSet
+                .Where(s => s.PartnerId == partnerId && s.IsCanceled == false).OrderBy(s => s.ScheduleDate).ToListAsync();
+            return schedules;
+        }
+
         private async Task<Pagination<Schedule>> DoFilter(PaginationParam paging, ScheduleFilterParam filter, IQueryable<Schedule> queryable)
         {
             if (filter.PartnerName != null && filter.PartnerName.Length > 0)
@@ -70,6 +77,17 @@ namespace ImportExportManagement_API.Repositories
             return pagination;
         }
 
+        public async void DisableAll()
+        {
+            List<Schedule> schedules = await _dbSet.Where(p => p.IsCanceled == false).ToListAsync();
+            foreach (var item in schedules)
+            {
+                item.IsCanceled = true;
+                _dbContext.Entry(item).State = EntityState.Modified;
+            }
+            await SaveAsync();
+        }
+
       
 
         public int Count()
@@ -92,6 +110,18 @@ namespace ImportExportManagement_API.Repositories
         public bool Exist(int id)
         {
             return _dbSet.Any(e => e.ScheduleId == id);
+        }
+
+        public Boolean TryToUpdate(Schedule schedule)
+        {
+            Schedule currentSchedule = _dbSet.Where(s => s.IsCanceled == false && s.TransactionType == schedule.TransactionType && s.TimeTemplateItemId == schedule.TimeTemplateItemId).SingleOrDefault();
+            if (currentSchedule != null)
+            {
+                currentSchedule.RegisteredWeight += schedule.RegisteredWeight;
+                _dbContext.Entry(currentSchedule).State = EntityState.Modified;
+                return true;
+            }
+            return false;
         }
     }
 }

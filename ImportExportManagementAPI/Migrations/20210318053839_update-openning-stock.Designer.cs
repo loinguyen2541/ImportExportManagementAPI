@@ -4,14 +4,16 @@ using ImportExportManagement_API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    partial class IEDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210318053839_update-openning-stock")]
+    partial class updateopenningstock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,40 +51,12 @@ namespace ImportExportManagementAPI.Migrations
                     b.ToTable("PartnerType");
                 });
 
-            modelBuilder.Entity("ImportExportManagementAPI.Models.SystemConfig", b =>
-                {
-                    b.Property<string>("AttributeKey")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AttributeValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("AttributeKey");
-
-                    b.ToTable("SystemConfig");
-
-                    b.HasData(
-                        new
-                        {
-                            AttributeKey = "StorageCapacity",
-                            AttributeValue = "2000"
-                        },
-                        new
-                        {
-                            AttributeKey = "AutoSchedule",
-                            AttributeValue = "18:00:00"
-                        });
-                });
-
             modelBuilder.Entity("ImportExportManagementAPI.Models.TimeTemplate", b =>
                 {
                     b.Property<int>("TimeTemplateId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime?>("ApplyingDate")
-                        .HasColumnType("Date");
 
                     b.Property<string>("TimeTemplateName")
                         .HasColumnType("nvarchar(max)");
@@ -102,7 +76,7 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<float>("Inventory")
+                    b.Property<float>("Capacity")
                         .HasColumnType("real");
 
                     b.Property<TimeSpan>("ScheduleTime")

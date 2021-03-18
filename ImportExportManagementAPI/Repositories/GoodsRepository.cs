@@ -34,7 +34,8 @@ namespace ImportExportManagementAPI.Repositories
 
         public float GetGoodCapacity()
         {
-            return _dbSet.First().QuantityOfInventory;
+            return _dbSet.SingleOrDefault().QuantityOfInventory;
         }
+
     }
 }

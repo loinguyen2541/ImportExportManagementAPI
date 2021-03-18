@@ -16,7 +16,7 @@ namespace ImportExportManagementAPI.Models
     public class TimeTemplateItem
     {
         public int TimeTemplateItemId { get; set; }
-        public float Capacity { get; set; }
+        public float Inventory { get; set; }
         public TimeSpan ScheduleTime { get; set; }
 
         public List<Schedule> Schedules { get; set; }
