@@ -23,7 +23,7 @@ namespace ImportExportManagementAPI.Repositories
             bool check = false;
             List<Transaction> listProcessingTrans = new List<Transaction>();
             listProcessingTrans = _dbSet.Where(t => t.TransactionStatus.Equals(TransactionStatus.Progessing)).ToList();
-            if(listProcessingTrans!= null && listProcessingTrans.Count != 0)
+            if (listProcessingTrans != null && listProcessingTrans.Count != 0)
             {
                 if (method.Equals("Insert"))
                 {
@@ -198,7 +198,14 @@ namespace ImportExportManagementAPI.Repositories
             listTransaction = await DoFilter(paging, filter, rawData);
             return listTransaction;
         }
-
+        public Pagination<TopPartner> GetTopPartner(PaginationParam paging, TransactionFilter filter)
+        {
+            Pagination<TopPartner> listTopPartner = new Pagination<TopPartner>();
+            IQueryable<Transaction> rawData = null;
+            rawData = _dbSet.Include(t => t.Partner);
+            listTopPartner = DoFilterTop10(paging, filter, rawData);
+            return listTopPartner;
+        }
         public async ValueTask<Pagination<Transaction>> GetLastIndex(PaginationParam paging)
         {
             Pagination<Transaction> listTransaction = new Pagination<Transaction>();
@@ -213,6 +220,13 @@ namespace ImportExportManagementAPI.Repositories
 
             if (filter != null)
             {
+
+                if ((DateTime.TryParse(filter.DateFrom, out DateTime dateFrom) && (DateTime.TryParse(filter.DateTo, out DateTime dateTo))))
+                {
+                    DateTime fromDate = DateTime.Parse(filter.DateFrom);
+                    DateTime toDate = DateTime.Parse(filter.DateTo);
+                    queryable = queryable.Where(p => p.CreatedDate.Date > fromDate && p.CreatedDate.Date < toDate);
+                }
                 if (filter.PartnerName != null && filter.PartnerName.Length > 0)
                 {
                     queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
@@ -251,6 +265,71 @@ namespace ImportExportManagementAPI.Repositories
             double totalPage = (count * 1.0) / (pagination.Size * 1.0);
             pagination.TotalPage = (int)Math.Ceiling(totalPage);
             pagination.Data = await queryable.ToListAsync();
+            return pagination;
+        }
+        private Pagination<TopPartner> DoFilterTop10(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)
+        {
+            if (filter != null)
+            {
+                if ((DateTime.TryParse(filter.DateFrom, out DateTime dateFrom) && (DateTime.TryParse(filter.DateTo, out DateTime dateTo))))
+                {
+                    DateTime fromDate = DateTime.Parse(filter.DateFrom);
+                    DateTime toDate = DateTime.Parse(filter.DateTo);
+                    queryable = queryable.Where(p => p.CreatedDate.Date > fromDate && p.CreatedDate.Date < toDate);
+                }
+                if (DateTime.TryParse(filter.DateCreate, out DateTime date))
+                {
+                    DateTime transDate = DateTime.Parse(filter.DateCreate);
+                    queryable = queryable.Where(p => p.CreatedDate.Date == transDate.Date);
+                }
+                if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
+                {
+                    TransactionType type = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
+                    queryable = queryable.Where(p => p.TransactionType == type);
+                }
+                if (filter.PartnerName != null && filter.PartnerName.Length > 0)
+                {
+                    queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
+                }
+            }
+            if (paging.Page < 1)
+            {
+                paging.Page = 1;
+            }
+            if (paging.Size < 1)
+            {
+                paging.Size = 1;
+            }
+
+            int count = queryable.Count();
+
+            if (((paging.Page - 1) * paging.Size) > count)
+            {
+                paging.Page = 1;
+            }
+            var query = queryable.GroupBy(c => c.PartnerId, (k, g) => new
+            {
+                id = k,
+                totalWeight = filter.TransactionType.Equals("Import") ? g.Sum(b => b.WeightIn) - g.Sum(b => b.WeightOut) : g.Sum(b => b.WeightOut) - g.Sum(b => b.WeightIn)
+            }); ; ;
+            query = query.OrderByDescending(p => p.totalWeight);
+            query = query.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
+            Pagination<TopPartner> pagination = new Pagination<TopPartner>();
+            pagination.Page = paging.Page;
+            pagination.Size = paging.Size;
+            double totalPage = (count * 1.0) / (pagination.Size * 1.0);
+            List<TopPartner> listTop = new List<TopPartner>();
+            PartnerRepository repo = new PartnerRepository();
+            foreach (var item in query.ToList())
+            {
+                TopPartner top = new TopPartner();
+                top.partner = repo.GetByID(item.id);
+                top.totalWeight = item.totalWeight;
+                listTop.Add(top);
+            }
+            pagination.TotalPage = (int)Math.Ceiling(totalPage);
+            pagination.Data = listTop;
+
             return pagination;
         }
         public async ValueTask<Pagination<Transaction>> GetTransByPartnerIdAsync(PaginationParam paging, int id)
@@ -374,7 +453,7 @@ namespace ImportExportManagementAPI.Repositories
         public async Task<bool> UpdateTransactionByManual(Transaction trans, int id)
         {
             bool checkUpdate = true;
-            if(id!= trans.TransactionId)
+            if (id != trans.TransactionId)
             {
                 return checkUpdate = false;
             }
@@ -383,7 +462,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 await SaveAsync();
             }
-            catch(Exception e)
+            catch (Exception)
             {
                 checkUpdate = false;
             }
@@ -393,7 +472,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             bool checkUpdate = true;
             Partner partner;
-            if (cardId!= null && cardId.Length > 0) //insert by arduino
+            if (cardId != null && cardId.Length > 0) //insert by arduino
             {
                 //find provider and check card status
                 IdentityCardRepository cardRepo = new IdentityCardRepository();
@@ -444,7 +523,7 @@ namespace ImportExportManagementAPI.Repositories
                     //update transaction thành công => tạo inventory detail
                     await UpdateInventoryDetail(trans);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     if (GetByID(trans.TransactionId) == null)
                     {

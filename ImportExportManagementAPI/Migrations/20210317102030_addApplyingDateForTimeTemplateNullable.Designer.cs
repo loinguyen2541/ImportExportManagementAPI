@@ -4,14 +4,16 @@ using ImportExportManagement_API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    partial class IEDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210317102030_addApplyingDateForTimeTemplateNullable")]
+    partial class addApplyingDateForTimeTemplateNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -193,9 +195,6 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<float?>("OpeningStock")
-                        .HasColumnType("real");
-
                     b.Property<DateTime>("RecordedDate")
                         .HasColumnType("Date");
 
@@ -316,9 +315,6 @@ namespace ImportExportManagementAPI.Migrations
 
                     b.Property<DateTime>("ScheduleDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("ScheduleStatus")
-                        .HasColumnType("int");
 
                     b.Property<int>("TimeTemplateItemId")
                         .HasColumnType("int");

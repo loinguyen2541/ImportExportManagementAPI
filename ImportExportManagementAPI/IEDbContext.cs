@@ -14,14 +14,16 @@ namespace ImportExportManagement_API
     public class IEDbContext : DbContext
     {
         public static readonly ILoggerFactory MyLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+        private IConfigurationRoot configuration;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             //optionsBuilder.UseLoggerFactory(MyLoggerFactory)
             //    .UseSqlServer(@"Data Source =.\; Initial Catalog = ExportImportManagement; Integrated Security = True")
-            IConfigurationRoot configuration = new ConfigurationBuilder().SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+            configuration = new ConfigurationBuilder().SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .Build();
+
             optionsBuilder.UseLoggerFactory(MyLoggerFactory).UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         }
 
@@ -67,6 +69,20 @@ namespace ImportExportManagement_API
             //Transaction
             modelBuilder.Entity<Transaction>().HasOne(t => t.IdentityCard).WithMany(c => c.Transactions).HasForeignKey(t => t.IdentityCardId);
             modelBuilder.Entity<Transaction>().Property(t => t.WeightOut).HasDefaultValue(0);
+
+            //SystemConfig
+            modelBuilder.Entity<SystemConfig>().HasKey(s => s.AttributeKey);
+
+            SystemConfig storgeCapcacity = new SystemConfig();
+            storgeCapcacity.AttributeKey = AttributeKey.StorageCapacity.ToString();
+            storgeCapcacity.AttributeValue = configuration.GetValue<String>("SystemConfigs:StorageCapacity");
+
+            SystemConfig autoSchedule = new SystemConfig();
+            autoSchedule.AttributeKey = AttributeKey.AutoSchedule.ToString();
+            autoSchedule.AttributeValue = configuration.GetValue<String>("SystemConfigs:AutoSchedule"); ;
+
+            modelBuilder.Entity<SystemConfig>().HasData(storgeCapcacity);
+            modelBuilder.Entity<SystemConfig>().HasData(autoSchedule);
         }
 
         public DbSet<Partner> Partner { get; set; }
@@ -80,5 +96,8 @@ namespace ImportExportManagement_API
         public DbSet<Role> Role { get; set; }
         public DbSet<ImportExportManagementAPI.Models.PartnerType> PartnerType { get; set; }
         public DbSet<ImportExportManagementAPI.Models.PartnerPartnerType> PartnerPartnerType { get; set; }
+        public DbSet<TimeTemplate> TimeTemplate { get; set; }
+        public DbSet<TimeTemplateItem> TimeTemplateItem { get; set; }
+        public DbSet<SystemConfig> SystemConfig { get; set; }
     }
 }

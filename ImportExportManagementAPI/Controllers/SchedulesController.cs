@@ -9,7 +9,7 @@ using ImportExportManagement_API;
 using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
-using Microsoft.AspNetCore.Authorization;
+using ImportExportManagementAPI.Repositories;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -18,18 +18,33 @@ namespace ImportExportManagementAPI.Controllers
     public class SchedulesController : ControllerBase
     {
         private readonly ScheduleRepository _repo;
-
+        private readonly TimeTemplateItemRepository _timeTemplateItemRepo;
+        private readonly GoodsRepository _goodsRepository;
         public SchedulesController()
         {
             _repo = new ScheduleRepository();
+            _timeTemplateItemRepo = new TimeTemplateItemRepository();
+            _goodsRepository = new GoodsRepository();
         }
 
-        // GET: api/Schedules
         [HttpGet]
-        [AllowAnonymous]
-        public async Task<ActionResult<Pagination<Schedule>>> GetSchedule([FromQuery] PaginationParam paging, [FromQuery] ScheduleFilterParam filter)
+        public async Task<ActionResult<Pagination<Schedule>>> GetScheduleByPartnerId(int partnerId)
+        {
+            List<Schedule> schedules = await _repo.GetByPartnerId(partnerId);
+            return Ok(schedules);
+        }
+
+        // GET: api/Schedules/search
+        [HttpGet("search")]
+        public async Task<ActionResult<Pagination<Schedule>>> SearchSchedule([FromQuery] PaginationParam paging, [FromQuery] ScheduleFilterParam filter)
         {
             Pagination<Schedule> schedules = await _repo.GetAllAsync(paging, filter);
+            return Ok(schedules);
+        }
+        [HttpGet("schedulehistory")]
+        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule([FromQuery] ScheduleFilterParam filter)
+        {
+            List<Schedule> schedules = await _repo.GetHistory(filter);
             return Ok(schedules);
         }
 
@@ -49,71 +64,86 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         // PUT: api/Schedules/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> PutSchedule(int id, Schedule schedule)
+        [HttpPut("changeschedule/{id}")]
+        public async Task<IActionResult> ChangeSchedule(int id, int time)
         {
-            if (id != schedule.ScheduleId)
+            Schedule scheduleBefore = _repo.GetByID(id);
+            Schedule scheduleUpdate = _repo.GetByID(id);
+            if (scheduleBefore != null)
             {
-                return BadRequest();
-            }
-
-            _repo.Update(schedule);
-
-            try
-            {
-                await _repo.SaveAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_repo.Exist(id))
+                if (scheduleBefore.IsCanceled == true)
                 {
-                    return NotFound();
+                    return BadRequest();
                 }
                 else
                 {
-                    throw;
+                    //change inventory and timeitem
+                    bool checkUpdate = await _timeTemplateItemRepo.ChangeSchedule(scheduleUpdate, scheduleBefore);
+                    if (checkUpdate)
+                    {
+                        scheduleUpdate.TimeTemplateItemId = 11;
+                        try
+                        {
+                            await _repo.SaveAsync();
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            BadRequest();
+                        }
+                    }
                 }
             }
-
             return NoContent();
         }
 
         // POST: api/Schedules
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [AllowAnonymous]
         public async Task<ActionResult<Schedule>> PostSchedule(Schedule schedule)
         {
-            _repo.Insert(schedule);
-            await _repo.SaveAsync();
 
+            if (_timeTemplateItemRepo.CheckCapacity(schedule.RegisteredWeight, schedule.TimeTemplateItemId))
+            {
+                // float quantityOfInventory = _goodsRepository.GetGoodCapacity(schedule.GoodsId);
+                _timeTemplateItemRepo.UpdateSchedule(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
+                schedule.IsCanceled = false;
+                if (!_repo.TryToUpdate(schedule))
+                {
+                    _repo.Insert(schedule);
+                }
+                await _repo.SaveAsync();
+            }
             return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
         }
 
-        // DELETE: api/Schedules/5
-        [HttpDelete("{id}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> DeleteSchedule(int id)
+        [HttpPut("cancel")]
+        public async Task<ActionResult<Schedule>> CancelSchedule(int id, String username)
         {
-            var schedule = await _repo.GetByIDAsync(id);
-            if (schedule == null)
+            Schedule schedule = _repo.GetByID(id);
+            if (schedule != null)
             {
-                return NotFound();
+                if (schedule.IsCanceled == false)
+                {
+                    bool checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule);
+                    if (checkCancel)
+                    {
+                        schedule.IsCanceled = true;
+                        schedule.UpdatedBy = username;
+                        _repo.Update(schedule);
+                    }
+                    try
+                    {
+                        await _repo.SaveAsync();
+                    }
+                    catch
+                    {
+                        return BadRequest();
+                    }
+
+                    return NoContent();
+                }
             }
-
-            _repo.Delete(schedule);
-            await _repo.SaveAsync();
-
-            return NoContent();
-        }
-
-        [HttpGet("types")]
-        [AllowAnonymous]
-        public ActionResult<Object> GetTransType()
-        {
-            return Ok(Enum.GetValues(typeof(TransactionType)).Cast<TransactionType>().ToList());
+            return NotFound();
         }
     }
 }
