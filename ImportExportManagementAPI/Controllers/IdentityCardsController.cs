@@ -26,6 +26,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/IdentityCards
         [HttpGet]
+        [Authorize(Roles = "Staff")]
         public async Task<ActionResult<IEnumerable<IdentityCard>>> GetIdentityCard()
         {
             return await _repo.GetAllAsync();

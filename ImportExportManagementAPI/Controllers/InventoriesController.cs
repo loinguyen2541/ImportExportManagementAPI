@@ -29,6 +29,7 @@ namespace ImportExportManagementAPI.Controllers
         }
         //check ngày này có tồn tại phiếu nhập kho chưa
         [HttpGet("{dateRecord}")]
+        [AllowAnonymous]
         public async Task<ActionResult<IdentityCard>> GetDateRecord(DateTime dateRecord)
         {
             var identityCard = await _repo.CheckExistDateRecord(dateRecord);
@@ -60,11 +61,13 @@ namespace ImportExportManagementAPI.Controllers
             return Ok(total.Result);
         }
         [HttpGet("totalFloat")]
+        [AllowAnonymous]
         public ActionResult<float> GetTotalByDateTypeFloat(DateTime date, int type)
         {
             return Ok(_repo.TotalWeightInventoryFloat(date, type).Result);
         }
         [HttpGet("totalByMonth")]
+        [AllowAnonymous]
         public ActionResult<List<TotalInventoryDetailedByDate>> GetTotalByDateFromDateToTypeFloat(DateTime dateFrom,DateTime dateTo, int type)
         {
             return Ok(_repo.TotalWeightInventoryFloatByMonth(dateFrom, dateTo, type));

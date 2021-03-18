@@ -24,7 +24,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/PartnerTypes
         [HttpGet]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<PartnerType>>> GetPartnerType()
         {
             return await _context.PartnerType.Include(p => p.Partners).ToListAsync();

@@ -25,7 +25,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Goods
         [HttpGet]
-        [Authorize(Roles = "Staff")]
+        [Authorize(Roles = "Staff,Manager")]
         public ActionResult<List<Goods>> GetGoods()
         {
             return repo.GetGoods();
@@ -33,6 +33,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Goods/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Staff,Manager")]
         public async Task<ActionResult<Goods>> GetGoods(int id)
         {
             var goods = await repo.GetByIDAsync(id);

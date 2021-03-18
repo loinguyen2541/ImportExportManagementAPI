@@ -25,7 +25,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/Partners
         [HttpGet]
-        [Authorize(Roles = "Staff")]
+        [Authorize(Roles = "Manager")]
         public ActionResult<List<Account>> GetAccounts([FromQuery] AccountStatus status)
         {
             return _repo.GetAccounts(status);

@@ -25,7 +25,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Partners
         [HttpGet]
-        [Authorize(Roles = "Staff")]
+        [Authorize(Roles = "Manager")]
         public ActionResult<IEnumerable<Partner>> GetPartners()
         {
             return _repo.GetPartners();
@@ -33,7 +33,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Partners
         [HttpGet("/api/partners/search")]
-        [Authorize(Roles = "Staff")]
+        [Authorize(Roles = "Manager")]
         public async Task<ActionResult<IEnumerable<Partner>>> SearchPartnersByFilterAsync([FromQuery] PaginationParam paging, [FromQuery] PartnerFilter partnerFilter)
         {
             Pagination<Partner> partners = await _repo.GetAllAsync(paging, partnerFilter);
