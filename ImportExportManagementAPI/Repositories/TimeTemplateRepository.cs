@@ -16,7 +16,13 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class TimeTemplateRepository : BaseRepository<TimeTemplate>
     {
-        public async void ResetSchedule(float inventory)
+        /// <summary>
+        ///  This method resets a applied time template base on current inventory. <br/>
+        ///  If there is a peding item template in the system, then update the pending status of that object to be applied 
+        ///  and change status of applied item template to disable.
+        /// </summary>
+        /// <param name="inventory"></param>
+        public async void ResetTimeTemplate(float inventory)
         {
 
             TimeTemplate timeTemplateApplied = await _dbSet.Include(t => t.TimeTemplateItems)
@@ -28,25 +34,45 @@ namespace ImportExportManagementAPI.Repositories
             if (timeTemplatePending == null)
             {
                 //Update current applied template
-                UpdateInventory(timeTemplateApplied, inventory);
-                _dbContext.Entry(timeTemplateApplied).State = EntityState.Modified;
+                UpdateCurrentApliedTemplate(timeTemplateApplied, inventory);
+
             }
             else
             {
-                //Change current pending template to applied and update it's items
-                timeTemplatePending.TimeTemplateStatus = TimeTemplateStatus.Applied;
-                UpdateInventory(timeTemplatePending, inventory);
-                _dbContext.Entry(timeTemplatePending).State = EntityState.Modified;
-
-                //Disable current applied template
-                if (timeTemplateApplied != null)
+                if (timeTemplatePending.ApplyingDate <= DateTime.Now.Date)
                 {
-                    timeTemplateApplied.TimeTemplateStatus = TimeTemplateStatus.Disabled;
-                    _dbContext.Entry(timeTemplateApplied).State = EntityState.Modified;
+                    //Change current pending template to applied and update it's items
+                    timeTemplatePending.TimeTemplateStatus = TimeTemplateStatus.Applied;
+                    timeTemplatePending.ApplyingDate = DateTime.Now.Date.AddDays(1);
+                    UpdateInventory(timeTemplatePending, inventory);
+                    _dbContext.Entry(timeTemplatePending).State = EntityState.Modified;
+
+                    //Disable current applied template
+                    if (timeTemplateApplied != null)
+                    {
+                        timeTemplateApplied.TimeTemplateStatus = TimeTemplateStatus.Disabled;
+                        _dbContext.Entry(timeTemplateApplied).State = EntityState.Modified;
+                    }
+                }
+                else
+                {
+                    //Update current applied template
+                    UpdateCurrentApliedTemplate(timeTemplateApplied, inventory);
                 }
             }
 
             await SaveAsync();
+        }
+
+        private void UpdateCurrentApliedTemplate(TimeTemplate timeTemplate, float inventory)
+        {
+            //Update current applied template
+            if (timeTemplate.ApplyingDate.Date <= DateTime.Now.Date)
+            {
+                timeTemplate.ApplyingDate = DateTime.Now.Date.AddDays(1);
+                UpdateInventory(timeTemplate, inventory);
+                _dbContext.Entry(timeTemplate).State = EntityState.Modified;
+            }
         }
 
         private void UpdateInventory(TimeTemplate timeTemplate, float inventory)
@@ -65,5 +91,13 @@ namespace ImportExportManagementAPI.Repositories
                 .SingleOrDefaultAsync();
             return timeTemplate;
         }
+
+        public TimeTemplate GetCurrentTimeTemplate()
+        {
+            TimeTemplate timeTemplate = _dbSet.
+                Where(t => t.TimeTemplateStatus == TimeTemplateStatus.Applied).SingleOrDefault();
+            return timeTemplate;
+        }
+
     }
 }

@@ -20,7 +20,7 @@ namespace ImportExportManagementAPI.Models
         public String TimeTemplateName { get; set; }
 
         [Column(TypeName = "Date")]
-        public DateTime? ApplyingDate { get; set; }
+        public DateTime ApplyingDate { get; set; }
 
         public TimeTemplateStatus TimeTemplateStatus { get; set; }
 

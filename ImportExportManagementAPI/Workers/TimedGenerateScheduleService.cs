@@ -42,9 +42,10 @@ namespace ImportExportManagementAPI.Workers
 
             DateTime now = DateTime.Now;
 
-            SystemConfig autoSchedule = _systemConfigRepository.GetByID(AttributeKey.AutoSchedule.ToString());
+            SystemConfig scheduleTime = _systemConfigRepository.GetByID(AttributeKey.AutoSchedule.ToString());
             TimeSpan ts;
-            if (TimeSpan.TryParse(autoSchedule.AttributeValue, out ts))
+
+            if (TimeSpan.TryParse(scheduleTime.AttributeValue, out ts))
             {
                 _logger.LogInformation(ts.Hours + "");
             }
@@ -52,23 +53,62 @@ namespace ImportExportManagementAPI.Workers
             {
                 ts = new TimeSpan();
             }
-            DateTime firstRun = new DateTime(now.Year, now.Month, now.Day, ts.Hours, ts.Minutes, 0, 0);
 
-            //if (now > firstRun)
-            //{
-            //    firstRun = firstRun.AddDays(1);
-            //}
+            TimeTemplate currentTimeTemplate = _timeTemplateRepository.GetCurrentTimeTemplate();
 
-            TimeSpan timeToGo = firstRun - now;
-            if (timeToGo <= TimeSpan.Zero)
+            TimeSpan timeToGo = CalculateTimeToGo(ts, currentTimeTemplate.ApplyingDate);
+
+            TimeSpan timeFrom = TimeSpan.FromDays(1);
+            if (timeToGo == TimeSpan.Zero)
+            {
+                timeFrom = TimeSpan.FromDays(1) - (now.TimeOfDay - ts);
+            }
+
+            _timer = new Timer(DoWork, null, timeToGo, timeFrom);
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        ///    This method calculates launch time of timer. <para/>
+        ///    1. If the current date is less than the scheduled date <para/>
+        ///                    => executes the timer at the scheduled time of the next day.<para/>
+        ///    2. If the current date is equal to the scheduled date <para/>
+        ///                     2.1 If current time is greater than or equal to scheduled time <para/>
+        ///                     => executes the timer immediately.<para/>
+        ///                     2.2 Else <para/>
+        ///                     => excute the timer at scheduled time.<para/>
+        ///    3. If the current date is greater than the scheduled date<para/>
+        ///                     => executes the timer immediately.<para/>
+        /// </summary>
+        /// <param name="scheduleTime"> daily launch time. </param>
+        /// <param name="applyingDate"> date applied for time template items.</param>
+        /// <returns>launch time of timer</returns>
+        private TimeSpan CalculateTimeToGo(TimeSpan scheduleTime, DateTime applyingDate)
+        {
+            TimeSpan timeToGo = new TimeSpan();
+            DateTime currentDate = DateTime.Now;
+
+            if (currentDate.Date < applyingDate.Date)
+            {
+                timeToGo = TimeSpan.FromDays(1) - (currentDate.TimeOfDay - scheduleTime);
+            }
+            else if (currentDate.Date == applyingDate.Date)
+            {
+                if (currentDate.TimeOfDay >= scheduleTime)
+                {
+                    timeToGo = TimeSpan.Zero;
+                }
+                else
+                {
+                    timeToGo = scheduleTime - currentDate.TimeOfDay;
+                }
+            }
+            else
             {
                 timeToGo = TimeSpan.Zero;
             }
-
-            _timer = new Timer(DoWork, null, timeToGo,
-                TimeSpan.FromSeconds(5));
-
-            return Task.CompletedTask;
+            return timeToGo;
         }
 
         private void DoWork(object state)
@@ -77,12 +117,12 @@ namespace ImportExportManagementAPI.Workers
 
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
-            //float capacity = _goodsRepository.GetGoodCapacity(2);
-            //_timeTemplateRepository.ResetSchedule(capacity);
-            //_scheduleRepository.DisableAll();
-            if (count == 1)
+            float capacity = _goodsRepository.GetGoodCapacity();
+            _timeTemplateRepository.ResetTimeTemplate(capacity);
+            _scheduleRepository.DisableAll();
+            if (count == 2)
             {
-                _timer?.Change(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(1));
+                _timer?.Change(TimeSpan.FromDays(1), TimeSpan.FromDays(1));
             }
         }
 
