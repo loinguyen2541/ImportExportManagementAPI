@@ -36,5 +36,6 @@ namespace ImportExportManagementAPI.Repositories
         {
             return _dbSet.SingleOrDefault().QuantityOfInventory;
         }
+
     }
 }
