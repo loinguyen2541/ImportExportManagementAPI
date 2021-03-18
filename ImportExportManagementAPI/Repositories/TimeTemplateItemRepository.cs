@@ -132,7 +132,7 @@ namespace ImportExportManagementAPI.Repositories
                     checkCancel = false;
                 }
             }
-            
+
             return checkCancel;
         }
         public void CancelImport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float registeredWeight)
@@ -141,7 +141,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 if (item.ScheduleTime >= targetTime)
                 {
-                    item.Inventory = item.Inventory + registeredWeight;
+                    item.Inventory = item.Inventory - registeredWeight;
                 }
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
@@ -160,13 +160,92 @@ namespace ImportExportManagementAPI.Repositories
 
         }
 
+        public async Task<bool> ChangeSchedule(Schedule updateSchedule, Schedule existedSchedule)
+        {
+            bool checkUpdate = false;
+            TimeTemplateItem timeTemplateItemUpdate = await _dbSet.FindAsync(updateSchedule.TimeTemplateItemId);
+            TimeTemplateItem timeTemplateItemCurrent = await _dbSet.FindAsync(existedSchedule.TimeTemplateItemId);
+            List<TimeTemplateItem> timeTemplateItems = new List<TimeTemplateItem>();
+            if (timeTemplateItemUpdate != null && timeTemplateItemCurrent != null)
+            {
+                if (CheckValidTime(timeTemplateItemUpdate))
+                {
+                    timeTemplateItems = await _dbSet.OrderBy(p => p.ScheduleTime).ToListAsync();
+                }
+            }
+            if (timeTemplateItems != null && timeTemplateItems.Count > 0)
+            {
+                //check tgian update lon hon hay be hon tgian da book
+                int check = (int)timeTemplateItemCurrent.ScheduleTime.TotalMinutes - (int)timeTemplateItemUpdate.ScheduleTime.TotalMinutes;
+                if (updateSchedule.TransactionType.Equals(TransactionType.Import))
+                {
+                    UpdateImport(timeTemplateItems, timeTemplateItemUpdate.ScheduleTime, timeTemplateItemCurrent.ScheduleTime, updateSchedule.RegisteredWeight, check);
+                }
+                else if (updateSchedule.TransactionType.Equals(TransactionType.Export))
+                {
+                    bool checkInventory = CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId);
+                    if (checkInventory)
+                    {
+                        UpdateExport(timeTemplateItems, updateSchedule.RegisteredWeight);
+                    }
+                    else
+                    {
+                        return checkUpdate = true;
+                    }
+                }
+                try
+                {
+                    await _dbContext.SaveChangesAsync();
+                    checkUpdate = true;
+                }
+                catch
+                {
+                    checkUpdate = false;
+                }
+            }
+            return checkUpdate;
+        }
+        public void UpdateExport(List<TimeTemplateItem> timeTemplateItems, float registeredWeight)
+        {
+            foreach (var item in timeTemplateItems)
+            {
+                item.Inventory = item.Inventory - registeredWeight;
+                _dbContext.Entry(item).State = EntityState.Modified;
+            }
+
+        }
+        public void UpdateImport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, TimeSpan beforeSchedule, float registeredWeight, int check)
+        {
+            foreach (var item in timeTemplateItems)
+            {
+                if (check < 0)
+                {
+                    //tgian đổi trễ hơn
+                    if (item.ScheduleTime >= beforeSchedule && item.ScheduleTime < targetTime)
+                    {
+                        item.Inventory = item.Inventory - registeredWeight;
+                    }
+                }
+                else if (check > 0)
+                {
+                    //tgian đổi sớm hơn
+                    if (item.ScheduleTime >= targetTime && item.ScheduleTime < beforeSchedule)
+                    {
+                        item.Inventory = item.Inventory + registeredWeight;
+                    }
+                }
+                _dbContext.Entry(item).State = EntityState.Modified;
+            }
+
+        }
+
         public Boolean CheckValidTime(TimeTemplateItem scheduleTime)
         {
             bool check = false;
             TimeSpan current = DateTime.Now.TimeOfDay;
             TimeSpan scheduleDate = scheduleTime.ScheduleTime;
             TimeSpan result = current.Subtract(scheduleDate);
-            if(current >= scheduleDate)
+            if (current >= scheduleDate)
             {
 
             }
