@@ -18,7 +18,7 @@ namespace ImportExportManagementAPI.Repositories
     {
         public async void ResetSchedule(float capacity)
         {
-
+/*
             TimeTemplate timeTemplate = await _dbSet.Include(t => t.TimeTemplateItems)
                 .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Applied).SingleAsync();
             foreach (var item in timeTemplate.TimeTemplateItems)
@@ -28,7 +28,7 @@ namespace ImportExportManagementAPI.Repositories
 
             _dbContext.Entry(timeTemplate).State = EntityState.Modified;
 
-            await SaveAsync();
+            await SaveAsync();*/
         }
     }
 }
