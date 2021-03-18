@@ -128,7 +128,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 await SaveAsync();
             }
-            catch (Exception e)
+            catch (Exception )
             {
                 throw;
             }
@@ -144,7 +144,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 await SaveAsync();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }
