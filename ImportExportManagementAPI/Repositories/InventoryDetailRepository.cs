@@ -132,7 +132,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 await SaveAsync();
             }
-            catch (Exception e)
+            catch (Exception )
             {
                 throw;
             }
@@ -148,7 +148,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 await SaveAsync();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }
@@ -166,6 +166,26 @@ namespace ImportExportManagementAPI.Repositories
         {
             List<InventoryDetail> details = new List<InventoryDetail>();
             details = await _dbSet.Where(d => d.InventoryId == inventoryId && (int)d.Type == detailType).ToListAsync();
+            return details;
+        }
+        //get list detail by  datefrom and dateto type 
+        public  List<TotalInventoryDetailedByDate> GetInventoryDetailDateFromDateTo(List<int> inventories, int detailType)
+        {
+            var rawData = _dbSet.Include(p=> p.Inventory).Where(d => inventories.Contains(d.InventoryId) && (int)d.Type == detailType)
+                 .GroupBy(p => p.InventoryId, (k, g) => new 
+                 {
+                     
+                     id = k,
+                     totalWeight = g.Sum(p => p.Weight)
+                 }) ; ; ; ;
+            List<TotalInventoryDetailedByDate> details = new List<TotalInventoryDetailedByDate>();
+            foreach (var item in rawData.ToList())
+            {
+                TotalInventoryDetailedByDate totalInventory = new TotalInventoryDetailedByDate();
+                totalInventory.id = item.id;
+                totalInventory.weight = item.totalWeight;
+                details.Add(totalInventory);
+            }
             return details;
         }
     }

@@ -32,9 +32,10 @@ namespace ImportExportManagementAPI.Repositories
 
         }
 
-        public float GetGoodCapacity(int id)
+        public float GetGoodCapacity()
         {
-            return _dbSet.Find(id).QuantityOfInventory;
+            return _dbSet.SingleOrDefault().QuantityOfInventory;
         }
+
     }
 }
