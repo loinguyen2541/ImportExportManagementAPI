@@ -22,9 +22,12 @@ namespace ImportExportManagementAPI.Repositories
     {
         public String GetAutoSchedule()
         {
-            String ss = AttributeKey.AutoSchedule.ToString();
             return _dbSet.Where(s => s.AttributeKey == AttributeKey.AutoSchedule.ToString()).Select(s => s.AttributeValue).ToString();
         }
 
+        public String GetStorageCapacity()
+        {
+            return _dbSet.Where(s => s.AttributeKey == AttributeKey.StorageCapacity.ToString()).Select(s => s.AttributeValue).SingleOrDefault();
+        }
     }
 }
