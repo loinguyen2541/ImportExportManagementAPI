@@ -69,7 +69,7 @@ namespace ImportExportManagementAPI.Repositories
             if (inventory.Result == null)
             {
                 //chua co thi tao moi
-                Inventory newInventory = new Inventory { RecordedDate = dateRecord};
+                Inventory newInventory = new Inventory { RecordedDate = dateRecord };
                 Insert(newInventory);
                 await SaveAsync();
                 return newInventory;
@@ -83,13 +83,13 @@ namespace ImportExportManagementAPI.Repositories
             String total = "0.0 KG";
             //check ngày này có inventory chưa
             Inventory inventory = await CheckExistDateRecord(dateRecord);
-            if(inventory!= null)
+            if (inventory != null)
             {
                 //get list detail
                 float weightTotal = 0;
                 InventoryDetailRepository detailRepo = new InventoryDetailRepository();
                 List<InventoryDetail> listDetail = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, type);
-                if(listDetail!=null && listDetail.Count > 0)
+                if (listDetail != null && listDetail.Count > 0)
                 {
                     foreach (var item in listDetail)
                     {
@@ -120,11 +120,11 @@ namespace ImportExportManagementAPI.Repositories
             }
             return weightTotal;
         }
-        public List<TotalInventoryDetailedByDate> TotalWeightInventoryFloatByMonth(DateTime dateFrom,DateTime dateTo, int type)
+        public List<TotalInventoryDetailedByDate> TotalWeightInventoryFloatByMonth(DateTime dateFrom, DateTime dateTo, int type)
         {
             List<TotalInventoryDetailedByDate> listDetail = new List<TotalInventoryDetailedByDate>();
             //check ngày này có inventory chưa
-            if (dateFrom  != null && dateTo != null)
+            if (dateFrom != null && dateTo != null)
             {
                 IQueryable<Inventory> rawData = null;
                 rawData = _dbSet.Where(p => p.RecordedDate >= dateFrom && p.RecordedDate <= dateTo);
@@ -140,12 +140,12 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 if (listInvenId.Count > 0)
                 {
-                    listDetail =  detailRepo.GetInventoryDetailDateFromDateTo(listInvenId, type);
+                    listDetail = detailRepo.GetInventoryDetailDateFromDateTo(listInvenId, type);
                     foreach (var item in inventories)
                     {
                         foreach (var item2 in listDetail)
                         {
-                            if(item.InventoryId == item2.id)
+                            if (item.InventoryId == item2.id)
                             {
                                 item2.date = item.RecordedDate;
                             }
