@@ -39,7 +39,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("report")]
         public async Task<ActionResult<IEnumerable<InventoryDetail>>> Search([FromQuery] PaginationParam paging, [FromQuery] InventoryFilter filter)
         {
-            Pagination<InventoryDetail> listInventory = await _repo.GetDataPartner(paging, filter);
+            Pagination<InventoryDetail> listInventory = await _repo.GetReportPartner(paging, filter);
             return Ok(listInventory);
         }
 

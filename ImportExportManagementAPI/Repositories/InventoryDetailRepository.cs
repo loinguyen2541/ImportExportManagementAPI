@@ -165,13 +165,13 @@ namespace ImportExportManagementAPI.Repositories
             return details;
         }
 
-        public async ValueTask<Pagination<InventoryDetail>> GetDataPartner(PaginationParam paging, InventoryFilter filter)
+        public async ValueTask<Pagination<InventoryDetail>> GetReportPartner(PaginationParam paging, InventoryFilter filter)
         {
             Pagination<InventoryDetail> listInventory = new Pagination<InventoryDetail>();
             IQueryable<InventoryDetail> rawData = null;
             rawData = _dbSet.Include(p => p.Partner);
             rawData = rawData.Include(p => p.Inventory);
-            listInventory = await DoFilterDataPartner(paging, filter, rawData);
+            listInventory = await DoFilterReportPartner(paging, filter, rawData);
             return listInventory;
         }
         public async Task<List<InventoryDetail>> getDataReportInventoryDetail(ReportFilter filter)
@@ -197,7 +197,7 @@ namespace ImportExportManagementAPI.Repositories
 
         }
 
-        private async Task<Pagination<InventoryDetail>> DoFilterDataPartner(PaginationParam paging, InventoryFilter filter, IQueryable<InventoryDetail> queryable)
+        private async Task<Pagination<InventoryDetail>> DoFilterReportPartner(PaginationParam paging, InventoryFilter filter, IQueryable<InventoryDetail> queryable)
         {
 
             if (filter.PartnerName != null && filter.PartnerName.Length > 0)
@@ -205,11 +205,11 @@ namespace ImportExportManagementAPI.Repositories
                 queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
             }
 
-            if (DateTime.TryParse(filter.RecordedDate, out DateTime recordedData))
+            if (DateTime.TryParse(filter.dateFrom, out DateTime FromDate) && DateTime.TryParse(filter.dateTo, out DateTime ToDate))
             {
-
-                DateTime dateRecord = DateTime.Parse(filter.RecordedDate);
-                queryable = queryable.Where(p => p.Inventory.RecordedDate == dateRecord);
+                DateTime dateFrom = DateTime.Parse(filter.dateFrom);
+                DateTime dateTo = DateTime.Parse(filter.dateTo);
+                queryable = queryable.Where(p => p.Inventory.RecordedDate >= dateFrom && p.Inventory.RecordedDate <= dateTo);
             }
             if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
             {

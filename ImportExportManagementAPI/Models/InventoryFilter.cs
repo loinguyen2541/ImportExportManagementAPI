@@ -10,6 +10,7 @@ namespace ImportExportManagement_API.Models
         public String PartnerName { get; set; }
         public String TransactionType { get; set; }
         public String RecordedDate { get; set; }
-
+        public String dateTo { get; set; }
+        public String dateFrom { get; set; }
     }
 }
