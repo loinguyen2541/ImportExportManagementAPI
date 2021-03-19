@@ -25,6 +25,29 @@ namespace ImportExportManagement_API.Repositories
             return schedules;
         }
 
+        public async ValueTask<List<Schedule>> GetHistory(ScheduleFilterParam filter)
+        {
+            List<Schedule> schedules = new List<Schedule>();
+            IQueryable<Schedule> rawData = null;
+            rawData = _dbSet.Include(s => s.Partner).Include(s => s.TimeTemplateItem);
+            schedules = await DoFilterHistory(filter, rawData);
+            return schedules;
+        }
+
+        private async Task<List<Schedule>> DoFilterHistory(ScheduleFilterParam filter, IQueryable<Schedule> queryable)
+        {
+            if (filter.PartnerId != 0)
+            {
+                queryable = queryable.Where(s => s.PartnerId == filter.PartnerId);
+            }
+            if (filter.toDate == DateTime.MinValue)
+            {
+                //todate rong
+                filter.toDate = DateTime.Now;
+            }
+            queryable = queryable.Where(s => filter.fromDate <= s.ScheduleDate && s.ScheduleDate <= filter.toDate );
+            return await queryable.ToListAsync();
+        }
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
         {
             List<Schedule> schedules = await _dbSet
@@ -87,6 +110,8 @@ namespace ImportExportManagement_API.Repositories
             }
             await SaveAsync();
         }
+
+
 
         public int Count()
         {

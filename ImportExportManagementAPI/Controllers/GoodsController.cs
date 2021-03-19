@@ -106,9 +106,9 @@ namespace ImportExportManagementAPI
             return Ok(repo.GetGoodsStatus());
         }
         [HttpGet("quantity")]
-        public ActionResult<float> GetQuantityGoods([FromQuery] int id)
+        public ActionResult<float> GetQuantityGoods()
         {
-            return repo.GetGoodCapacity(id);
+            return repo.GetGoodCapacity();
         }
 
     }
