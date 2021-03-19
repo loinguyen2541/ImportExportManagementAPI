@@ -167,28 +167,27 @@ namespace ImportExportManagementAPI.Repositories
             {
                 if (CheckValidTime(timeTemplateItemUpdate))
                 {
-                    timeTemplateItems = await _dbSet.OrderBy(p => p.ScheduleTime).ToListAsync();
+                    timeTemplateItems = await _dbSet.Where(t => t.TimeTemplateId == existedSchedule.TimeTemplateItemId).OrderBy(p => p.ScheduleTime).ToListAsync();
                 }
             }
             if (timeTemplateItems != null && timeTemplateItems.Count > 0)
             {
-                //check tgian update lon hon hay be hon tgian da book
-                int check = (int)timeTemplateItemCurrent.ScheduleTime.TotalMinutes - (int)timeTemplateItemUpdate.ScheduleTime.TotalMinutes;
-                if (updateSchedule.TransactionType.Equals(TransactionType.Import))
+                if (updateSchedule.TransactionType.Equals(TransactionType.Export))
                 {
-                    UpdateImport(timeTemplateItems, timeTemplateItemUpdate.ScheduleTime, timeTemplateItemCurrent.ScheduleTime, updateSchedule.RegisteredWeight, check);
-                }
-                else if (updateSchedule.TransactionType.Equals(TransactionType.Export))
-                {
-                    bool checkInventory = CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId);
-                    if (checkInventory)
+                    if (updateSchedule.RegisteredWeight != existedSchedule.RegisteredWeight)
                     {
-                        UpdateExport(timeTemplateItems, updateSchedule.RegisteredWeight);
+                        UpdateExport(timeTemplateItems, existedSchedule.RegisteredWeight, updateSchedule.RegisteredWeight);
                     }
                     else
                     {
                         return checkUpdate = true;
                     }
+                }
+                if (updateSchedule.TransactionType.Equals(TransactionType.Import))
+                {
+                    // check tgian update lon hon hay be hon tgian da book
+                    int check = (int)timeTemplateItemCurrent.ScheduleTime.TotalMinutes - (int)timeTemplateItemUpdate.ScheduleTime.TotalMinutes;
+                    UpdateImport(timeTemplateItems, timeTemplateItemUpdate.ScheduleTime, timeTemplateItemCurrent.ScheduleTime, updateSchedule.RegisteredWeight, check);
                 }
                 try
                 {
@@ -202,11 +201,11 @@ namespace ImportExportManagementAPI.Repositories
             }
             return checkUpdate;
         }
-        public void UpdateExport(List<TimeTemplateItem> timeTemplateItems, float registeredWeight)
+        public void UpdateExport(List<TimeTemplateItem> timeTemplateItems, float registerWeightBefore, float registerWeightAfter)
         {
             foreach (var item in timeTemplateItems)
             {
-                item.Inventory = item.Inventory - registeredWeight;
+                item.Inventory = item.Inventory + registerWeightBefore - registerWeightAfter;
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
 
