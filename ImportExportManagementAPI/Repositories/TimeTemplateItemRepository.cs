@@ -27,16 +27,16 @@ namespace ImportExportManagementAPI.Repositories
             return false;
         }
 
-        public async void UpdateSchedule(TransactionType type, float registeredWeight, int id)
+        public void UpdateCurrent(TransactionType type, float registeredWeight, int id)
         {
-            TimeTemplateItem timeTemplateItem = await _dbSet.FindAsync(id);
+            TimeTemplateItem timeTemplateItem = _dbSet.Find(id);
             float targetItemCapacity = 0;
             List<TimeTemplateItem> timeTemplateItems = null;
             if (timeTemplateItem != null)
             {
-                timeTemplateItems = await _dbSet
+                timeTemplateItems = _dbSet
                 .Where(i => i.TimeTemplateId == timeTemplateItem.TimeTemplateId)
-                .OrderBy(p => p.ScheduleTime).ToListAsync();
+                .OrderBy(p => p.ScheduleTime).ToList();
             }
             if (timeTemplateItems != null || timeTemplateItems.Count > 0)
             {
@@ -50,7 +50,7 @@ namespace ImportExportManagementAPI.Repositories
                     targetItemCapacity = timeTemplateItem.Inventory + registeredWeight;
                     UpdateCapacityImport(timeTemplateItems, timeTemplateItem.ScheduleTime, targetItemCapacity, registeredWeight);
                 }
-                await _dbContext.SaveChangesAsync();
+                _dbContext.SaveChanges();
             }
         }
 

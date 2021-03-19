@@ -19,7 +19,7 @@ namespace ImportExportManagementAPI.Controllers
             _timeTemplateItemRepository = new TimeTemplateItemRepository();
         }
         [HttpGet("current")]
-        public async Task<ActionResult<List<TimeTemplateItem>>> getCurrent()
+        public async Task<ActionResult<List<TimeTemplateItem>>> GetCurrent()
         {
             List<TimeTemplateItem> timeTemplateItems = await _timeTemplateItemRepository.GetAppliedItem();
             return Ok(timeTemplateItems);

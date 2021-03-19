@@ -16,7 +16,7 @@ namespace ImportExportManagement_API.Models
     {
         public int InventoryDetailId { get; set; }
         public float Weight { get; set; }
-        public InventoryDetailType Type { get; set; }
+        public InventoryDetailType? Type { get; set; }
 
         public int InventoryId { get; set; }
         public Inventory Inventory { get; set; }

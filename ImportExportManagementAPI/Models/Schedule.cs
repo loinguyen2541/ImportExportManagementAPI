@@ -14,8 +14,10 @@ namespace ImportExportManagement_API.Models
         public float RegisteredWeight { get; set; }
         public DateTime CreatedDate { get; set; }
         public TransactionType TransactionType { get; set; }
+        public ScheduleStatus ScheduleStatus { get; set; }
         public bool IsCanceled { get; set; }
         public String UpdatedBy { get; set; }
+
         public int PartnerId { get; set; }
         public Partner Partner { get; set; }
 
