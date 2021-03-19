@@ -24,7 +24,7 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<InventoryDetail> listInventoryDetail = await _repo.GetInventoryDetail(paging, filter);
             return Ok(listInventoryDetail);
         }
-        [HttpGet("inventoryid")]
+        [HttpGet("{Inventoryid}")]
         public async Task<ActionResult<IdentityCard>> GetInventoryDetailByInventory([FromQuery] PaginationParam paging, [FromQuery] InventoryDetailFilter filter)
         {
             Pagination<InventoryDetail> listInventoryDetail = await _repo.GetInventoryDetail(paging, filter);
@@ -35,5 +35,23 @@ namespace ImportExportManagementAPI.Controllers
         {
             return Ok(Enum.GetValues(typeof(InventoryDetailType)).Cast<InventoryDetailType>().ToList());
         }
+
+        [HttpGet("report")]
+        public async Task<ActionResult<IEnumerable<InventoryDetail>>> Search([FromQuery] PaginationParam paging, [FromQuery] InventoryFilter filter)
+        {
+            Pagination<InventoryDetail> listInventory = await _repo.GetReportPartner(paging, filter);
+            return Ok(listInventory);
+        }
+
+        [HttpGet("reportIventoryDetail")]
+        public async Task<ActionResult<IEnumerable<InventoryDetail>>> report([FromQuery] ReportFilter filter)
+        {
+            List<InventoryDetail> listInventory = await _repo.getDataReportInventoryDetail(filter);
+            return Ok(listInventory);
+        }
+
+
+
+
     }
 }

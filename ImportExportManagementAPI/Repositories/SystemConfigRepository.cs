@@ -1,9 +1,14 @@
-﻿using ImportExportManagement_API.Repositories;
+
+
+using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
 using System;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
+
 
 /**
 * @author Loi Nguyen
@@ -17,12 +22,29 @@ namespace ImportExportManagementAPI.Repositories
     {
         public String GetAutoSchedule()
         {
-            return _dbSet.Where(s => s.AttributeKey == AttributeKey.AutoSchedule.ToString()).Select(s => s.AttributeValue).ToString();
+            return _dbSet.Where(s => s.AttributeKey == AttributeKey.AutoSchedule.ToString()).Select(s => s.AttributeValue).SingleOrDefault();
         }
 
         public String GetStorageCapacity()
         {
             return _dbSet.Where(s => s.AttributeKey == AttributeKey.StorageCapacity.ToString()).Select(s => s.AttributeValue).SingleOrDefault();
+        }
+
+        public async Task<Boolean> UpdateAutoSchedule(String time)
+        {
+            TimeSpan newTime;
+            if (TimeSpan.TryParse(time, out newTime))
+            {
+                SystemConfig autoSchedule = await _dbSet.FindAsync(AttributeKey.AutoSchedule.ToString());
+                if (autoSchedule != null)
+                {
+                    autoSchedule.AttributeValue = time;
+                    _dbContext.Entry(autoSchedule).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    await SaveAsync();
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

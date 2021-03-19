@@ -25,27 +25,33 @@ namespace ImportExportManagement_API.Repositories
             return schedules;
         }
 
-        public async ValueTask<List<Schedule>> GetHistory(ScheduleFilterParam filter)
+        public async ValueTask<List<Schedule>> GetHistory(string searchDate)
         {
             List<Schedule> schedules = new List<Schedule>();
             IQueryable<Schedule> rawData = null;
-            rawData = _dbSet.Include(s => s.Partner).Include(s => s.TimeTemplateItem);
-            schedules = await DoFilterHistory(filter, rawData);
+            rawData = _dbSet;
+            schedules = await DoFilterHistory(searchDate, rawData);
             return schedules;
         }
 
-        private async Task<List<Schedule>> DoFilterHistory(ScheduleFilterParam filter, IQueryable<Schedule> queryable)
+        private async Task<List<Schedule>> DoFilterHistory(String searchDate, IQueryable<Schedule> queryable)
         {
-            if (filter.PartnerId != 0)
+            //if (filter.PartnerId != 0)
+            //{
+            //    queryable = queryable.Where(s => s.PartnerId == filter.PartnerId);
+            //}
+            //if (filter.toDate == DateTime.MinValue)
+            //{
+            //    //todate rong
+            //    filter.toDate = DateTime.Now;
+            //}
+            if(DateTime.TryParse(searchDate, out DateTime date))
             {
-                queryable = queryable.Where(s => s.PartnerId == filter.PartnerId);
+                DateTime start = DateTime.Parse(searchDate);
+                DateTime end = DateTime.Parse(searchDate).AddDays(1);
+                queryable = queryable.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
             }
-            if (filter.toDate == DateTime.MinValue)
-            {
-                //todate rong
-                filter.toDate = DateTime.Now;
-            }
-            queryable = queryable.Where(s => filter.fromDate <= s.ScheduleDate && s.ScheduleDate <= filter.toDate );
+            
             return await queryable.ToListAsync();
         }
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
