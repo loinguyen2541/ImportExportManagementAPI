@@ -55,6 +55,7 @@ namespace ImportExportManagementAPI.Controllers
             Task<String> total = _repo.TotalWeightInventory(date, type);
             return Ok(total.Result);
         }
+
         //lấy tổng khối lượng nhập/xuất theo ngày
         [HttpGet("reportPartner")]
         public ActionResult<Inventory> reportPartner(DateTime DateFrom, DateTime DateTo, string partnerName)

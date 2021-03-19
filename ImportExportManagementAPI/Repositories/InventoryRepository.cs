@@ -101,9 +101,14 @@ namespace ImportExportManagementAPI.Repositories
             }
             return total;
         }
+
         public List<Inventory> ReportPartner(DateTime DateFrom, DateTime DateTo, string partnerName)
         {
             return _dbSet.Where(p => p.RecordedDate.Date >= DateFrom.Date && p.RecordedDate.Date <= DateTo.Date).Include(p => p.InventoryDetails.Where(i => i.Partner.DisplayName.Contains(partnerName))).ToList();
+
+
+
+
         }
 
 
@@ -113,3 +118,4 @@ namespace ImportExportManagementAPI.Repositories
         }
     }
 }
+

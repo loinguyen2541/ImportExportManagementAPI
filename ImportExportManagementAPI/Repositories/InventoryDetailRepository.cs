@@ -165,6 +165,7 @@ namespace ImportExportManagementAPI.Repositories
             return details;
         }
 
+
         public async ValueTask<Pagination<InventoryDetail>> GetReportPartner(PaginationParam paging, InventoryFilter filter)
         {
             Pagination<InventoryDetail> listInventory = new Pagination<InventoryDetail>();
@@ -253,6 +254,28 @@ namespace ImportExportManagementAPI.Repositories
 
 
 
+
+
+        //get list detail by  datefrom and dateto type 
+        public  List<TotalInventoryDetailedByDate> GetInventoryDetailDateFromDateTo(List<int> inventories, int detailType)
+        {
+            var rawData = _dbSet.Include(p=> p.Inventory).Where(d => inventories.Contains(d.InventoryId) && (int)d.Type == detailType)
+                 .GroupBy(p => p.InventoryId, (k, g) => new 
+                 {
+                     
+                     id = k,
+                     totalWeight = g.Sum(p => p.Weight)
+                 }) ; ; ; ;
+            List<TotalInventoryDetailedByDate> details = new List<TotalInventoryDetailedByDate>();
+            foreach (var item in rawData.ToList())
+            {
+                TotalInventoryDetailedByDate totalInventory = new TotalInventoryDetailedByDate();
+                totalInventory.id = item.id;
+                totalInventory.weight = item.totalWeight;
+                details.Add(totalInventory);
+            }
+            return details;
+        }
 
     }
 }

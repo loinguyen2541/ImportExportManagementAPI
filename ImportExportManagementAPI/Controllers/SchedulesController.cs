@@ -41,6 +41,12 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<Schedule> schedules = await _repo.GetAllAsync(paging, filter);
             return Ok(schedules);
         }
+        [HttpGet("schedulehistory")]
+        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate)
+        {
+            List<Schedule> schedules = await _repo.GetHistory(searchDate);
+            return Ok(schedules);
+        }
 
         // GET: api/Schedules/5
         [HttpGet("{id}")]
@@ -57,46 +63,46 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         // PUT: api/Schedules/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSchedule(int id, Schedule schedule)
+        [HttpPut("changeschedule/{id}")]
+        public async Task<IActionResult> ChangeSchedule(int id, int time)
         {
-            if (id != schedule.ScheduleId)
+            Schedule scheduleBefore = _repo.GetByID(id);
+            Schedule scheduleUpdate = _repo.GetByID(id);
+            if (scheduleBefore != null)
             {
-                return BadRequest();
-            }
-
-            _repo.Update(schedule);
-
-            try
-            {
-                await _repo.SaveAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_repo.Exist(id))
+                if (scheduleBefore.IsCanceled == true)
                 {
-                    return NotFound();
+                    return BadRequest();
                 }
                 else
                 {
-                    throw;
+                    //change inventory and timeitem
+                    bool checkUpdate = await _timeTemplateItemRepo.ChangeSchedule(scheduleUpdate, scheduleBefore);
+                    if (checkUpdate)
+                    {
+                        scheduleUpdate.TimeTemplateItemId = 11;
+                        try
+                        {
+                            await _repo.SaveAsync();
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            BadRequest();
+                        }
+                    }
                 }
             }
-
             return NoContent();
         }
 
         // POST: api/Schedules
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Schedule>> PostSchedule(Schedule schedule)
         {
 
             if (_timeTemplateItemRepo.CheckCapacity(schedule.RegisteredWeight, schedule.TimeTemplateItemId))
             {
-                // float quantityOfInventory = _goodsRepository.GetGoodCapacity(schedule.GoodsId);
-                _timeTemplateItemRepo.UpdateSchedule(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
+                _timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
                 schedule.IsCanceled = false;
                 if (!_repo.TryToUpdate(schedule))
                 {
@@ -107,32 +113,34 @@ namespace ImportExportManagementAPI.Controllers
             return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
         }
 
-        // DELETE: api/Schedules/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSchedule(int id)
+        [HttpPut("cancel")]
+        public async Task<ActionResult<Schedule>> CancelSchedule(int id, String username)
         {
-            var schedule = await _repo.GetByIDAsync(id);
-            if (schedule == null)
+            Schedule schedule = _repo.GetByID(id);
+            if (schedule != null)
             {
-                return NotFound();
+                if (schedule.IsCanceled == false)
+                {
+                    bool checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule);
+                    if (checkCancel)
+                    {
+                        schedule.IsCanceled = true;
+                        schedule.UpdatedBy = username;
+                        _repo.Update(schedule);
+                    }
+                    try
+                    {
+                        await _repo.SaveAsync();
+                    }
+                    catch
+                    {
+                        return BadRequest();
+                    }
+
+                    return NoContent();
+                }
             }
-
-            _repo.Delete(schedule);
-            await _repo.SaveAsync();
-
-            return NoContent();
-        }
-
-        [HttpGet("types")]
-        public ActionResult<Object> GetTransType()
-        {
-            return Ok(Enum.GetValues(typeof(TransactionType)).Cast<TransactionType>().ToList());
-        }
-
-        [HttpGet("time")]
-        public ActionResult<Object> ChangeTime()
-        {
-            return Ok(Enum.GetValues(typeof(TransactionType)).Cast<TransactionType>().ToList());
+            return NotFound();
         }
     }
 }
