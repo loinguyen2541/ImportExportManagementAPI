@@ -47,9 +47,8 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost("manual")]
         public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
         {
-            bool check = true;
-            //check = await _repo.CreateTransactionAsync(transaction, "manual");
-            if (!check)
+            var check = await _repo.CreateTransaction(transaction, "manual");
+            if (check == null)
             {
                 return BadRequest("Invalid input");
             }
