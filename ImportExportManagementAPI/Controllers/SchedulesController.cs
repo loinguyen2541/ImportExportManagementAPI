@@ -102,8 +102,7 @@ namespace ImportExportManagementAPI.Controllers
 
             if (_timeTemplateItemRepo.CheckCapacity(schedule.RegisteredWeight, schedule.TimeTemplateItemId))
             {
-                // float quantityOfInventory = _goodsRepository.GetGoodCapacity(schedule.GoodsId);
-                _timeTemplateItemRepo.UpdateSchedule(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
+                _timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
                 schedule.IsCanceled = false;
                 if (!_repo.TryToUpdate(schedule))
                 {
