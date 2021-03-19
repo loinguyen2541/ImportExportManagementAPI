@@ -24,10 +24,6 @@ namespace ImportExportManagementAPI.Repositories
         {
             if (filter != null)
             {
-                if (filter.InventoryId != 0)
-                {
-                    queryable = queryable.Where(i => i.InventoryId == filter.InventoryId);
-                }
                 if (filter.PartnerName != null && filter.PartnerName.Length > 0)
                 {
                     queryable = queryable.Where(i => i.Partner.DisplayName.Contains(filter.PartnerName));
@@ -98,7 +94,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             //get list detail of partner
             List<InventoryDetail> listDetailOfPartner = await GetPartnerInventoryDetail(partnerId, inventoryId);
-            if(listDetailOfPartner!= null && listDetailOfPartner.Count > 0)
+            if (listDetailOfPartner != null && listDetailOfPartner.Count > 0)
             {
                 foreach (var item in listDetailOfPartner)
                 {
@@ -132,7 +128,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 await SaveAsync();
             }
-            catch (Exception )
+            catch (Exception)
             {
                 throw;
             }
@@ -158,7 +154,7 @@ namespace ImportExportManagementAPI.Repositories
         private async Task<List<InventoryDetail>> GetPartnerInventoryDetail(int partnerId, int inventoryId)
         {
             List<InventoryDetail> details = new List<InventoryDetail>();
-            details = await _dbSet.Where(d => d.PartnerId == partnerId &&  d.InventoryId == inventoryId).ToListAsync();
+            details = await _dbSet.Where(d => d.PartnerId == partnerId && d.InventoryId == inventoryId).ToListAsync();
             return details;
         }
         //get list detail by datetime and type
@@ -168,25 +164,105 @@ namespace ImportExportManagementAPI.Repositories
             details = await _dbSet.Where(d => d.InventoryId == inventoryId && (int)d.Type == detailType).ToListAsync();
             return details;
         }
-        //get list detail by  datefrom and dateto type 
-        public  List<TotalInventoryDetailedByDate> GetInventoryDetailDateFromDateTo(List<int> inventories, int detailType)
+
+
+        public async ValueTask<Pagination<InventoryDetail>> GetReportPartner(PaginationParam paging, InventoryFilter filter)
         {
-            var rawData = _dbSet.Include(p=> p.Inventory).Where(d => inventories.Contains(d.InventoryId) && (int)d.Type == detailType)
-                 .GroupBy(p => p.InventoryId, (k, g) => new 
-                 {
-                     
-                     id = k,
-                     totalWeight = g.Sum(p => p.Weight)
-                 }) ; ; ; ;
-            List<TotalInventoryDetailedByDate> details = new List<TotalInventoryDetailedByDate>();
-            foreach (var item in rawData.ToList())
-            {
-                TotalInventoryDetailedByDate totalInventory = new TotalInventoryDetailedByDate();
-                totalInventory.id = item.id;
-                totalInventory.weight = item.totalWeight;
-                details.Add(totalInventory);
-            }
-            return details;
+            Pagination<InventoryDetail> listInventory = new Pagination<InventoryDetail>();
+            IQueryable<InventoryDetail> rawData = null;
+            rawData = _dbSet.Include(p => p.Partner);
+            rawData = rawData.Include(p => p.Inventory);
+            listInventory = await DoFilterReportPartner(paging, filter, rawData);
+            return listInventory;
         }
+        public async Task<List<InventoryDetail>> getDataReportInventoryDetail(ReportFilter filter)
+        {
+            List<InventoryDetail> listInventory = new List<InventoryDetail>();
+            IQueryable<InventoryDetail> rawData = null;
+            rawData = _dbSet.Include(p => p.Goods);
+            rawData = rawData.Include(p => p.Inventory);
+            listInventory = await doFilterReportInventory(filter, rawData);
+            return listInventory;
+
+        }
+        private async Task<List<InventoryDetail>> doFilterReportInventory(ReportFilter filter, IQueryable<InventoryDetail> queryable)
+        {
+            if (DateTime.TryParse(filter.dateFrom, out DateTime FromDate) && DateTime.TryParse(filter.dateTo, out DateTime ToDate))
+            {
+                DateTime dateFrom = DateTime.Parse(filter.dateFrom);
+                DateTime dateTo = DateTime.Parse(filter.dateTo);
+                queryable = queryable.Where(p => p.Inventory.RecordedDate >= dateFrom && p.Inventory.RecordedDate <= dateTo);
+            }
+            return await queryable.ToListAsync();
+
+
+        }
+
+        private async Task<Pagination<InventoryDetail>> DoFilterReportPartner(PaginationParam paging, InventoryFilter filter, IQueryable<InventoryDetail> queryable)
+        {
+
+            if (filter.PartnerName != null && filter.PartnerName.Length > 0)
+            {
+                queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
+            }
+
+            if (DateTime.TryParse(filter.dateFrom, out DateTime FromDate) && DateTime.TryParse(filter.dateTo, out DateTime ToDate))
+            {
+                DateTime dateFrom = DateTime.Parse(filter.dateFrom);
+                DateTime dateTo = DateTime.Parse(filter.dateTo);
+                queryable = queryable.Where(p => p.Inventory.RecordedDate >= dateFrom && p.Inventory.RecordedDate <= dateTo);
+            }
+            if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
+            {
+                InventoryDetailType type = (InventoryDetailType)Enum.Parse(typeof(InventoryDetailType), filter.TransactionType);
+                queryable = queryable.Where(p => p.Type == type);
+            }
+
+
+            //check giá trị page client truyền
+            if (paging.Page < 1)
+            {
+                paging.Page = 1;
+            }
+            if (paging.Size < 1)
+            {
+                paging.Size = 1;
+            }
+
+            //lấy tổng các giá trị query được
+            int count = queryable.Count();
+
+            //check giá trị page ban đầu
+            if (count != 0)
+            {
+                if (((paging.Page - 1) * paging.Size) > count)
+                {
+                    paging.Page = 1;
+                }
+            }
+
+            queryable = queryable.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
+            Pagination<InventoryDetail> pagination = new Pagination<InventoryDetail>();
+            pagination.Page = paging.Page;
+            pagination.Size = paging.Size;
+            double totalPage = (count * 1.0) / (pagination.Size * 1.0);
+            pagination.TotalPage = (int)Math.Ceiling(totalPage);
+            pagination.Data = await queryable.ToListAsync();
+            return pagination;
+        }
+        //get list detail by  datefrom and dateto type 
+        public List<TotalInventoryDetailedByDate> GetInventoryDetailDateFromDateTo(List<int> inventories)
+        {
+            var rawData = _dbSet.Where(d => inventories.Contains(d.InventoryId)).
+               GroupBy(p => new { p.InventoryId, p.Type }, (k, g) => new TotalInventoryDetailedByDate
+               {
+                   id = k.InventoryId,
+                   type = (InventoryDetailType)k.Type,
+                   weight = g.Sum(p => p.Weight)
+               }); ; ; ;
+
+            return rawData.ToList();
+        }
+
     }
 }

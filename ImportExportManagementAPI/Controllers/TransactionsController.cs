@@ -67,7 +67,7 @@ namespace ImportExportManagementAPI.Controllers
                 await _repo.SaveAsync();
                 return CreatedAtAction("GetTransaction", new { id = check.TransactionId }, check);
             }
-            return BadRequest("Card is not exised");
+            return BadRequest("Card is not exist");
         }
         //KhanhBDB
         //update transaction information => manual

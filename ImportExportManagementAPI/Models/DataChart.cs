@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Models
 {
-    public class TotalInventoryDetailedByDate
+    public class DataChart
     {
         public int id { get; set; }
         public DateTime date { get; set; }
-        public float weight { get; set; }
-        public InventoryDetailType type { get; set; 
-        }
+        public float weightImport { get; set; }
+        public float weightExport { get; set; }
     }
 }
