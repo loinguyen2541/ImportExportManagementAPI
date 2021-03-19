@@ -42,9 +42,9 @@ namespace ImportExportManagementAPI.Controllers
             return Ok(schedules);
         }
         [HttpGet("schedulehistory")]
-        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule([FromQuery] ScheduleFilterParam filter)
+        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate)
         {
-            List<Schedule> schedules = await _repo.GetHistory(filter);
+            List<Schedule> schedules = await _repo.GetHistory(searchDate);
             return Ok(schedules);
         }
 
