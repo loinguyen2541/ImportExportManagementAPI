@@ -105,5 +105,11 @@ namespace ImportExportManagementAPI.Repositories
         {
             return _dbSet.Where(p => p.RecordedDate.Date >= DateFrom.Date && p.RecordedDate.Date <= DateTo.Date).Include(p => p.InventoryDetails.Where(i => i.Partner.DisplayName.Contains(partnerName))).ToList();
         }
+
+
+        public List<Inventory> ReportTransaction(DateTime currentDate, string partnerName)
+        {
+            return _dbSet.Where(p => p.RecordedDate == currentDate).Include(p => p.InventoryDetails.Where(i => i.Partner.DisplayName.Contains(partnerName))).ThenInclude(p => p.Goods).ThenInclude(p => p.Transactions.Where(p => p.TimeOut == currentDate.Date)).ToList();
+        }
     }
 }
