@@ -1,3 +1,4 @@
+using ImportExportManagementAPI.Hubs;
 using ImportExportManagementAPI.Repositories;
 using ImportExportManagementAPI.Workers;
 using Microsoft.AspNetCore.Builder;
@@ -61,6 +62,7 @@ namespace ImportExportManagementAPI
             });
 
             services.AddSingleton<SystemConfigRepository>();
+            services.AddSignalR();
 
         }
 
@@ -85,8 +87,8 @@ namespace ImportExportManagementAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<TransactionHub>("/transaction-hub");
             });
-
         }
     }
 }
