@@ -120,7 +120,7 @@ namespace ImportExportManagementAPI.Repositories
             }
             return weightTotal;
         }
-        public List<TotalInventoryDetailedByDate> TotalWeightInventoryFloatByMonth(DateTime dateFrom,DateTime dateTo, int type)
+        public List<TotalInventoryDetailedByDate> TotalWeightInventoryFloatByMonth(DateTime dateFrom,DateTime dateTo)
         {
             List<TotalInventoryDetailedByDate> listDetail = new List<TotalInventoryDetailedByDate>();
             //check ngày này có inventory chưa
@@ -140,7 +140,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 if (listInvenId.Count > 0)
                 {
-                    listDetail =  detailRepo.GetInventoryDetailDateFromDateTo(listInvenId, type);
+                    listDetail =  detailRepo.GetInventoryDetailDateFromDateTo(listInvenId);
                     foreach (var item in inventories)
                     {
                         foreach (var item2 in listDetail)
@@ -156,5 +156,6 @@ namespace ImportExportManagementAPI.Repositories
             }
             return listDetail;
         }
+
     }
 }

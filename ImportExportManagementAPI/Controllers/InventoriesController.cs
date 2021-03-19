@@ -61,9 +61,9 @@ namespace ImportExportManagementAPI.Controllers
             return Ok(_repo.TotalWeightInventoryFloat(date, type).Result);
         }
         [HttpGet("totalByMonth")]
-        public ActionResult<List<TotalInventoryDetailedByDate>> GetTotalByDateFromDateToTypeFloat(DateTime dateFrom,DateTime dateTo, int type)
+        public ActionResult<List<TotalInventoryDetailedByDate>> GetTotalByDateFromDateToTypeFloat(DateTime dateFrom,DateTime dateTo)
         {
-            return Ok(_repo.TotalWeightInventoryFloatByMonth(dateFrom, dateTo, type));
+            return Ok(_repo.TotalWeightInventoryFloatByMonth(dateFrom, dateTo));
         }
 
     }
