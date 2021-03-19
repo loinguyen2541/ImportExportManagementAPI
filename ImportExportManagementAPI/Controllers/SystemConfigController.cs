@@ -1,5 +1,6 @@
 ﻿using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
+using ImportExportManagementAPI.Workers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -14,10 +15,12 @@ namespace ImportExportManagementAPI.Controllers
     public class SystemConfigController : ControllerBase
     {
         private readonly SystemConfigRepository _systemConfigRepository;
+        private readonly TimedGenerateScheduleService _timedGenerateScheduleService;
 
-        public SystemConfigController(SystemConfigRepository systemConfigRepository)
+        public SystemConfigController(SystemConfigRepository systemConfigRepository, TimedGenerateScheduleService timedGenerateScheduleService)
         {
             _systemConfigRepository = systemConfigRepository;
+            _timedGenerateScheduleService = timedGenerateScheduleService;
         }
 
         [HttpGet("storge-capacity")]
@@ -25,5 +28,18 @@ namespace ImportExportManagementAPI.Controllers
         {
             return Ok(_systemConfigRepository.GetStorageCapacity());
         }
+
+        [HttpPut("auto-schedule")]
+        public async Task<ActionResult<SystemConfig>> PutAutoSchedule(String time)
+        {
+            if (await _systemConfigRepository.UpdateAutoSchedule(time))
+            {
+                await _timedGenerateScheduleService.StopAsync(new System.Threading.CancellationToken());
+                await _timedGenerateScheduleService.StartAsync(new System.Threading.CancellationToken());
+                return NoContent();
+            }
+            return BadRequest();
+        }
+
     }
 }

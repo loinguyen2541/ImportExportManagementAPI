@@ -42,10 +42,10 @@ namespace ImportExportManagementAPI.Workers
 
             DateTime now = DateTime.Now;
 
-            SystemConfig scheduleTime = _systemConfigRepository.GetByID(AttributeKey.AutoSchedule.ToString());
+            String scheduleTime = _systemConfigRepository.GetAutoSchedule();
             TimeSpan ts;
 
-            if (TimeSpan.TryParse(scheduleTime.AttributeValue, out ts))
+            if (TimeSpan.TryParse(scheduleTime, out ts))
             {
                 _logger.LogInformation(ts.Hours + "");
             }
