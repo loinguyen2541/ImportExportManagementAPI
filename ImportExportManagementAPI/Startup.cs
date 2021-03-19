@@ -1,3 +1,4 @@
+using ImportExportManagementAPI.Repositories;
 using ImportExportManagementAPI.Workers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -58,6 +59,8 @@ namespace ImportExportManagementAPI
                                         .AllowCredentials();
                 });
             });
+
+            services.AddSingleton<SystemConfigRepository>();
 
         }
 
