@@ -250,23 +250,17 @@ namespace ImportExportManagementAPI.Repositories
             pagination.Data = await queryable.ToListAsync();
             return pagination;
         }
-
-
-
-
-
-
         //get list detail by  datefrom and dateto type 
-        public  List<TotalInventoryDetailedByDate> GetInventoryDetailDateFromDateTo(List<int> inventories)
+        public List<TotalInventoryDetailedByDate> GetInventoryDetailDateFromDateTo(List<int> inventories)
         {
             var rawData = _dbSet.Where(d => inventories.Contains(d.InventoryId)).
-               GroupBy(p =>new { p.InventoryId, p.Type } , (k, g) => new TotalInventoryDetailedByDate
+               GroupBy(p => new { p.InventoryId, p.Type }, (k, g) => new TotalInventoryDetailedByDate
                {
-                     id = k.InventoryId,
-                     type = k.Type,
-                     weight = g.Sum(p => p.Weight)
-                 }) ; ; ; ;
-           
+                   id = k.InventoryId,
+                   type = (InventoryDetailType)k.Type,
+                   weight = g.Sum(p => p.Weight)
+               }); ; ; ;
+
             return rawData.ToList();
         }
 

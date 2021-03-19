@@ -121,11 +121,11 @@ namespace ImportExportManagementAPI.Repositories
             }
             return weightTotal;
         }
-        public List<TotalInventoryDetailedByDate> TotalWeightInventoryFloatByMonth(DateTime dateFrom,DateTime dateTo)
+        public List<TotalInventoryDetailedByDate> TotalWeightInventoryFloatByMonth(DateTime dateFrom, DateTime dateTo)
         {
             List<TotalInventoryDetailedByDate> listDetail = new List<TotalInventoryDetailedByDate>();
             //check ngày này có inventory chưa
-            if (dateFrom  != null && dateTo != null)
+            if (dateFrom != null && dateTo != null)
             {
                 IQueryable<Inventory> rawData = null;
                 rawData = _dbSet.Where(p => p.RecordedDate >= dateFrom && p.RecordedDate <= dateTo);
@@ -141,12 +141,12 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 if (listInvenId.Count > 0)
                 {
-                    listDetail =  detailRepo.GetInventoryDetailDateFromDateTo(listInvenId);
+                    listDetail = detailRepo.GetInventoryDetailDateFromDateTo(listInvenId);
                     foreach (var item in inventories)
                     {
                         foreach (var item2 in listDetail)
                         {
-                            if(item.InventoryId == item2.id)
+                            if (item.InventoryId == item2.id)
                             {
                                 item2.date = item.RecordedDate;
                             }
@@ -161,4 +161,5 @@ namespace ImportExportManagementAPI.Repositories
         {
             return _dbSet.Where(p => p.RecordedDate.Date >= DateFrom.Date && p.RecordedDate.Date <= DateTo.Date).Include(p => p.InventoryDetails.Where(i => i.Partner.DisplayName.Contains(partnerName))).ToList();
         }
+    }
 }
