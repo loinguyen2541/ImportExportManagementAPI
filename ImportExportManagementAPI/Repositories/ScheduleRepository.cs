@@ -52,7 +52,7 @@ namespace ImportExportManagement_API.Repositories
                 queryable = queryable.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
             }
             queryable = queryable.Where(s => !s.UpdatedBy.Contains("system"));
-            return await queryable.ToListAsync();
+            return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
         }
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
         {
