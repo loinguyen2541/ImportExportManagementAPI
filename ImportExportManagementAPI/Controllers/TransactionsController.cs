@@ -16,9 +16,11 @@ namespace ImportExportManagementAPI.Controllers
     public class TransactionsController : ControllerBase
     {
         private readonly TransactionRepository _repo;
+        private readonly GoodsRepository _goodsRepository;
         public TransactionsController()
         {
             _repo = new TransactionRepository();
+            _goodsRepository = new GoodsRepository();
         }
         //get transaction
         [HttpGet]
@@ -60,7 +62,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost("automatic")]
         public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn)
         {
-            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing};
+            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing };
             Transaction check = await _repo.CreateTransaction(trans, "Insert");
             if (check != null)
             {
@@ -92,9 +94,10 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPut("automatic/{cardId}")]
         public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut)
         {
-            bool check = await _repo.UpdateTransactionArduino(cardId, weightOut, "UpdateArduino");
-            if (check)
+            Transaction transaction = await _repo.UpdateTransactionArduino(cardId, weightOut, "UpdateArduino");
+            if (transaction != null)
             {
+                _goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, transaction.WeightIn - transaction.WeightOut);
                 return NoContent();
             }
             else
