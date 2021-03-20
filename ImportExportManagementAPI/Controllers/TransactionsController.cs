@@ -1,8 +1,10 @@
 ﻿using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Models;
+using ImportExportManagementAPI.ModelWeb;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -17,8 +19,11 @@ namespace ImportExportManagementAPI.Controllers
     {
         private readonly TransactionRepository _repo;
         private readonly GoodsRepository _goodsRepository;
-        public TransactionsController()
+        private readonly IHubContext<ChartHub> chartHub;
+
+        public TransactionsController(IHubContext<ChartHub> chartHub)
         {
+            this.chartHub = chartHub;
             _repo = new TransactionRepository();
             _goodsRepository = new GoodsRepository();
         }
@@ -98,6 +103,7 @@ namespace ImportExportManagementAPI.Controllers
             if (transaction != null)
             {
                 _goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, transaction.WeightIn - transaction.WeightOut);
+                await chartHub.Clients.All.SendAsync("TransactionSuccess" , cardId);
                 return NoContent();
             }
             else
