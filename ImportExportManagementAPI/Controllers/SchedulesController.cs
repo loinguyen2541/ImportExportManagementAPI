@@ -21,11 +21,13 @@ namespace ImportExportManagementAPI.Controllers
         private readonly ScheduleRepository _repo;
         private readonly TimeTemplateItemRepository _timeTemplateItemRepo;
         private readonly GoodsRepository _goodsRepository;
-        public SchedulesController()
+        private readonly SystemConfigRepository _systemConfigRepository;
+        public SchedulesController(SystemConfigRepository systemConfigRepository)
         {
             _repo = new ScheduleRepository();
             _timeTemplateItemRepo = new TimeTemplateItemRepository();
             _goodsRepository = new GoodsRepository();
+            _systemConfigRepository = systemConfigRepository;
         }
 
         [HttpGet]
@@ -100,8 +102,12 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Schedule>> PostSchedule(Schedule schedule)
         {
-
-            if (_timeTemplateItemRepo.CheckCapacity(schedule.RegisteredWeight, schedule.TimeTemplateItemId))
+            float storgeCapacity;
+            if (!float.TryParse(_systemConfigRepository.GetStorageCapacity(), out storgeCapacity))
+            {
+                return NoContent();
+            }
+            if (_timeTemplateItemRepo.CheckInventory(schedule.RegisteredWeight, schedule.TimeTemplateItemId, schedule.TransactionType, storgeCapacity))
             {
                 _timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
                 schedule.IsCanceled = false;
@@ -110,8 +116,9 @@ namespace ImportExportManagementAPI.Controllers
                     _repo.Insert(schedule);
                 }
                 await _repo.SaveAsync();
+                return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
             }
-            return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
+            return BadRequest();
         }
 
         [HttpPut("cancel")]

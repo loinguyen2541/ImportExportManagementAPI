@@ -18,6 +18,29 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class TimeTemplateItemRepository : BaseRepository<TimeTemplateItem>
     {
+
+        public bool CheckInventory(float registeredWeight, int id, TransactionType type, float storageCapacity)
+        {
+
+            float inventory = _dbSet.Find(id).Inventory;
+            if (type == TransactionType.Import)
+            {
+                float availableStorageCapacity = storageCapacity - inventory;
+                if (availableStorageCapacity >= registeredWeight)
+                {
+                    return true;
+                }
+            }
+            else if (type == TransactionType.Export)
+            {
+                if (inventory >= registeredWeight)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public bool CheckCapacity(float registeredWeight, int id)
         {
             float capacity = _dbSet.Find(id).Inventory;
