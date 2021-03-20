@@ -86,7 +86,7 @@ namespace ImportExportManagementAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<ChartHub>("/chart");
+                endpoints.MapHub<ChartHub>("/transaction");
             });
 
         }

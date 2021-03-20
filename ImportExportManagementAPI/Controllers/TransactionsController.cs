@@ -1,8 +1,10 @@
 ﻿using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Models;
+using ImportExportManagementAPI.ModelWeb;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -16,9 +18,11 @@ namespace ImportExportManagementAPI.Controllers
     public class TransactionsController : ControllerBase
     {
         private readonly TransactionRepository _repo;
-        public TransactionsController()
+        private readonly IHubContext<ChartHub> _chartHub;
+        public TransactionsController(IHubContext<ChartHub> chartHub)
         {
             _repo = new TransactionRepository();
+            _chartHub = chartHub;
         }
         //get transaction
         [HttpGet]
@@ -94,6 +98,7 @@ namespace ImportExportManagementAPI.Controllers
             bool check = await _repo.UpdateTransactionArduino(cardId, weightOut, "UpdateArduino");
             if (check)
             {
+                await _chartHub.Clients.All.SendAsync("TransactionSuccess" , cardId);
                 return NoContent();
             }
             else
