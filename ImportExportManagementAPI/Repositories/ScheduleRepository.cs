@@ -29,9 +29,25 @@ namespace ImportExportManagement_API.Repositories
         {
             List<Schedule> schedules = new List<Schedule>();
             IQueryable<Schedule> rawData = null;
-            rawData = _dbSet;
+            rawData = _dbSet.Include(t => t.TimeTemplateItem);
             schedules = await DoFilterHistory(searchDate, rawData);
+            foreach (var item in schedules)
+            {
+                //date of schedule
+                item.ScheduleDate = ChangeTime(item.ScheduleDate, item.TimeTemplateItem.ScheduleTime.Hours, item.TimeTemplateItem.ScheduleTime.Minutes, item.TimeTemplateItem.ScheduleTime.Seconds);
+            }
             return schedules;
+        }
+        public DateTime ChangeTime(DateTime dateTime, int hours, int minutes, int seconds)
+        {
+            return new DateTime(
+                dateTime.Year,
+                dateTime.Month,
+                dateTime.Day,
+                hours,
+                minutes,
+                seconds,
+                dateTime.Kind);
         }
 
         private async Task<List<Schedule>> DoFilterHistory(String searchDate, IQueryable<Schedule> queryable)
@@ -45,14 +61,14 @@ namespace ImportExportManagement_API.Repositories
             //    //todate rong
             //    filter.toDate = DateTime.Now;
             //}
-            if(DateTime.TryParse(searchDate, out DateTime date))
+            if (DateTime.TryParse(searchDate, out DateTime date))
             {
                 DateTime start = DateTime.Parse(searchDate);
                 DateTime end = DateTime.Parse(searchDate).AddDays(1);
                 queryable = queryable.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
             }
-            
-            return await queryable.ToListAsync();
+            queryable = queryable.Where(s => !s.UpdatedBy.Contains("system"));
+            return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
         }
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
         {
