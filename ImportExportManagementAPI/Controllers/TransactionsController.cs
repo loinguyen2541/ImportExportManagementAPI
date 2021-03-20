@@ -75,9 +75,10 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPut("manual/{id}")]
         public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
         {
-            bool checkUpdate = await _repo.UpdateTransactionByManual(trans, id);
-            if (checkUpdate)
+            Transaction transactionUpdated = await _repo.UpdateTransactionByManual(trans, id);
+            if (transactionUpdated != null)
             {
+                _goodsRepository.UpdateQuantityOfGood(transactionUpdated.GoodsId, transactionUpdated.WeightIn - transactionUpdated.WeightOut);
                 return NoContent();
             }
             return BadRequest();

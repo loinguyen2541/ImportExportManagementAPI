@@ -450,12 +450,11 @@ namespace ImportExportManagementAPI.Repositories
         //}
 
         //update transaction
-        public async Task<bool> UpdateTransactionByManual(Transaction trans, int id)
+        public async Task<Transaction> UpdateTransactionByManual(Transaction trans, int id)
         {
-            bool checkUpdate = true;
             if (id != trans.TransactionId)
             {
-                return checkUpdate = false;
+                return null;
             }
             Update(trans);
             try
@@ -464,9 +463,9 @@ namespace ImportExportManagementAPI.Repositories
             }
             catch (Exception)
             {
-                checkUpdate = false;
+                return null;
             }
-            return checkUpdate;
+            return trans;
         }
         public async Task<Transaction> UpdateTransactionArduino(String cardId, float weightOut, String method)
         {
