@@ -40,10 +40,6 @@ namespace ImportExportManagementAPI.Repositories
 
         public async void UpdateQuantityOfGood(int id, float weight)
         {
-            if (weight < 0)
-            {
-                weight = weight * -1;
-            }
             Goods goods = _dbSet.Find(id);
             goods.QuantityOfInventory = goods.QuantityOfInventory - weight;
             _dbContext.Entry(goods).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
