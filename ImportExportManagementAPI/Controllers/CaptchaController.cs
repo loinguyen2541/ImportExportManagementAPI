@@ -24,7 +24,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // provide random captcha
         [HttpGet]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public IActionResult GetCaptcha(string mailOfManager)
         {    
             if ( !repo.checkFormatMail(mailOfManager))
@@ -43,7 +43,7 @@ namespace ImportExportManagementAPI.Controllers
             return Unauthorized();
         }
         [HttpGet("check")]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public IActionResult CheckCaptcha([FromQuery] string usercaptcha)
         {
             if (HttpContext.Session.IsAvailable)

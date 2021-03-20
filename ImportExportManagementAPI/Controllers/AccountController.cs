@@ -25,7 +25,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/Partners
         [HttpGet]
-        [Authorize(Roles = "Manager")]
+        [AllowAnonymous]
         public ActionResult<List<Account>> GetAccounts([FromQuery] AccountStatus status)
         {
             return _repo.GetAccounts(status);
@@ -50,7 +50,7 @@ namespace ImportExportManagementAPI.Controllers
         // PUT: api/Partners/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut()]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<IActionResult> PutAccount(string username, Account account)
         {
             if (username != account.Username)
@@ -82,7 +82,7 @@ namespace ImportExportManagementAPI.Controllers
         // POST: api/Partners
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<ActionResult<Account>> PostAccount(Account account)
         {
             _repo.Insert(account);
@@ -93,7 +93,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // DELETE: api/Partners/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeleteAccount(string username)
         {
             var account = await _repo.GetByIDAsync(username);

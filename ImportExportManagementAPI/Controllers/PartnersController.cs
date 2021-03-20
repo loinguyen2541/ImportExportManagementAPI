@@ -25,7 +25,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Partners
         [HttpGet]
-        [Authorize(Roles = "Manager")]
+        [AllowAnonymous]
         public ActionResult<IEnumerable<Partner>> GetPartners()
         {
             return _repo.GetPartners();
@@ -33,7 +33,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Partners
         [HttpGet("/api/partners/search")]
-        [Authorize(Roles = "Manager")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Partner>>> SearchPartnersByFilterAsync([FromQuery] PaginationParam paging, [FromQuery] PartnerFilter partnerFilter)
         {
             Pagination<Partner> partners = await _repo.GetAllAsync(paging, partnerFilter);
@@ -91,7 +91,7 @@ namespace ImportExportManagementAPI
         // POST: api/Partners
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<ActionResult<Partner>> PostPartner(Partner partner)
         {
             _repo.Insert(partner);
@@ -102,7 +102,7 @@ namespace ImportExportManagementAPI
 
         // DELETE: api/Partners/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeletePartner(int id)
         {
             var partner = await _repo.GetByIDAsync(id);
@@ -117,7 +117,7 @@ namespace ImportExportManagementAPI
             return NoContent();
         }
         [HttpGet("status")]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public ActionResult<Object> GetCardStatus()
         {
             return Ok(_repo.GetPartnerStatus());

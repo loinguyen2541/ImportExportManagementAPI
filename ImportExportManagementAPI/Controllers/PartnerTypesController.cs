@@ -92,7 +92,7 @@ namespace ImportExportManagementAPI.Controllers
         // POST: api/PartnerTypes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "Manager")]
+        [AllowAnonymous]
         public async Task<ActionResult<PartnerType>> PostPartnerType(PartnerType partnerType)
         {
             _context.PartnerType.Add(partnerType);
@@ -103,7 +103,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // DELETE: api/PartnerTypes/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Manager")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeletePartnerType(int id)
         {
             var partnerType = await _context.PartnerType.FindAsync(id);

@@ -10,6 +10,7 @@ using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -28,6 +29,7 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<Pagination<Schedule>>> GetScheduleByPartnerId(int partnerId)
         {
             List<Schedule> schedules = await _repo.GetByPartnerId(partnerId);
@@ -36,12 +38,14 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/Schedules/search
         [HttpGet("search")]
+        [AllowAnonymous]
         public async Task<ActionResult<Pagination<Schedule>>> SearchSchedule([FromQuery] PaginationParam paging, [FromQuery] ScheduleFilterParam filter)
         {
             Pagination<Schedule> schedules = await _repo.GetAllAsync(paging, filter);
             return Ok(schedules);
         }
         [HttpGet("schedulehistory")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate)
         {
             List<Schedule> schedules = await _repo.GetHistory(searchDate);
@@ -50,6 +54,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/Schedules/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Schedule>> GetSchedule(int id)
         {
             var schedule = await _repo.GetByIDAsync(id);
@@ -64,6 +69,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // PUT: api/Schedules/5
         [HttpPut("changeschedule/{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> ChangeSchedule(int id, Schedule updateSchedule)
         {
             Schedule beforeSchedule = await _repo.GetByIDAsync(id);
@@ -79,7 +85,7 @@ namespace ImportExportManagementAPI.Controllers
                     await _repo.SaveAsync();
                     return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
                 }
-            
+
                 catch
                 {
                     return BadRequest("Update failed");
@@ -91,6 +97,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // POST: api/Schedules
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<Schedule>> PostSchedule(Schedule schedule)
         {
 
@@ -108,6 +115,7 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpPut("cancel")]
+        [AllowAnonymous]
         public async Task<ActionResult<Schedule>> CancelSchedule(int id, String username)
         {
             Schedule schedule = _repo.GetByID(id);

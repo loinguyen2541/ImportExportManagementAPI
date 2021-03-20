@@ -27,6 +27,7 @@ namespace ImportExportManagementAPI.Controllers
             return Ok(listInventoryDetail);
         }
         [HttpGet("{Inventoryid}")]
+        [AllowAnonymous]
         public async Task<ActionResult<IdentityCard>> GetInventoryDetailByInventory([FromQuery] PaginationParam paging, [FromQuery] InventoryDetailFilter filter)
         {
             Pagination<InventoryDetail> listInventoryDetail = await _repo.GetInventoryDetail(paging, filter);
@@ -40,6 +41,7 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpGet("report")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<InventoryDetail>>> Search([FromQuery] PaginationParam paging, [FromQuery] InventoryFilter filter)
         {
             Pagination<InventoryDetail> listInventory = await _repo.GetReportPartner(paging, filter);
@@ -47,6 +49,7 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpGet("reportIventoryDetail")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<InventoryDetail>>> report([FromQuery] ReportFilter filter)
         {
             List<InventoryDetail> listInventory = await _repo.getDataReportInventoryDetail(filter);

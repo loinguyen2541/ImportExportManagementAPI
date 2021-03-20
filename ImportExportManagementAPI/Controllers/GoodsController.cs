@@ -25,7 +25,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Goods
         [HttpGet]
-        [Authorize(Roles = "Staff,Manager")]
+        [AllowAnonymous]
         public ActionResult<List<Goods>> GetGoods()
         {
             return repo.GetGoods();
@@ -33,7 +33,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Goods/5
         [HttpGet("{id}")]
-        [Authorize(Roles = "Staff,Manager")]
+        [AllowAnonymous]
         public async Task<ActionResult<Goods>> GetGoods(int id)
         {
             var goods = await repo.GetByIDAsync(id);
@@ -49,7 +49,7 @@ namespace ImportExportManagementAPI
         // PUT: api/Goods/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<IActionResult> PutGoods(int id, Goods goods)
         {
             if (id != goods.GoodsId)
@@ -80,7 +80,7 @@ namespace ImportExportManagementAPI
         // POST: api/Goods
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<ActionResult<Goods>> PostGoods(Goods goods)
         {
             repo.Insert(goods);
@@ -91,7 +91,7 @@ namespace ImportExportManagementAPI
 
         // DELETE: api/Goods/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeleteGoods(int id)
         {
             var goods = await repo.GetByIDAsync(id);
@@ -107,12 +107,13 @@ namespace ImportExportManagementAPI
         }
 
         [HttpGet("status")]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public ActionResult<Object> GetGoodsStatus()
         {
             return Ok(repo.GetGoodsStatus());
         }
         [HttpGet("quantity")]
+        [AllowAnonymous]
         public ActionResult<float> GetQuantityGoods()
         {
             return repo.GetGoodCapacity();

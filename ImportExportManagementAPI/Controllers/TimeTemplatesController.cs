@@ -51,7 +51,7 @@ namespace ImportExportManagementAPI.Controllers
         // PUT: api/TimeTemplates/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<IActionResult> PutTimeTemplate(int id, TimeTemplate timeTemplate)
         {
             if (id != timeTemplate.TimeTemplateId)
@@ -83,7 +83,7 @@ namespace ImportExportManagementAPI.Controllers
         // POST: api/TimeTemplates
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<ActionResult<TimeTemplate>> PostTimeTemplate(TimeTemplate timeTemplate)
         {
             _context.TimeTemplate.Add(timeTemplate);
@@ -94,7 +94,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // DELETE: api/TimeTemplates/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Staff")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeleteTimeTemplate(int id)
         {
             var timeTemplate = await _context.TimeTemplate.FindAsync(id);
@@ -110,6 +110,7 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpGet("current")]
+        [AllowAnonymous]
         public async Task<ActionResult<TimeTemplate>> GetCurrentTimeTemplate(int partnerId)
         {
             TimeTemplate timeTemplate = await _timeTemplateRepository.GetCurrentTimeTemplateAsync(partnerId);
