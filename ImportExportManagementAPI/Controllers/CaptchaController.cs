@@ -1,4 +1,5 @@
 ﻿using ImportExportManagementAPI.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // provide random captcha
         [HttpGet]
+        [Authorize(Roles = "Staff")]
         public IActionResult GetCaptcha(string mailOfManager)
         {    
             if ( !repo.checkFormatMail(mailOfManager))
@@ -41,6 +43,7 @@ namespace ImportExportManagementAPI.Controllers
             return Unauthorized();
         }
         [HttpGet("check")]
+        [Authorize(Roles = "Staff")]
         public IActionResult CheckCaptcha([FromQuery] string usercaptcha)
         {
             if (HttpContext.Session.IsAvailable)

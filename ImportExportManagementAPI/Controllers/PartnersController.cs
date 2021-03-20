@@ -9,6 +9,7 @@ using ImportExportManagement_API;
 using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Repositories;
 using ImportExportManagementAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ImportExportManagementAPI
 {
@@ -24,6 +25,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Partners
         [HttpGet]
+        [Authorize(Roles = "Manager")]
         public ActionResult<IEnumerable<Partner>> GetPartners()
         {
             return _repo.GetPartners();
@@ -31,6 +33,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Partners
         [HttpGet("/api/partners/search")]
+        [Authorize(Roles = "Manager")]
         public async Task<ActionResult<IEnumerable<Partner>>> SearchPartnersByFilterAsync([FromQuery] PaginationParam paging, [FromQuery] PartnerFilter partnerFilter)
         {
             Pagination<Partner> partners = await _repo.GetAllAsync(paging, partnerFilter);
@@ -40,6 +43,7 @@ namespace ImportExportManagementAPI
 
         // GET: api/Partners/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Partner>> GetPartner(int id)
         {
             var partner = await _repo.GetByIDAsync(id);
@@ -55,6 +59,7 @@ namespace ImportExportManagementAPI
         // PUT: api/Partners/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> PutPartner(int id, Partner partner)
         {
             if (id != partner.PartnerId)
@@ -86,6 +91,7 @@ namespace ImportExportManagementAPI
         // POST: api/Partners
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Staff")]
         public async Task<ActionResult<Partner>> PostPartner(Partner partner)
         {
             _repo.Insert(partner);
@@ -96,6 +102,7 @@ namespace ImportExportManagementAPI
 
         // DELETE: api/Partners/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> DeletePartner(int id)
         {
             var partner = await _repo.GetByIDAsync(id);
@@ -110,12 +117,14 @@ namespace ImportExportManagementAPI
             return NoContent();
         }
         [HttpGet("status")]
+        [Authorize(Roles = "Staff")]
         public ActionResult<Object> GetCardStatus()
         {
             return Ok(_repo.GetPartnerStatus());
         }
 
         [HttpGet("{id}/cards")]
+        [AllowAnonymous]
         public async Task<ActionResult<Partner>> GetCards([FromQuery] PaginationParam paging, int id)
         {
             Partner partner = await _repo.GetCards(id);
