@@ -37,5 +37,13 @@ namespace ImportExportManagementAPI.Repositories
             return _dbSet.SingleOrDefault().QuantityOfInventory;
         }
 
+
+        public async void UpdateQuantityOfGood(int id, float weight)
+        {
+            Goods goods = _dbSet.Find(id);
+            goods.QuantityOfInventory = goods.QuantityOfInventory - weight;
+            _dbContext.Entry(goods).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            await SaveAsync();
+        }
     }
 }
