@@ -80,10 +80,7 @@ namespace ImportExportManagementAPI.Controllers
             {
                 try
                 {
-                    if (!_repo.TryToUpdate(schedule))
-                    {
-                        _repo.Insert(schedule);
-                    }
+                    _repo.Insert(schedule);
                     await _repo.SaveAsync();
                     return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
                 }

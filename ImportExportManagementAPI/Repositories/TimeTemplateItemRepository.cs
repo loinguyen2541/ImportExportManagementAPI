@@ -145,6 +145,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 schedule.IsCanceled = true;
                 schedule.UpdatedBy = username;
+                schedule.ScheduleStatus = ScheduleStatus.Cancel;
                 try
                 {
                     await _dbContext.SaveChangesAsync();
@@ -173,11 +174,8 @@ namespace ImportExportManagementAPI.Repositories
         {
             foreach (var item in timeTemplateItems)
             {
-                if (item.ScheduleTime >= targetTime)
-                {
-                    //ko xuất kho, tồn kho tăng lên
-                    item.Inventory = item.Inventory + registeredWeight;
-                }
+                //ko xuất kho, tồn kho tăng lên
+                item.Inventory = item.Inventory + registeredWeight;
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
 
