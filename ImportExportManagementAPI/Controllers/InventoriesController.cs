@@ -67,9 +67,9 @@ namespace ImportExportManagementAPI.Controllers
 
         //lấy tổng khối lượng nhập/xuất theo ngày
         [HttpGet("reportTransaction")]
-        public ActionResult<Inventory> ReportTransaction(DateTime currentDate, string partnerName)
+        public ActionResult<Inventory> ReportTransaction(DateTime currentDate, int partnerID)
         {
-            List<Inventory> total = _repo.ReportTransaction(currentDate, partnerName);
+          Inventory total = _repo.ReportTransaction(currentDate, partnerID);
             return Ok(total);
         }
     }
