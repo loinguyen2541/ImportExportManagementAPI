@@ -450,12 +450,11 @@ namespace ImportExportManagementAPI.Repositories
         //}
 
         //update transaction
-        public async Task<bool> UpdateTransactionByManual(Transaction trans, int id)
+        public async Task<Transaction> UpdateTransactionByManual(Transaction trans, int id)
         {
-            bool checkUpdate = true;
             if (id != trans.TransactionId)
             {
-                return checkUpdate = false;
+                return null;
             }
             Update(trans);
             try
@@ -464,13 +463,12 @@ namespace ImportExportManagementAPI.Repositories
             }
             catch (Exception)
             {
-                checkUpdate = false;
+                return null;
             }
-            return checkUpdate;
+            return trans;
         }
-        public async Task<bool> UpdateTransactionArduino(String cardId, float weightOut, String method)
+        public async Task<Transaction> UpdateTransactionArduino(String cardId, float weightOut, String method)
         {
-            bool checkUpdate = true;
             Partner partner;
             if (cardId != null && cardId.Length > 0) //insert by arduino
             {
@@ -480,18 +478,18 @@ namespace ImportExportManagementAPI.Repositories
                 if (checkCard.Result == null)
                 {
                     //card not available
-                    return checkUpdate = false;
+                    return null;
                 }
                 partner = cardRepo.GetPartnerCard(checkCard.Result.PartnerId).Result;
             }
             else
             {
-                return checkUpdate = false;
+                return null;
             }
             //get partner failed
             if (partner == null)
             {
-                return checkUpdate = false;
+                return null;
             }
 
 
@@ -499,13 +497,13 @@ namespace ImportExportManagementAPI.Repositories
 
             if (checkProcessingCard)
             {
-                return checkUpdate = false;
+                return null;
             }
             else
             {
-                if (weightOut <= 0) return checkUpdate = false;
+                if (weightOut <= 0) return null;
                 var trans = FindTransToWeightOut(cardId);
-                if (trans.WeightIn <= 0) return checkUpdate = false;
+                if (trans.WeightIn <= 0) return null;
 
                 //set type
                 SetTransactionType(trans, weightOut);
@@ -522,21 +520,20 @@ namespace ImportExportManagementAPI.Repositories
                     await SaveAsync();
                     //update transaction thành công => tạo inventory detail
                     await UpdateInventoryDetail(trans);
+                    return trans;
                 }
                 catch (Exception)
                 {
                     if (GetByID(trans.TransactionId) == null)
                     {
-                        return checkUpdate = false;
+                        return null;
                     }
                     else
                     {
-                        return checkUpdate = false;
+                        return null;
                     }
                 }
             }
-
-            return checkUpdate;
         }
 
         //tao inventory detail

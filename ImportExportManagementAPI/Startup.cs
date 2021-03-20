@@ -1,3 +1,4 @@
+using ImportExportManagementAPI.ModelWeb;
 using ImportExportManagementAPI.Helper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ImportExportManagementAPI.Repositories;
@@ -110,7 +111,7 @@ namespace ImportExportManagementAPI
                                         .AllowCredentials();
                 });
             });
-
+            services.AddSignalR();
             services.AddSingleton<SystemConfigRepository>();
 
         }
@@ -137,6 +138,7 @@ namespace ImportExportManagementAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChartHub>("/transaction");
             });
            
         }

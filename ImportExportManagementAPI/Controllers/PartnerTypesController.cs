@@ -29,11 +29,13 @@ namespace ImportExportManagementAPI.Controllers
         {
             return await _context.PartnerType.Include(p => p.Partners).ToListAsync();
         }
+
+
         [HttpGet("partnerTypeName")]
         [AllowAnonymous]
         public async Task<ActionResult<List<String>>> GetPartnerTypeName()
         {
-            IEnumerable<PartnerType> listPartnerType= await _context.PartnerType.Include(p => p.Partners).ToListAsync();
+            IEnumerable<PartnerType> listPartnerType = await _context.PartnerType.Include(p => p.Partners).ToListAsync();
             List<String> listPartnerTypeName = new List<string>();
             foreach (var x in listPartnerType)
             {
