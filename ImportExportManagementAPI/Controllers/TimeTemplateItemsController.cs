@@ -1,5 +1,6 @@
 ﻿using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,7 +20,8 @@ namespace ImportExportManagementAPI.Controllers
             _timeTemplateItemRepository = new TimeTemplateItemRepository();
         }
         [HttpGet("current")]
-        public async Task<ActionResult<List<TimeTemplateItem>>> GetCurrent()
+        [AllowAnonymous]
+        public async Task<ActionResult<List<TimeTemplateItem>>> getCurrent()
         {
             List<TimeTemplateItem> timeTemplateItems = await _timeTemplateItemRepository.GetAppliedItem();
             return Ok(timeTemplateItems);

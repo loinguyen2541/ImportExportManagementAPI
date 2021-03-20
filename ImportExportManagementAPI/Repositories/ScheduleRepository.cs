@@ -45,14 +45,14 @@ namespace ImportExportManagement_API.Repositories
             //    //todate rong
             //    filter.toDate = DateTime.Now;
             //}
-            if(DateTime.TryParse(searchDate, out DateTime date))
+            if (DateTime.TryParse(searchDate, out DateTime date))
             {
                 DateTime start = DateTime.Parse(searchDate);
                 DateTime end = DateTime.Parse(searchDate).AddDays(1);
                 queryable = queryable.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
             }
-            
-            return await queryable.ToListAsync();
+            queryable = queryable.Where(s => !s.UpdatedBy.Contains("system"));
+            return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
         }
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
         {

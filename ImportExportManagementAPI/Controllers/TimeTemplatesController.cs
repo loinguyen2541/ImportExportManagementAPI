@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ImportExportManagementAPI.Models;
 using ImportExportManagement_API;
 using ImportExportManagementAPI.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -26,6 +27,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/TimeTemplates
         [HttpGet]
+        [Authorize(Roles = "Manager")]
         public async Task<ActionResult<IEnumerable<TimeTemplate>>> GetTimeTemplate()
         {
             return await _context.TimeTemplate.ToListAsync();
@@ -33,6 +35,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/TimeTemplates/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<TimeTemplate>> GetTimeTemplate(int id)
         {
             var timeTemplate = await _context.TimeTemplate.FindAsync(id);
@@ -48,6 +51,7 @@ namespace ImportExportManagementAPI.Controllers
         // PUT: api/TimeTemplates/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> PutTimeTemplate(int id, TimeTemplate timeTemplate)
         {
             if (id != timeTemplate.TimeTemplateId)
@@ -79,6 +83,7 @@ namespace ImportExportManagementAPI.Controllers
         // POST: api/TimeTemplates
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<TimeTemplate>> PostTimeTemplate(TimeTemplate timeTemplate)
         {
             _context.TimeTemplate.Add(timeTemplate);
@@ -89,6 +94,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // DELETE: api/TimeTemplates/5
         [HttpDelete("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeleteTimeTemplate(int id)
         {
             var timeTemplate = await _context.TimeTemplate.FindAsync(id);
@@ -104,6 +110,7 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpGet("current")]
+        [AllowAnonymous]
         public async Task<ActionResult<TimeTemplate>> GetCurrentTimeTemplate(int partnerId)
         {
             TimeTemplate timeTemplate = await _timeTemplateRepository.GetCurrentTimeTemplateAsync(partnerId);

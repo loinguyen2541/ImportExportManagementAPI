@@ -9,6 +9,7 @@ using ImportExportManagement_API;
 using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Repositories;
 using ImportExportManagementAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -25,6 +26,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/IdentityCards
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<IdentityCard>>> GetIdentityCard()
         {
             return await _repo.GetAllAsync();
@@ -33,6 +35,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/Partners
         [HttpGet("searchCard")]
+        [AllowAnonymous]
         public async Task<ActionResult<Pagination<IdentityCard>>> SearchCardByFilterAsync([FromQuery] IdentityCardFilter partnerFilter, [FromQuery] PaginationParam paging)
         {
             Pagination<IdentityCard> identityCards = await _repo.GetAllAsync(paging, partnerFilter);
@@ -41,6 +44,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/IdentityCards/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<IdentityCard>> GetIdentityCard(String id)
         {
             var identityCard = await _repo.GetByIDAsync(id);
@@ -56,6 +60,7 @@ namespace ImportExportManagementAPI.Controllers
         // PUT: api/IdentityCards/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> PutIdentityCard(String id, IdentityCard identityCard)
         {
             if (!id.Equals(identityCard.IdentityCardId))
@@ -87,6 +92,7 @@ namespace ImportExportManagementAPI.Controllers
         // POST: api/IdentityCards
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<IdentityCard>> PostIdentityCard(IdentityCard identityCard)
         {
             _repo.Insert(identityCard);
@@ -97,6 +103,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // DELETE: api/IdentityCards/5
         [HttpDelete("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeleteIdentityCard(String id)
         {
             var identityCard = await _repo.GetByIDAsync(id);
@@ -112,6 +119,7 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpGet("status")]
+        [AllowAnonymous]
         public ActionResult<Object> GetCardStatus()
         {
             return Ok(_repo.GetCardsStatus());

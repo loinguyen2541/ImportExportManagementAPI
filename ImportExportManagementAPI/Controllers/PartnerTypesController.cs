@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ImportExportManagementAPI.Models;
 using ImportExportManagement_API;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -23,11 +24,13 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/PartnerTypes
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<PartnerType>>> GetPartnerType()
         {
             return await _context.PartnerType.Include(p => p.Partners).ToListAsync();
         }
         [HttpGet("partnerTypeName")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<String>>> GetPartnerTypeName()
         {
             IEnumerable<PartnerType> listPartnerType= await _context.PartnerType.Include(p => p.Partners).ToListAsync();
@@ -41,6 +44,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/PartnerTypes/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<PartnerType>> GetPartnerType(int id)
         {
             var partnerType = await _context.PartnerType.FindAsync(id);
@@ -56,6 +60,7 @@ namespace ImportExportManagementAPI.Controllers
         // PUT: api/PartnerTypes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> PutPartnerType(int id, PartnerType partnerType)
         {
             if (id != partnerType.PartnerTypeId)
@@ -87,6 +92,7 @@ namespace ImportExportManagementAPI.Controllers
         // POST: api/PartnerTypes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<PartnerType>> PostPartnerType(PartnerType partnerType)
         {
             _context.PartnerType.Add(partnerType);
@@ -97,6 +103,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // DELETE: api/PartnerTypes/5
         [HttpDelete("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeletePartnerType(int id)
         {
             var partnerType = await _context.PartnerType.FindAsync(id);
