@@ -64,35 +64,29 @@ namespace ImportExportManagementAPI.Controllers
 
         // PUT: api/Schedules/5
         [HttpPut("changeschedule/{id}")]
-        public async Task<IActionResult> ChangeSchedule(int id, int time)
+        public async Task<IActionResult> ChangeSchedule(int id, Schedule updateSchedule)
         {
-            Schedule scheduleBefore = _repo.GetByID(id);
-            Schedule scheduleUpdate = _repo.GetByID(id);
-            if (scheduleBefore != null)
+            Schedule beforeSchedule = await _repo.GetByIDAsync(id);
+            Schedule schedule = await _timeTemplateItemRepo.ChangeSchedule(updateSchedule, beforeSchedule);
+            if (schedule != null)
             {
-                if (scheduleBefore.IsCanceled == true)
+                try
                 {
-                    return BadRequest();
-                }
-                else
-                {
-                    //change inventory and timeitem
-                    bool checkUpdate = await _timeTemplateItemRepo.ChangeSchedule(scheduleUpdate, scheduleBefore);
-                    if (checkUpdate)
+                    if (!_repo.TryToUpdate(schedule))
                     {
-                        scheduleUpdate.TimeTemplateItemId = 11;
-                        try
-                        {
-                            await _repo.SaveAsync();
-                        }
-                        catch (DbUpdateConcurrencyException)
-                        {
-                            BadRequest();
-                        }
+                        _repo.Insert(schedule);
                     }
+                    await _repo.SaveAsync();
+                    return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
                 }
+            
+                catch
+                {
+                    return BadRequest("Update failed");
+                }
+
             }
-            return NoContent();
+            return BadRequest("Update failed");
         }
 
         // POST: api/Schedules
@@ -121,22 +115,8 @@ namespace ImportExportManagementAPI.Controllers
             {
                 if (schedule.IsCanceled == false)
                 {
-                    bool checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule);
-                    if (checkCancel)
-                    {
-                        schedule.IsCanceled = true;
-                        schedule.UpdatedBy = username;
-                        _repo.Update(schedule);
-                    }
-                    try
-                    {
-                        await _repo.SaveAsync();
-                    }
-                    catch
-                    {
-                        return BadRequest();
-                    }
-
+                    bool checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule, username);
+                    await _repo.SaveAsync();
                     return NoContent();
                 }
             }

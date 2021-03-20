@@ -1,5 +1,6 @@
 ﻿using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
+using ImportExportManagementAPI.Controllers;
 using ImportExportManagementAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -94,7 +95,7 @@ namespace ImportExportManagementAPI.Repositories
             return await _dbSet.Include(i => i.Schedules.Where(s => s.IsCanceled == false)).Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).ToListAsync();
         }
 
-        public async Task<bool> CancelSchedule(Schedule schedule)
+        public async Task<bool> CancelSchedule(Schedule schedule, String username)
         {
             bool checkCancel = false;
             TimeTemplateItem timeTemplateItem = await _dbSet.FindAsync(schedule.TimeTemplateItemId);
@@ -119,6 +120,8 @@ namespace ImportExportManagementAPI.Repositories
                 {
                     CancelExport(timeTemplateItems, timeTemplateItem.ScheduleTime, schedule.RegisteredWeight);
                 }
+                schedule.IsCanceled = true;
+                schedule.UpdatedBy = username;
                 try
                 {
                     await _dbContext.SaveChangesAsync();
@@ -157,83 +160,24 @@ namespace ImportExportManagementAPI.Repositories
 
         }
 
-        public async Task<bool> ChangeSchedule(Schedule updateSchedule, Schedule existedSchedule)
+        public async Task<Schedule> ChangeSchedule(Schedule updateSchedule, Schedule existedSchedule)
         {
-            bool checkUpdate = false;
-            TimeTemplateItem timeTemplateItemUpdate = await _dbSet.FindAsync(updateSchedule.TimeTemplateItemId);
-            TimeTemplateItem timeTemplateItemCurrent = await _dbSet.FindAsync(existedSchedule.TimeTemplateItemId);
-            List<TimeTemplateItem> timeTemplateItems = new List<TimeTemplateItem>();
-            if (timeTemplateItemUpdate != null && timeTemplateItemCurrent != null)
+            bool cancelSchedule = await CancelSchedule(existedSchedule, "system");
+            if (cancelSchedule)
             {
-                if (CheckValidTime(timeTemplateItemUpdate))
+                if(CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId))
                 {
-                    timeTemplateItems = await _dbSet.OrderBy(p => p.ScheduleTime).ToListAsync();
+                    UpdateCurrent(updateSchedule.TransactionType, updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId);
+                    updateSchedule.IsCanceled = false;
+                    updateSchedule.RegisteredWeight = updateSchedule.RegisteredWeight;
+                    return updateSchedule;
+                }
+                else
+                {
+                    return null;
                 }
             }
-            if (timeTemplateItems != null && timeTemplateItems.Count > 0)
-            {
-                //check tgian update lon hon hay be hon tgian da book
-                int check = (int)timeTemplateItemCurrent.ScheduleTime.TotalMinutes - (int)timeTemplateItemUpdate.ScheduleTime.TotalMinutes;
-                if (updateSchedule.TransactionType.Equals(TransactionType.Import))
-                {
-                    UpdateImport(timeTemplateItems, timeTemplateItemUpdate.ScheduleTime, timeTemplateItemCurrent.ScheduleTime, updateSchedule.RegisteredWeight, check);
-                }
-                else if (updateSchedule.TransactionType.Equals(TransactionType.Export))
-                {
-                    bool checkInventory = CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId);
-                    if (checkInventory)
-                    {
-                        UpdateExport(timeTemplateItems, updateSchedule.RegisteredWeight);
-                    }
-                    else
-                    {
-                        return checkUpdate = true;
-                    }
-                }
-                try
-                {
-                    await _dbContext.SaveChangesAsync();
-                    checkUpdate = true;
-                }
-                catch
-                {
-                    checkUpdate = false;
-                }
-            }
-            return checkUpdate;
-        }
-        public void UpdateExport(List<TimeTemplateItem> timeTemplateItems, float registeredWeight)
-        {
-            foreach (var item in timeTemplateItems)
-            {
-                item.Inventory = item.Inventory - registeredWeight;
-                _dbContext.Entry(item).State = EntityState.Modified;
-            }
-
-        }
-        public void UpdateImport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, TimeSpan beforeSchedule, float registeredWeight, int check)
-        {
-            foreach (var item in timeTemplateItems)
-            {
-                if (check < 0)
-                {
-                    //tgian đổi trễ hơn
-                    if (item.ScheduleTime >= beforeSchedule && item.ScheduleTime < targetTime)
-                    {
-                        item.Inventory = item.Inventory - registeredWeight;
-                    }
-                }
-                else if (check > 0)
-                {
-                    //tgian đổi sớm hơn
-                    if (item.ScheduleTime >= targetTime && item.ScheduleTime < beforeSchedule)
-                    {
-                        item.Inventory = item.Inventory + registeredWeight;
-                    }
-                }
-                _dbContext.Entry(item).State = EntityState.Modified;
-            }
-
+            return null;
         }
 
         public Boolean CheckValidTime(TimeTemplateItem scheduleTime)
@@ -269,5 +213,44 @@ namespace ImportExportManagementAPI.Repositories
             }
             return listTemp;
         }
+
+        //public async Task<string> UpdateScheduleSameTypeAsync(Schedule beforeSchedule, Schedule afterSchedule)
+        //{
+        //    String message = "";
+        //    TimeTemplateItem timeTemplateItemBefore = await _dbSet.FindAsync(beforeSchedule.TimeTemplateItemId);
+        //    TimeTemplateItem timeTemplateItemAfter = await _dbSet.FindAsync(afterSchedule.TimeTemplateItemId);
+        //    List<TimeTemplateItem> timeTemplateItems = new List<TimeTemplateItem>();
+        //    float targetWeight = 0;
+        //    if (beforeSchedule.TimeTemplateItemId == afterSchedule.TimeTemplateItemId)
+        //    {
+        //        //cung gio - xuat kho - giam het capacity
+        //        if (afterSchedule.TransactionType.Equals(TransactionType.Export))
+        //        {
+        //            timeTemplateItems = await _dbSet.OrderBy(p => p.ScheduleTime).ToListAsync();
+        //            targetWeight = beforeSchedule.RegisteredWeight - afterSchedule.RegisteredWeight;
+        //            UpdateExport(timeTemplateItems, targetWeight,"sametype");
+        //        }
+        //        //cung gio - nhap kho - tang capacity
+        //        if (afterSchedule.TransactionType.Equals(TransactionType.Import))
+        //        {
+        //            timeTemplateItems = await _dbSet.Where(i => i.TimeTemplateId == timeTemplateItemAfter.TimeTemplateId).OrderBy(p => p.ScheduleTime).ToListAsync();
+        //            targetWeight = beforeSchedule.RegisteredWeight + afterSchedule.RegisteredWeight;
+
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //khac gio
+
+        //    }
+        //    try
+        //    {
+        //        await _dbContext.SaveChangesAsync();
+        //    }
+        //    catch
+        //    {
+        //    }
+        //    return message;
+        //}
     }
 }
