@@ -202,7 +202,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<TopPartner> listTopPartner = new Pagination<TopPartner>();
             IQueryable<Transaction> rawData = null;
-            rawData = _dbSet.Include(t => t.Partner);
+            rawData = _dbSet.Include(t => t.Partner).Where(p => p.TransactionStatus == TransactionStatus.Success);
             listTopPartner = DoFilterTop10(paging, filter, rawData);
             return listTopPartner;
         }
