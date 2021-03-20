@@ -1,3 +1,4 @@
+using ImportExportManagementAPI.ModelWeb;
 using ImportExportManagementAPI.Repositories;
 using ImportExportManagementAPI.Workers;
 using Microsoft.AspNetCore.Builder;
@@ -59,7 +60,7 @@ namespace ImportExportManagementAPI
                                         .AllowCredentials();
                 });
             });
-
+            services.AddSignalR();
             services.AddSingleton<SystemConfigRepository>();
 
         }
@@ -85,6 +86,7 @@ namespace ImportExportManagementAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChartHub>("/chart");
             });
 
         }
