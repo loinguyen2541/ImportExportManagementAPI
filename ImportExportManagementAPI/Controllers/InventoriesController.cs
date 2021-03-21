@@ -80,6 +80,13 @@ namespace ImportExportManagementAPI.Controllers
             List<Inventory> total = _repo.ReportPartner(DateFrom, DateTo, partnerName);
             return Ok(total);
         }
+        [HttpGet("reportInventory")]
+        [AllowAnonymous]
+        public ActionResult<Inventory> reportInventory(DateTime DateFrom, DateTime DateTo)
+        {
+            List<Inventory> total = _repo.ReoportInventory(DateFrom, DateTo);
+            return Ok(total);
+        }
 
 
     }

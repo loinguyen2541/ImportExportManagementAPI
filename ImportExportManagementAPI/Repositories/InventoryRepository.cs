@@ -161,5 +161,13 @@ namespace ImportExportManagementAPI.Repositories
         {
             return _dbSet.Where(p => p.RecordedDate.Date >= DateFrom.Date && p.RecordedDate.Date <= DateTo.Date).Include(p => p.InventoryDetails.Where(i => i.Partner.DisplayName.Contains(partnerName))).ToList();
         }
+
+        public List<Inventory> ReoportInventory(DateTime DateFrom, DateTime DateTo)
+        {
+            return _dbSet.Where(p => p.RecordedDate.Date >= DateFrom.Date && p.RecordedDate.Date <= DateTo.Date).Include(p => p.InventoryDetails).ToList();
+        }
+
+
+
     }
 }
