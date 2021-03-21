@@ -109,6 +109,10 @@ namespace ImportExportManagementAPI
                                         .AllowAnyHeader()
                                         .AllowAnyMethod()
                                         .AllowCredentials();
+                    builder.WithOrigins("https://ican.azurewebsites.net")
+                                        .AllowAnyHeader()
+                                        .AllowAnyMethod()
+                                        .AllowCredentials();
                 });
             });
             services.AddSignalR();
@@ -140,7 +144,7 @@ namespace ImportExportManagementAPI
                 endpoints.MapControllers();
                 endpoints.MapHub<ChartHub>("/transaction");
             });
-           
+
         }
     }
 }
