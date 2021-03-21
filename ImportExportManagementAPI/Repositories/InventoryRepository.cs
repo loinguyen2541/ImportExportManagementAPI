@@ -155,7 +155,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
 
             }
-            return listDetail;
+            return listDetail.OrderBy(o => o.date).ToList();
         }
         public List<Inventory> ReportPartner(DateTime DateFrom, DateTime DateTo, string partnerName)
         {
