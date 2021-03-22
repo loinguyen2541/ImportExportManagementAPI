@@ -27,6 +27,7 @@ namespace ImportExportManagementAPI.Repositories
 
             TimeTemplate timeTemplateApplied = await _dbSet.Include(t => t.TimeTemplateItems)
                 .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Applied).SingleOrDefaultAsync();
+            await _dbContext.Entry(timeTemplateApplied).ReloadAsync();
 
             TimeTemplate timeTemplatePending = await _dbSet.Include(t => t.TimeTemplateItems)
                 .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Pending).SingleOrDefaultAsync();
@@ -94,7 +95,7 @@ namespace ImportExportManagementAPI.Repositories
 
         public TimeTemplate GetCurrentTimeTemplate()
         {
-            TimeTemplate timeTemplate = _dbSet.
+            TimeTemplate timeTemplate = _dbSet.AsNoTracking().
                 Where(t => t.TimeTemplateStatus == TimeTemplateStatus.Applied).SingleOrDefault();
             return timeTemplate;
         }
