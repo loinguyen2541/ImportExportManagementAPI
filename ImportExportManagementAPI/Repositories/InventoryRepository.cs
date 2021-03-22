@@ -121,7 +121,7 @@ namespace ImportExportManagementAPI.Repositories
             }
             return weightTotal;
         }
-        public List<TotalInventoryDetailedByDate> TotalWeightInventoryFloatByMonth(DateTime dateFrom, DateTime dateTo)
+        public Object TotalWeightInventoryFloatByMonth(DateTime dateFrom, DateTime dateTo)
         {
             List<TotalInventoryDetailedByDate> listDetail = new List<TotalInventoryDetailedByDate>();
             //check ngày này có inventory chưa
@@ -155,7 +155,11 @@ namespace ImportExportManagementAPI.Repositories
                 }
 
             }
-            return listDetail.OrderBy(o => o.date).ToList();
+            return new
+            {
+                listAsc = listDetail.OrderBy(o => o.date).ToList(),
+                listDes = listDetail.OrderByDescending(o => o.date).ToList(),
+            };
         }
         public List<Inventory> ReportPartner(DateTime DateFrom, DateTime DateTo, string partnerName)
         {
