@@ -1,3 +1,4 @@
+using ImportExportManagementAPI.ModelWeb;
 using ImportExportManagementAPI.Helper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ImportExportManagementAPI.Repositories;
@@ -104,13 +105,14 @@ namespace ImportExportManagementAPI
                 options.AddPolicy("AllowOrigin",
                 builder =>
                 {
-                    builder.WithOrigins("http://localhost:4200")
+                    builder.WithOrigins("http://localhost:4200", 
+                                        "https://ican.azurewebsites.net")
                                         .AllowAnyHeader()
                                         .AllowAnyMethod()
                                         .AllowCredentials();
                 });
             });
-
+            services.AddSignalR();
             services.AddSingleton<SystemConfigRepository>();
 
         }
@@ -137,8 +139,9 @@ namespace ImportExportManagementAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChartHub>("/transaction");
             });
-           
+
         }
     }
 }

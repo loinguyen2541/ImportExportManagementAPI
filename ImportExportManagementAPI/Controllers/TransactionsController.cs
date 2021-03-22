@@ -1,9 +1,11 @@
 ﻿using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Models;
+using ImportExportManagementAPI.ModelWeb;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -17,9 +19,14 @@ namespace ImportExportManagementAPI.Controllers
     public class TransactionsController : ControllerBase
     {
         private readonly TransactionRepository _repo;
-        public TransactionsController()
+        private readonly GoodsRepository _goodsRepository;
+        private readonly IHubContext<ChartHub> chartHub;
+
+        public TransactionsController(IHubContext<ChartHub> chartHub)
         {
+            this.chartHub = chartHub;
             _repo = new TransactionRepository();
+            _goodsRepository = new GoodsRepository();
         }
         //get transaction
         [HttpGet]
@@ -65,7 +72,7 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn)
         {
-            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing};
+            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing };
             Transaction check = await _repo.CreateTransaction(trans, "Insert");
             if (check != null)
             {
@@ -80,9 +87,10 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
         {
-            bool checkUpdate = await _repo.UpdateTransactionByManual(trans, id);
-            if (checkUpdate)
+            Transaction transactionUpdated = await _repo.UpdateTransactionByManual(trans, id);
+            if (transactionUpdated != null)
             {
+                _goodsRepository.UpdateQuantityOfGood(transactionUpdated.GoodsId, transactionUpdated.WeightIn - transactionUpdated.WeightOut);
                 return NoContent();
             }
             return BadRequest();
@@ -99,9 +107,11 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut)
         {
-            bool check = await _repo.UpdateTransactionArduino(cardId, weightOut, "UpdateArduino");
-            if (check)
+            Transaction transaction = await _repo.UpdateTransactionArduino(cardId, weightOut, "UpdateArduino");
+            if (transaction != null)
             {
+                _goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, transaction.WeightIn - transaction.WeightOut);
+                await chartHub.Clients.All.SendAsync("TransactionSuccess" , cardId);
                 return NoContent();
             }
             else

@@ -155,7 +155,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
 
             }
-            return listDetail;
+            return listDetail.OrderBy(o => o.date).ToList();
         }
         public List<Inventory> ReportPartner(DateTime DateFrom, DateTime DateTo, string partnerName)
         {
@@ -168,5 +168,12 @@ namespace ImportExportManagementAPI.Repositories
 
             return _dbSet.Where(p => p.RecordedDate == currentDate).Include(p => p.InventoryDetails.Where(i => i.Partner.PartnerId == partnerID)).ThenInclude(p => p.Goods).ThenInclude(p => p.Transactions.Where(p => p.TimeIn.Date == currentDate.Date && p.TransactionStatus == TransactionStatus.Success && p.PartnerId == partnerID)).SingleOrDefault();
         }
+        public List<Inventory> ReoportInventory(DateTime DateFrom, DateTime DateTo)
+        {
+            return _dbSet.Where(p => p.RecordedDate.Date >= DateFrom.Date && p.RecordedDate.Date <= DateTo.Date).Include(p => p.InventoryDetails).ToList();
+        }
+
+
+
     }
 }

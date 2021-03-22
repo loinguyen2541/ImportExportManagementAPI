@@ -12,6 +12,7 @@ namespace ImportExportManagement_API.Models
         public int ScheduleId { get; set; }
         public DateTime ScheduleDate { get; set; }
         public float RegisteredWeight { get; set; }
+        public float? RealWeight { get; set; }
         public DateTime CreatedDate { get; set; }
         public TransactionType TransactionType { get; set; }
         public ScheduleStatus ScheduleStatus { get; set; }
