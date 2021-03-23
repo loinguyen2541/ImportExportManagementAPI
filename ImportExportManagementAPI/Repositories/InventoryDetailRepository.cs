@@ -65,14 +65,14 @@ namespace ImportExportManagementAPI.Repositories
             return pagination;
         }
 
-        public async Task<bool> UpdateInventoryDetail(DateTime recordDate, Transaction trans, float goodsQuantity)
+        public async Task<bool> UpdateInventoryDetail(DateTime recordDate, Transaction trans)
         {
             InventoryRepository inventRepo = new InventoryRepository();
             var date = recordDate.Date;
             int transType = (int)trans.TransactionType;
 
             //check da co phieu nhao kho vao ngay chua va detail cua type nay da co chua
-            Inventory checkInventoryExisted = await inventRepo.CheckExistDateRecord(date, goodsQuantity);
+            Inventory checkInventoryExisted = await inventRepo.CheckExistDateRecord(date);
             Task<InventoryDetail> checkTypeExisted = CheckExistedDetailType(trans.PartnerId, transType, checkInventoryExisted.InventoryId);
             //neu inven da co && type chua co => tao moi
             if (checkTypeExisted.Result == null)
