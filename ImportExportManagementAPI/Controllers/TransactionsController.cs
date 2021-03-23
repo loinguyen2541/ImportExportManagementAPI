@@ -157,10 +157,10 @@ namespace ImportExportManagementAPI.Controllers
         {
             return Ok(Enum.GetValues(typeof(TransactionStatus)).Cast<TransactionStatus>().ToList());
         }
-        [HttpGet("top")]
+      /*  [HttpGet("top")]
         public ActionResult<Object> GetTopPartner([FromQuery] PaginationParam paging, [FromQuery] TransactionFilter filter)
         {
             return Ok(_repo.GetTopPartner(paging, filter));
-        }
+        }*/
     }
 }
