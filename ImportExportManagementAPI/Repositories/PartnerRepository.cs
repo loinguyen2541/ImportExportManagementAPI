@@ -21,6 +21,27 @@ namespace ImportExportManagementAPI.Repositories
             return partners;
         }
 
+        public async ValueTask<List<Partner>> GetPartnerReport(String fromDate, String toDate, int caseSearch)
+        {
+            List<Partner> partners = new List<Partner>();
+            IQueryable<Partner> rawData = _dbSet.Include(p => p.Schedules);
+            List<Partner> temp = new List<Partner>();
+            temp = await rawData.ToListAsync();
+            switch (caseSearch)
+            {
+                case 1:
+                    //đặt lịch mà giao => check by realweight
+                    rawData = _dbSet.Include(p => p.Schedules.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.RealWeight != null));
+                    break;
+                case 2:
+                    //đặt lịch mà không giao => bị hủy bởi hệ thống => check by iscancel và update by hệ thống
+                    rawData = _dbSet.Include(p => p.Schedules.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("System")));
+                    break;
+            }
+            partners = await rawData.ToListAsync();
+            return partners;
+        }
+
         private async Task<Pagination<Partner>> DoFilter(PaginationParam paging, PartnerFilter filter, IQueryable<Partner> queryable)
         {
             if (filter.Name != null && filter.Name.Length > 0)

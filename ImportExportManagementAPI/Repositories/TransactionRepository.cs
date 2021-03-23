@@ -403,53 +403,6 @@ namespace ImportExportManagementAPI.Repositories
                 trans.TransactionType = TransactionType.Export;
             }
         }
-
-        //public async Task<bool> CreateTransactionAsync(Transaction trans, String method)
-        //{
-        //    bool checkCreate = false;
-        //    DateTime dateTimeNow = DateTime.Now;
-        //    trans.CreatedDate = dateTimeNow;
-        //    //tạo bằng arduino => mã thẻ quẹt
-        //    //tạo bằng tay => thẻ của bv
-        //    if (trans.IdentityCardId != null)
-        //    {
-        //        //disable hết các transaction của thẻ này mà đang status processing
-        //        bool checkProcessingCard = await CheckProcessingCard(trans.IdentityCardId, "Insert");
-        //        if (!checkProcessingCard)
-        //        {
-        //            if (trans.WeightIn > 0)
-        //            {
-        //                if (method.Equals("manual"))
-        //                {
-        //                    //tạo bằng tay => yêu cầu nhập cả time in, time out và status phải là success
-        //                    if (trans.WeightOut != 0 && trans.TimeOut != null && trans.TransactionStatus.Equals(TransactionStatus.Success))
-        //                    {
-        //                        //check hợp lệ => tạo transaction
-        //                        SetTransactionType(trans, trans.WeightOut);
-        //                        Insert(trans);
-        //                        checkCreate = true;
-        //                        //tạo transaction thành công => tạo inventory detail
-        //                        await UpdateInventoryDetail(trans);
-        //                    }
-        //                    else
-        //                    {
-        //                        checkCreate = false;
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    //tạo bằng arduino => xác phải có vật trên cân
-        //                    Insert(trans);
-        //                    checkCreate = true;
-        //                }
-
-        //            }
-        //        }
-        //    }
-        //    return checkCreate;
-        //}
-
-        //update transaction
         public async Task<Transaction> UpdateTransactionByManual(Transaction trans, int id)
         {
             if (id != trans.TransactionId)
@@ -591,12 +544,52 @@ namespace ImportExportManagementAPI.Repositories
             trans.GoodsId = _dbContext.Goods.First().GoodsId;
             SetTransactionType(trans, trans.WeightOut);
             Insert(trans);
-            if (trans.TransactionStatus.Equals(TransactionStatus.Success))
+            if(method.Equals("manual"))
             {
-                //tạo transaction thành công => tạo inventory detail
-                await UpdateInventoryDetail(trans);
+                if (trans.TransactionStatus.Equals(TransactionStatus.Success))
+                {
+                    //tạo transaction thành công => tạo inventory detail
+                    await UpdateInventoryDetail(trans);
+                }
             }
             return trans;
+        }
+
+        //check transaction is scheduled or not
+        public async Task<bool> CheckTransactionScheduled(String identityCardId)
+        {
+            bool check = false;
+            IdentityCardRepository cardRepo = new IdentityCardRepository();
+            Task<IdentityCard> checkCard = cardRepo.checkCard(identityCardId);
+            if (checkCard.Result == null)
+            {
+                //card not available
+                check = false;
+            }
+            else
+            {
+                var partner = cardRepo.GetPartnerCard(checkCard.Result.PartnerId).Result;
+                if(partner == null)
+                {
+                    check = false;
+                }
+                else
+                {
+                    ScheduleRepository scheduleRepo = new ScheduleRepository();
+                    //get list schedule that partner is booked in date
+                    List<Schedule> listBookedSchedule = await scheduleRepo.GetBookedScheduleInDate(partner.PartnerId);
+                    if (listBookedSchedule != null && listBookedSchedule.Count != 0)
+                    {
+                        //partner co datlich
+                        check = true;
+                    }
+                    else
+                    {
+                        check = false;
+                    }
+                }
+            }
+            return check;
         }
     }
 }

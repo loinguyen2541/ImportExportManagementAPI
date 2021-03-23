@@ -25,12 +25,25 @@ namespace ImportExportManagement_API.Repositories
             return schedules;
         }
 
-        public async ValueTask<List<Schedule>> GetHistory(string searchDate)
+        public async ValueTask<List<Schedule>> GetHistory(string searchDate, string type)
         {
             List<Schedule> schedules = new List<Schedule>();
             IQueryable<Schedule> rawData = null;
             rawData = _dbSet.Include(t => t.TimeTemplateItem);
-            schedules = await DoFilterHistory(searchDate, rawData);
+            schedules = await DoFilterHistory(searchDate, rawData, type);
+            foreach (var item in schedules)
+            {
+                //date of schedule
+                item.ScheduleDate = ChangeTime(item.ScheduleDate, item.TimeTemplateItem.ScheduleTime.Hours, item.TimeTemplateItem.ScheduleTime.Minutes, item.TimeTemplateItem.ScheduleTime.Seconds);
+            }
+            return schedules;
+        }
+        public async ValueTask<List<Schedule>> GetListScheduleByRequire(string fromDate, string toDate, int caseSearch)
+        {
+            List<Schedule> schedules = new List<Schedule>();
+            IQueryable<Schedule> rawData = null;
+            rawData = _dbSet.Include(t => t.TimeTemplateItem);
+            schedules = await DoFilterReport(rawData, fromDate, toDate, caseSearch);
             foreach (var item in schedules)
             {
                 //date of schedule
@@ -50,22 +63,67 @@ namespace ImportExportManagement_API.Repositories
                 dateTime.Kind);
         }
 
-        private async Task<List<Schedule>> DoFilterHistory(String searchDate, IQueryable<Schedule> queryable)
+        private async Task<List<Schedule>> DoFilterReport(IQueryable<Schedule> queryable, String fromDate, String toDate, int caseSearch)
         {
-            //if (filter.PartnerId != 0)
-            //{
-            //    queryable = queryable.Where(s => s.PartnerId == filter.PartnerId);
-            //}
-            //if (filter.toDate == DateTime.MinValue)
-            //{
-            //    //todate rong
-            //    filter.toDate = DateTime.Now;
-            //}
+            if (DateTime.TryParse(fromDate, out DateTime date) && DateTime.TryParse(toDate, out DateTime date2))
+            {
+                DateTime start = DateTime.Parse(fromDate);
+                DateTime end = DateTime.Parse(toDate);
+                queryable = queryable.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
+            }
+            if(queryable != null)
+            {
+                switch (caseSearch)
+                {
+                    case 1:
+                        //đặt lịch mà giao => check by realweight
+                        queryable = queryable.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.RealWeight != null);
+                        break;
+                    case 2:
+                        //đặt lịch mà không giao => bị hủy bởi hệ thống => check by iscancel và update by hệ thống
+                        queryable = queryable.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("system"));
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
+        }
+
+        public int GetTotalByType(int type)
+        {
+            int count = 0;
+            TransactionType typeTrans = (TransactionType)type;
+            DateTime start = DateTime.Now;
+            DateTime end = DateTime.Now.AddDays(1);
+            IQueryable<Schedule> rawData = _dbSet.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end && s.TransactionType.Equals(typeTrans));
+            count = rawData.Count();
+
+            return count;
+        }
+
+        public async Task<List<Schedule>> DoFilter()
+        {
+            IQueryable<Schedule> queryable = _dbSet;
+            DateTime start = DateTime.Now.AddDays(-1);
+            DateTime end = DateTime.Now.AddDays(1);
+            queryable = queryable.Include(p=> p.Partner).Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
+
+            return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
+        }
+
+        private async Task<List<Schedule>> DoFilterHistory(String searchDate, IQueryable<Schedule> queryable, String type)
+        {
             if (DateTime.TryParse(searchDate, out DateTime date))
             {
-                DateTime start = DateTime.Parse(searchDate);
-                DateTime end = DateTime.Parse(searchDate).AddDays(1);
+                DateTime start = DateTime.Parse(searchDate).AddDays(1);
+                DateTime end = DateTime.Parse(searchDate).AddDays(2);
                 queryable = queryable.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
+            }
+            if (type != null && type.Length != 0)
+            {
+                TransactionType typeTrans = (TransactionType)Enum.Parse(typeof(TransactionType), type);
+                queryable = queryable.Where(s => s.TransactionType.Equals(typeTrans));
             }
             queryable = queryable.Where(s => !s.UpdatedBy.Contains("system"));
             return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
@@ -122,6 +180,16 @@ namespace ImportExportManagement_API.Repositories
             return pagination;
         }
 
+        public List<ReportSchedule> GetReportSchedule(List<Schedule> listSchedule)
+        {
+            List<ReportSchedule> listReport = new List<ReportSchedule>();
+            foreach (var item in listSchedule)
+            {
+
+            }
+            return listReport;
+        }
+
         public async void DisableAll()
         {
             List<Schedule> schedules = await _dbSet.Where(p => p.IsCanceled == false).ToListAsync();
@@ -168,5 +236,43 @@ namespace ImportExportManagement_API.Repositories
             }
             return false;
         }
+
+        public async Task<List<Schedule>> GetBookedScheduleInDate(int partnerId)
+        {
+            var current = DateTime.Now.Date;
+            List<Schedule> listSchedule = new List<Schedule>();
+            listSchedule = await _dbSet.OrderBy(s => s.RegisteredWeight).Where(s => s.PartnerId == partnerId && s.ScheduleDate.Date == current).ToListAsync();
+            return listSchedule;
+        }
+
+        public async Task<bool> UpdateRealWeight(int partnerId, float weight)
+        {
+            List<Schedule> listScheduled = await GetBookedScheduleInDate(partnerId);
+            if (listScheduled != null && listScheduled.Count > 0)
+            {
+                if (weight < 0) weight = weight * -1;
+                float deviation = (float)(weight * 0.1);
+                float max = weight + deviation;
+                float min = weight - deviation;
+                foreach (var item in listScheduled)
+                {
+                    if (min < item.RegisteredWeight && item.RegisteredWeight < max)
+                    {
+                        item.RealWeight = weight;
+                        item.ScheduleStatus = ScheduleStatus.Success;
+                        Update(item);
+                        await SaveAsync();
+                        return true;
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
+
+ 
 }

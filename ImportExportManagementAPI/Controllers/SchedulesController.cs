@@ -48,9 +48,9 @@ namespace ImportExportManagementAPI.Controllers
         }
         [HttpGet("schedulehistory")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate)
+        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate, String type)
         {
-            List<Schedule> schedules = await _repo.GetHistory(searchDate);
+            List<Schedule> schedules = await _repo.GetHistory(searchDate, type);
             return Ok(schedules);
         }
 
@@ -127,12 +127,28 @@ namespace ImportExportManagementAPI.Controllers
             {
                 if (schedule.IsCanceled == false)
                 {
-                    bool checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule, username);
+                    Schedule checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule, username);
+                    _repo.Update(checkCancel);
                     await _repo.SaveAsync();
                     return NoContent();
                 }
             }
             return NotFound();
+        }
+        [HttpGet("list-today")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<Schedule>>> GetScheduleToday()
+        {
+            List<Schedule> schedules = await _repo.DoFilter();
+            return Ok(schedules);
+        }
+
+        [HttpGet("count-total")]
+        [AllowAnonymous]
+        public async Task<int> GetCountTotal(int type)
+        {
+            int count = _repo.GetTotalByType(type);
+            return count;
         }
     }
 }

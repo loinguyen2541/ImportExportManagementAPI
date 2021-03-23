@@ -66,7 +66,8 @@ namespace ImportExportManagementAPI.Repositories
         //check coi này ngày đã có phiếu kiểm kho chưa
         public async Task<Inventory> CheckExistDateRecord(DateTime dateRecord)
         {
-            Task<Inventory> inventory = _dbSet.Where(i => i.RecordedDate.Equals(dateRecord)).FirstOrDefaultAsync();
+            var getDate = dateRecord.Date;
+            Task<Inventory> inventory = _dbSet.Where(i => i.RecordedDate.Equals(getDate)).FirstOrDefaultAsync();
             if (inventory.Result == null)
             {
                 //chua co thi tao moi

@@ -1,4 +1,5 @@
 ﻿using ImportExportManagement_API.Models;
+using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.ModelWeb;
 using ImportExportManagementAPI.Repositories;
@@ -20,6 +21,7 @@ namespace ImportExportManagementAPI.Controllers
     {
         private readonly TransactionRepository _repo;
         private readonly GoodsRepository _goodsRepository;
+        private readonly ScheduleRepository _scheduleRepository;
         private readonly IHubContext<ChartHub> chartHub;
 
         public TransactionsController(IHubContext<ChartHub> chartHub)
@@ -27,6 +29,7 @@ namespace ImportExportManagementAPI.Controllers
             this.chartHub = chartHub;
             _repo = new TransactionRepository();
             _goodsRepository = new GoodsRepository();
+            _scheduleRepository = new ScheduleRepository();
         }
         //get transaction
         [HttpGet]
@@ -70,9 +73,9 @@ namespace ImportExportManagementAPI.Controllers
         //add transaction
         [HttpPost("automatic")]
         [AllowAnonymous]
-        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn)
+        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn, bool isScheduled)
         {
-            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing };
+            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing, IsScheduled = isScheduled };
             Transaction check = await _repo.CreateTransaction(trans, "Insert");
             if (check != null)
             {
@@ -91,6 +94,7 @@ namespace ImportExportManagementAPI.Controllers
             if (transactionUpdated != null)
             {
                 _goodsRepository.UpdateQuantityOfGood(transactionUpdated.GoodsId, transactionUpdated.WeightIn - transactionUpdated.WeightOut);
+
                 return NoContent();
             }
             return BadRequest();
@@ -111,6 +115,7 @@ namespace ImportExportManagementAPI.Controllers
             if (transaction != null)
             {
                 _goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, transaction.WeightIn - transaction.WeightOut);
+                await _scheduleRepository.UpdateRealWeight(transaction.PartnerId, transaction.WeightIn - transaction.WeightOut);
                 await chartHub.Clients.All.SendAsync("TransactionSuccess" , cardId);
                 return NoContent();
             }
@@ -161,6 +166,14 @@ namespace ImportExportManagementAPI.Controllers
         public ActionResult<Object> GetTopPartner([FromQuery] PaginationParam paging, [FromQuery] TransactionFilter filter)
         {
             return Ok(_repo.GetTopPartner(paging, filter));
+        }
+
+        [HttpGet("checkSchedule")]
+        public async Task<bool> CheckScheduleAsync(String identityCardId)
+        {
+            bool check = false;
+            check = await _repo.CheckTransactionScheduled(identityCardId);
+            return check;
         }
     }
 }

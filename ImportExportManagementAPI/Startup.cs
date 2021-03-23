@@ -34,24 +34,6 @@ namespace ImportExportManagementAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            ////add authentication
-            //services.AddAuthentication(authOptions => {
-            //    authOptions.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    authOptions.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    authOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            //}).
-            //AddJwtBearer(jwtOptions => {
-            //    jwtOptions.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateAudience = true,
-            //        ValidAudience = Configuration["JwtSettings:Audience"],
-            //        ValidateIssuer = true,
-            //        ValidIssuer = Configuration["JwtSettings:Issuer"],
-            //        ValidateIssuerSigningKey = true,
-            //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtSettings:Key"])),
-            //        ValidateLifetime = true
-            //    };
-            //});
             // configure strongly typed settings objects
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);

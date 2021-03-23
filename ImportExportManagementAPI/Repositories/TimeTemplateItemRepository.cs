@@ -118,9 +118,8 @@ namespace ImportExportManagementAPI.Repositories
             return await _dbSet.Include(i => i.Schedules.Where(s => s.IsCanceled == false)).Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).ToListAsync();
         }
 
-        public async Task<bool> CancelSchedule(Schedule schedule, String username)
+        public async Task<Schedule> CancelSchedule(Schedule schedule, String username)
         {
-            bool checkCancel = false;
             TimeTemplateItem timeTemplateItem = await _dbSet.FindAsync(schedule.TimeTemplateItemId);
             List<TimeTemplateItem> timeTemplateItems = new List<TimeTemplateItem>();
             if (timeTemplateItem != null)
@@ -149,15 +148,15 @@ namespace ImportExportManagementAPI.Repositories
                 try
                 {
                     await _dbContext.SaveChangesAsync();
-                    checkCancel = true;
+                    return schedule;
                 }
                 catch
                 {
-                    checkCancel = false;
+                    return null;
                 }
             }
 
-            return checkCancel;
+            return null;
         }
         public void CancelImport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float registeredWeight)
         {
@@ -183,8 +182,8 @@ namespace ImportExportManagementAPI.Repositories
 
         public async Task<Schedule> ChangeSchedule(Schedule updateSchedule, Schedule existedSchedule)
         {
-            bool cancelSchedule = await CancelSchedule(existedSchedule, "system");
-            if (cancelSchedule)
+            Schedule cancelSchedule = await CancelSchedule(existedSchedule, "system");
+            if (cancelSchedule!=null)
             {
                 if(CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId))
                 {
