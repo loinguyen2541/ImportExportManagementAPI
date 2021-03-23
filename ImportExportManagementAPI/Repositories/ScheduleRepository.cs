@@ -77,7 +77,7 @@ namespace ImportExportManagement_API.Repositories
                 {
                     case 1:
                         //đặt lịch mà giao => check by realweight
-                        queryable = queryable.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.RealWeight != null);
+                        queryable = queryable.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.ActualWeight != null);
                         break;
                     case 2:
                         //đặt lịch mà không giao => bị hủy bởi hệ thống => check by iscancel và update by hệ thống
@@ -259,7 +259,7 @@ namespace ImportExportManagement_API.Repositories
                 {
                     if (min < item.RegisteredWeight && item.RegisteredWeight < max)
                     {
-                        item.RealWeight = weight;
+                        item.ActualWeight = weight;
                         item.ScheduleStatus = ScheduleStatus.Success;
                         Update(item);
                         await SaveAsync();
@@ -274,6 +274,9 @@ namespace ImportExportManagement_API.Repositories
             }
         }
     }
+    enum SystemName
+    {
+        System
+    }
 
- 
 }
