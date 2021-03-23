@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ImportExportManagementAPI.Migrations
 {
-    public partial class inital : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -28,8 +28,8 @@ namespace ImportExportManagementAPI.Migrations
                 {
                     InventoryId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RecordedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Weight = table.Column<float>(type: "real", nullable: false)
+                    OpeningStock = table.Column<float>(type: "real", nullable: true),
+                    RecordedDate = table.Column<DateTime>(type: "Date", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -55,7 +55,7 @@ namespace ImportExportManagementAPI.Migrations
                 {
                     RoleId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleName = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    RoleName = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -63,37 +63,41 @@ namespace ImportExportManagementAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "InventoryDetail",
+                name: "SystemConfig",
                 columns: table => new
                 {
-                    GoodsId = table.Column<int>(type: "int", nullable: false),
-                    InventoryId = table.Column<int>(type: "int", nullable: false)
+                    AttributeKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AttributeValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InventoryDetail", x => new { x.GoodsId, x.InventoryId });
-                    table.ForeignKey(
-                        name: "FK_InventoryDetail_Goods_GoodsId",
-                        column: x => x.GoodsId,
-                        principalTable: "Goods",
-                        principalColumn: "GoodsId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_InventoryDetail_Inventory_InventoryId",
-                        column: x => x.InventoryId,
-                        principalTable: "Inventory",
-                        principalColumn: "InventoryId",
-                        onDelete: ReferentialAction.Cascade);
+                    table.PrimaryKey("PK_SystemConfig", x => x.AttributeKey);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TimeTemplate",
+                columns: table => new
+                {
+                    TimeTemplateId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TimeTemplateName = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: true),
+                    ApplyingDate = table.Column<DateTime>(type: "Date", nullable: false),
+                    TimeTemplateStatus = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TimeTemplate", x => x.TimeTemplateId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Account",
                 columns: table => new
                 {
-                    Username = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Username = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    RoleId = table.Column<int>(type: "int", nullable: false)
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -107,17 +111,38 @@ namespace ImportExportManagementAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TimeTemplateItem",
+                columns: table => new
+                {
+                    TimeTemplateItemId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Inventory = table.Column<float>(type: "real", nullable: false),
+                    ScheduleTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    TimeTemplateId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TimeTemplateItem", x => x.TimeTemplateItemId);
+                    table.ForeignKey(
+                        name: "FK_TimeTemplateItem_TimeTemplate_TimeTemplateId",
+                        column: x => x.TimeTemplateId,
+                        principalTable: "TimeTemplate",
+                        principalColumn: "TimeTemplateId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Partner",
                 columns: table => new
                 {
                     PartnerId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    DisplayName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    DisplayName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     PhoneNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     PartnerStatus = table.Column<int>(type: "int", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    Username = table.Column<string>(type: "nvarchar(25)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -134,10 +159,10 @@ namespace ImportExportManagementAPI.Migrations
                 name: "IdentityCard",
                 columns: table => new
                 {
-                    IdentityCardId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IdentityCardId = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: false),
                     IdentityCardStatus = table.Column<int>(type: "int", nullable: false),
-                    ParnerId = table.Column<int>(type: "int", nullable: false),
-                    PartnerId = table.Column<int>(type: "int", nullable: true)
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PartnerId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -147,28 +172,63 @@ namespace ImportExportManagementAPI.Migrations
                         column: x => x.PartnerId,
                         principalTable: "Partner",
                         principalColumn: "PartnerId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InventoryDetail",
+                columns: table => new
+                {
+                    InventoryDetailId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Weight = table.Column<float>(type: "real", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: true),
+                    InventoryId = table.Column<int>(type: "int", nullable: false),
+                    GoodsId = table.Column<int>(type: "int", nullable: false),
+                    PartnerId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryDetail", x => x.InventoryDetailId);
+                    table.ForeignKey(
+                        name: "FK_InventoryDetail_Goods_GoodsId",
+                        column: x => x.GoodsId,
+                        principalTable: "Goods",
+                        principalColumn: "GoodsId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InventoryDetail_Inventory_InventoryId",
+                        column: x => x.InventoryId,
+                        principalTable: "Inventory",
+                        principalColumn: "InventoryId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InventoryDetail_Partner_PartnerId",
+                        column: x => x.PartnerId,
+                        principalTable: "Partner",
+                        principalColumn: "PartnerId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "PartnerPartnerType",
                 columns: table => new
                 {
-                    PartnerTypesPartnerTypeId = table.Column<int>(type: "int", nullable: false),
-                    PartnersPartnerId = table.Column<int>(type: "int", nullable: false)
+                    PartnerId = table.Column<int>(type: "int", nullable: false),
+                    PartnerTypeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PartnerPartnerType", x => new { x.PartnerTypesPartnerTypeId, x.PartnersPartnerId });
+                    table.PrimaryKey("PK_PartnerPartnerType", x => new { x.PartnerId, x.PartnerTypeId });
                     table.ForeignKey(
-                        name: "FK_PartnerPartnerType_Partner_PartnersPartnerId",
-                        column: x => x.PartnersPartnerId,
+                        name: "FK_PartnerPartnerType_Partner_PartnerId",
+                        column: x => x.PartnerId,
                         principalTable: "Partner",
                         principalColumn: "PartnerId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_PartnerPartnerType_PartnerType_PartnerTypesPartnerTypeId",
-                        column: x => x.PartnerTypesPartnerTypeId,
+                        name: "FK_PartnerPartnerType_PartnerType_PartnerTypeId",
+                        column: x => x.PartnerTypeId,
                         principalTable: "PartnerType",
                         principalColumn: "PartnerTypeId",
                         onDelete: ReferentialAction.Cascade);
@@ -182,10 +242,15 @@ namespace ImportExportManagementAPI.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ScheduleDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RegisteredWeight = table.Column<float>(type: "real", nullable: false),
+                    ActualWeight = table.Column<float>(type: "real", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TransactionType = table.Column<int>(type: "int", nullable: false),
+                    ScheduleStatus = table.Column<int>(type: "int", nullable: false),
                     IsCanceled = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PartnerId = table.Column<int>(type: "int", nullable: false),
-                    GoodsId = table.Column<int>(type: "int", nullable: false)
+                    GoodsId = table.Column<int>(type: "int", nullable: false),
+                    TimeTemplateItemId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -202,6 +267,12 @@ namespace ImportExportManagementAPI.Migrations
                         principalTable: "Partner",
                         principalColumn: "PartnerId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Schedule_TimeTemplateItem_TimeTemplateItemId",
+                        column: x => x.TimeTemplateItemId,
+                        principalTable: "TimeTemplateItem",
+                        principalColumn: "TimeTemplateItemId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -211,14 +282,17 @@ namespace ImportExportManagementAPI.Migrations
                     TransactionId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TimeIn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TimeOut = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TimeOut = table.Column<DateTime>(type: "datetime2", nullable: true),
                     WeightIn = table.Column<float>(type: "real", nullable: false),
-                    WeightOut = table.Column<float>(type: "real", nullable: false),
-                    TransactionType = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    WeightOut = table.Column<float>(type: "real", nullable: false, defaultValue: 0f),
+                    IsScheduled = table.Column<bool>(type: "bit", nullable: true),
+                    TransactionType = table.Column<int>(type: "int", nullable: true),
                     TransactionStatus = table.Column<int>(type: "int", nullable: false),
                     PartnerId = table.Column<int>(type: "int", nullable: false),
-                    GoodsId = table.Column<int>(type: "int", nullable: false),
-                    ScheduleId = table.Column<int>(type: "int", nullable: false)
+                    IdentityCardId = table.Column<string>(type: "nvarchar(25)", nullable: true),
+                    GoodsId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -230,18 +304,28 @@ namespace ImportExportManagementAPI.Migrations
                         principalColumn: "GoodsId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_Transaction_IdentityCard_IdentityCardId",
+                        column: x => x.IdentityCardId,
+                        principalTable: "IdentityCard",
+                        principalColumn: "IdentityCardId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Transaction_Partner_PartnerId",
                         column: x => x.PartnerId,
                         principalTable: "Partner",
                         principalColumn: "PartnerId",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Transaction_Schedule_ScheduleId",
-                        column: x => x.ScheduleId,
-                        principalTable: "Schedule",
-                        principalColumn: "ScheduleId",
-                        onDelete: ReferentialAction.NoAction);
                 });
+
+            migrationBuilder.InsertData(
+                table: "SystemConfig",
+                columns: new[] { "AttributeKey", "AttributeValue" },
+                values: new object[] { "StorageCapacity", "2000" });
+
+            migrationBuilder.InsertData(
+                table: "SystemConfig",
+                columns: new[] { "AttributeKey", "AttributeValue" },
+                values: new object[] { "AutoSchedule", "18:00:00" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Account_RoleId",
@@ -254,9 +338,19 @@ namespace ImportExportManagementAPI.Migrations
                 column: "PartnerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_InventoryDetail_GoodsId",
+                table: "InventoryDetail",
+                column: "GoodsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InventoryDetail_InventoryId",
                 table: "InventoryDetail",
                 column: "InventoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryDetail_PartnerId",
+                table: "InventoryDetail",
+                column: "PartnerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Partner_Username",
@@ -266,9 +360,9 @@ namespace ImportExportManagementAPI.Migrations
                 filter: "[Username] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PartnerPartnerType_PartnersPartnerId",
+                name: "IX_PartnerPartnerType_PartnerTypeId",
                 table: "PartnerPartnerType",
-                column: "PartnersPartnerId");
+                column: "PartnerTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Schedule_GoodsId",
@@ -281,31 +375,44 @@ namespace ImportExportManagementAPI.Migrations
                 column: "PartnerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Schedule_TimeTemplateItemId",
+                table: "Schedule",
+                column: "TimeTemplateItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimeTemplateItem_TimeTemplateId",
+                table: "TimeTemplateItem",
+                column: "TimeTemplateId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transaction_GoodsId",
                 table: "Transaction",
                 column: "GoodsId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Transaction_IdentityCardId",
+                table: "Transaction",
+                column: "IdentityCardId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transaction_PartnerId",
                 table: "Transaction",
                 column: "PartnerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transaction_ScheduleId",
-                table: "Transaction",
-                column: "ScheduleId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "IdentityCard");
-
-            migrationBuilder.DropTable(
                 name: "InventoryDetail");
 
             migrationBuilder.DropTable(
                 name: "PartnerPartnerType");
+
+            migrationBuilder.DropTable(
+                name: "Schedule");
+
+            migrationBuilder.DropTable(
+                name: "SystemConfig");
 
             migrationBuilder.DropTable(
                 name: "Transaction");
@@ -317,10 +424,16 @@ namespace ImportExportManagementAPI.Migrations
                 name: "PartnerType");
 
             migrationBuilder.DropTable(
-                name: "Schedule");
+                name: "TimeTemplateItem");
 
             migrationBuilder.DropTable(
                 name: "Goods");
+
+            migrationBuilder.DropTable(
+                name: "IdentityCard");
+
+            migrationBuilder.DropTable(
+                name: "TimeTemplate");
 
             migrationBuilder.DropTable(
                 name: "Partner");

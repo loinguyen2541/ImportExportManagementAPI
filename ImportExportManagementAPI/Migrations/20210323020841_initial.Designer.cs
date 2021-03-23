@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    [Migration("20210318052253_add-inventoryquantity")]
-    partial class addinventoryquantity
+    [Migration("20210323020841_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -51,6 +51,31 @@ namespace ImportExportManagementAPI.Migrations
                     b.ToTable("PartnerType");
                 });
 
+            modelBuilder.Entity("ImportExportManagementAPI.Models.SystemConfig", b =>
+                {
+                    b.Property<string>("AttributeKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AttributeValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AttributeKey");
+
+                    b.ToTable("SystemConfig");
+
+                    b.HasData(
+                        new
+                        {
+                            AttributeKey = "StorageCapacity",
+                            AttributeValue = "2000"
+                        },
+                        new
+                        {
+                            AttributeKey = "AutoSchedule",
+                            AttributeValue = "18:00:00"
+                        });
+                });
+
             modelBuilder.Entity("ImportExportManagementAPI.Models.TimeTemplate", b =>
                 {
                     b.Property<int>("TimeTemplateId")
@@ -58,8 +83,12 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("ApplyingDate")
+                        .HasColumnType("Date");
+
                     b.Property<string>("TimeTemplateName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(25)
+                        .HasColumnType("nvarchar(25)");
 
                     b.Property<int>("TimeTemplateStatus")
                         .HasColumnType("int");
@@ -76,7 +105,7 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<float>("Capacity")
+                    b.Property<float>("Inventory")
                         .HasColumnType("real");
 
                     b.Property<TimeSpan>("ScheduleTime")
@@ -95,7 +124,8 @@ namespace ImportExportManagementAPI.Migrations
             modelBuilder.Entity("ImportExportManagement_API.Models.Account", b =>
                 {
                     b.Property<string>("Username")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(25)
+                        .HasColumnType("nvarchar(25)");
 
                     b.Property<string>("Password")
                         .HasMaxLength(25)
@@ -142,7 +172,8 @@ namespace ImportExportManagementAPI.Migrations
             modelBuilder.Entity("ImportExportManagement_API.Models.IdentityCard", b =>
                 {
                     b.Property<string>("IdentityCardId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(25)
+                        .HasColumnType("nvarchar(25)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -167,7 +198,7 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<float?>("InventoryQuantity")
+                    b.Property<float?>("OpeningStock")
                         .HasColumnType("real");
 
                     b.Property<DateTime>("RecordedDate")
@@ -194,7 +225,7 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("PartnerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Type")
+                    b.Property<int?>("Type")
                         .HasColumnType("int");
 
                     b.Property<float>("Weight")
@@ -238,7 +269,7 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Username")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(25)");
 
                     b.HasKey("PartnerId");
 
@@ -257,7 +288,8 @@ namespace ImportExportManagementAPI.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("RoleName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(25)
+                        .HasColumnType("nvarchar(25)");
 
                     b.HasKey("RoleId");
 
@@ -270,6 +302,9 @@ namespace ImportExportManagementAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<float?>("ActualWeight")
+                        .HasColumnType("real");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -290,6 +325,9 @@ namespace ImportExportManagementAPI.Migrations
 
                     b.Property<DateTime>("ScheduleDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("ScheduleStatus")
+                        .HasColumnType("int");
 
                     b.Property<int>("TimeTemplateItemId")
                         .HasColumnType("int");
@@ -328,7 +366,10 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("IdentityCardId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(25)");
+
+                    b.Property<bool?>("IsScheduled")
+                        .HasColumnType("bit");
 
                     b.Property<int>("PartnerId")
                         .HasColumnType("int");
