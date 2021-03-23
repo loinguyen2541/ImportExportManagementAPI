@@ -14,6 +14,7 @@ namespace ImportExportManagement_API.Models
 {
     public class IdentityCard
     {
+        [MaxLength(25)]
         public String IdentityCardId { get; set; }
         public IdentityCardStatus IdentityCardStatus { get; set; }
         public DateTime CreatedDate { get; set; }

@@ -17,6 +17,7 @@ namespace ImportExportManagementAPI.Models
     {
         public int TimeTemplateId { get; set; }
 
+        [MaxLength(25)]
         public String TimeTemplateName { get; set; }
 
         [Column(TypeName = "Date")]

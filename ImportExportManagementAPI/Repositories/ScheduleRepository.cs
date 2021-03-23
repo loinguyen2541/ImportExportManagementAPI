@@ -192,10 +192,11 @@ namespace ImportExportManagement_API.Repositories
 
         public async void DisableAll()
         {
-            List<Schedule> schedules = await _dbSet.Where(p => p.IsCanceled == false).ToListAsync();
+            List<Schedule> schedules = await _dbSet.Where(p => p.ScheduleStatus == ScheduleStatus.Approved).ToListAsync();
             foreach (var item in schedules)
             {
-                item.IsCanceled = true;
+                item.ScheduleStatus = ScheduleStatus.Cancel;
+                item.UpdatedBy = SystemName.System.ToString();
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
             await SaveAsync();

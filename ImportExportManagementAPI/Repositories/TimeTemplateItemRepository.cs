@@ -115,7 +115,7 @@ namespace ImportExportManagementAPI.Repositories
 
         public async Task<List<TimeTemplateItem>> GetAppliedItem()
         {
-            return await _dbSet.Include(i => i.Schedules.Where(s => s.IsCanceled == false)).Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).ToListAsync();
+            return await _dbSet.Include(i => i.Schedules.Where(s => s.ScheduleStatus == ScheduleStatus.Approved)).Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).ToListAsync();
         }
 
         public async Task<Schedule> CancelSchedule(Schedule schedule, String username)
@@ -185,7 +185,7 @@ namespace ImportExportManagementAPI.Repositories
             Schedule cancelSchedule = await CancelSchedule(existedSchedule, "system");
             if (cancelSchedule!=null)
             {
-                if(CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId))
+                if (CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId))
                 {
                     UpdateCurrent(updateSchedule.TransactionType, updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId);
                     updateSchedule.IsCanceled = false;

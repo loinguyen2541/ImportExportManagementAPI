@@ -107,7 +107,7 @@ namespace ImportExportManagementAPI.Controllers
             if (_timeTemplateItemRepo.CheckInventory(schedule.RegisteredWeight, schedule.TimeTemplateItemId, schedule.TransactionType, storgeCapacity))
             {
                 _timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
-                schedule.IsCanceled = false;
+                schedule.ScheduleStatus = ScheduleStatus.Approved;
                 if (!_repo.TryToUpdate(schedule))
                 {
                     _repo.Insert(schedule);
@@ -125,12 +125,16 @@ namespace ImportExportManagementAPI.Controllers
             Schedule schedule = _repo.GetByID(id);
             if (schedule != null)
             {
-                if (schedule.IsCanceled == false)
+                if (schedule.ScheduleStatus == ScheduleStatus.Approved)
                 {
                     Schedule checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule, username);
                     _repo.Update(checkCancel);
                     await _repo.SaveAsync();
                     return NoContent();
+                }
+                else
+                {
+                    return BadRequest();
                 }
             }
             return NotFound();
