@@ -64,13 +64,13 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //check coi này ngày đã có phiếu kiểm kho chưa
-        public async Task<Inventory> CheckExistDateRecord(DateTime dateRecord)
+        public async Task<Inventory> CheckExistDateRecord(DateTime dateRecord, float goodsQuantity)
         {
             Task<Inventory> inventory = _dbSet.Where(i => i.RecordedDate.Equals(dateRecord)).FirstOrDefaultAsync();
             if (inventory.Result == null)
             {
                 //chua co thi tao moi
-                Inventory newInventory = new Inventory { RecordedDate = dateRecord };
+                Inventory newInventory = new Inventory { RecordedDate = dateRecord, OpeningStock = goodsQuantity };
                 Insert(newInventory);
                 await SaveAsync();
                 return newInventory;

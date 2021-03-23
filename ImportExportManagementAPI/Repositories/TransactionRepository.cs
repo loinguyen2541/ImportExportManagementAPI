@@ -540,7 +540,9 @@ namespace ImportExportManagementAPI.Repositories
         private async Task UpdateInventoryDetail(Transaction trans)
         {
             InventoryDetailRepository detailRepo = new InventoryDetailRepository();
-            await detailRepo.UpdateInventoryDetail(trans.CreatedDate, trans);
+            GoodsRepository goodsRepository = new GoodsRepository();
+            float goodQuantity = goodsRepository.GetGoodCapacity();
+            await detailRepo.UpdateInventoryDetail(trans.CreatedDate, trans, goodQuantity);
         }
 
         //tạo transaction
