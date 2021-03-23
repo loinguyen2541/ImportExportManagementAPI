@@ -1,6 +1,7 @@
 ﻿using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
+using ImportExportManagementAPI.Objects;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -70,7 +71,10 @@ namespace ImportExportManagementAPI.Repositories
             if (inventory.Result == null)
             {
                 //chua co thi tao moi
-                Inventory newInventory = new Inventory { RecordedDate = dateRecord };
+
+                GoodsRepository goodsRepository = new GoodsRepository();
+                float goodsQuantity = goodsRepository.GetGoodCapacity();
+                Inventory newInventory = new Inventory { RecordedDate = dateRecord, OpeningStock = goodsQuantity };
                 Insert(newInventory);
                 await SaveAsync();
                 return newInventory;
@@ -101,25 +105,44 @@ namespace ImportExportManagementAPI.Repositories
             }
             return total;
         }
-        public async Task<float> TotalWeightInventoryFloat(DateTime dateRecord, int type)
+        public async Task<ObjectTotalImportExportToday> TotalWeightInventoryFloat(DateTime dateRecord)
         {
-            float weightTotal = 0;
             //check ngày này có inventory chưa
             Inventory inventory = await CheckExistDateRecord(dateRecord);
+            ObjectTotalImportExportToday objectTotal = new ObjectTotalImportExportToday();
             if (inventory != null)
             {
+                float weightTotal = 0;
                 //get list detail
                 InventoryDetailRepository detailRepo = new InventoryDetailRepository();
-                List<InventoryDetail> listDetail = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, type);
-                if (listDetail != null && listDetail.Count > 0)
+                List<InventoryDetail> listImport = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, 0);
+                List<InventoryDetail> listExport = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, 1);
+                if (listImport != null && listImport.Count > 0)
                 {
-                    foreach (var item in listDetail)
+                    foreach (var item in listImport)
                     {
                         weightTotal += item.Weight;
                     }
+                    objectTotal.Import = weightTotal;
                 }
+                weightTotal = 0;
+                if (listExport != null && listExport.Count > 0)
+                {
+                    foreach (var item in listExport)
+                    {
+                        weightTotal += item.Weight;
+                    }
+                    objectTotal.Export = weightTotal;
+                }
+                objectTotal.OpeningStock = GetOpeningStockByDate(dateRecord, inventory.InventoryId);
+                objectTotal.Iventory = (objectTotal.OpeningStock + objectTotal.Import) - objectTotal.Export;
             }
-            return weightTotal;
+            return objectTotal;
+        }
+        public float GetOpeningStockByDate(DateTime date, int id)
+        {
+            float OpeningStock = _dbSet.Where(o => o.RecordedDate == date && o.InventoryId == id).Select(o => o.OpeningStock).FirstOrDefault().Value;
+            return OpeningStock;
         }
         public Object TotalWeightInventoryFloatByMonth(DateTime dateFrom, DateTime dateTo)
         {

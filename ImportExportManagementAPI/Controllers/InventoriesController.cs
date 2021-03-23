@@ -1,5 +1,6 @@
 ﻿using ImportExportManagement_API.Models;
 using ImportExportManagementAPI.Models;
+using ImportExportManagementAPI.Objects;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -62,9 +63,9 @@ namespace ImportExportManagementAPI.Controllers
         }
         [HttpGet("totalFloat")]
         [AllowAnonymous]
-        public ActionResult<float> GetTotalByDateTypeFloat(DateTime date, int type)
+        public ActionResult<ObjectTotalImportExportToday> GetTotalByDateTypeFloat(DateTime date)
         {
-            return Ok(_repo.TotalWeightInventoryFloat(date, type).Result);
+            return Ok(_repo.TotalWeightInventoryFloat(date).Result);
         }
         [HttpGet("totalByMonth")]
         [AllowAnonymous]
