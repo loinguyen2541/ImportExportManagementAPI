@@ -1,8 +1,10 @@
 ﻿using ImportExportManagement_API.Models;
+using ImportExportManagementAPI.Hubs;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -16,9 +18,11 @@ namespace ImportExportManagementAPI.Controllers
     public class TransactionsController : ControllerBase
     {
         private readonly TransactionRepository _repo;
-        public TransactionsController()
+        private IHubContext<TransactionHub> _transactionHub;
+        public TransactionsController(IHubContext<TransactionHub> transactionHub)
         {
             _repo = new TransactionRepository();
+            _transactionHub = transactionHub;
         }
         //get transaction
         [HttpGet]
@@ -60,11 +64,12 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost("automatic")]
         public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn)
         {
-            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing};
+            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing };
             Transaction check = await _repo.CreateTransaction(trans, "Insert");
             if (check != null)
             {
                 await _repo.SaveAsync();
+                await _transactionHub.Clients.All.SendAsync("ReloadTransaction", "reload");
                 return CreatedAtAction("GetTransaction", new { id = check.TransactionId }, check);
             }
             return BadRequest("Card is not exist");
@@ -95,6 +100,7 @@ namespace ImportExportManagementAPI.Controllers
             bool check = await _repo.UpdateTransactionArduino(cardId, weightOut, "UpdateArduino");
             if (check)
             {
+                await _transactionHub.Clients.All.SendAsync("ReloadTransaction", "reload");
                 return NoContent();
             }
             else

@@ -14,9 +14,5 @@ namespace ImportExportManagementAPI.Hubs
 {
     public class TransactionHub : Hub
     {
-        public async Task SendMessage()
-        {
-            await Clients.All.SendAsync("ReloadTransaction", "reload");
-        }
     }
 }

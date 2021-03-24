@@ -15,19 +15,16 @@ namespace ImportExportManagementAPI.Controllers
     public class TimedSchedulesController : ControllerBase
     {
         TimedGenerateScheduleService TimedControlService;
-        private readonly IHubContext<TransactionHub> _transHub;
 
-        public TimedSchedulesController(TimedGenerateScheduleService timedGenerateScheduleService, Microsoft.AspNetCore.SignalR.IHubContext<ImportExportManagementAPI.Hubs.TransactionHub> transHub)
+        public TimedSchedulesController(TimedGenerateScheduleService timedGenerateScheduleService)
         {
             TimedControlService = timedGenerateScheduleService;
-            _transHub = transHub;
         }
 
         [HttpGet("stop")]
         public async Task<ActionResult> Stop()
         {
-            await _transHub.Clients.All.SendAsync("SendMess", "123");
-            //await TimedControlService.StopAsync(new System.Threading.CancellationToken());
+            await TimedControlService.StopAsync(new System.Threading.CancellationToken());
             return Ok();
         }
 
