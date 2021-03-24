@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Hubs
 {
-    public class ChartHub : Hub
+    public class ScheduleHub : Hub
     {
     }
 }
