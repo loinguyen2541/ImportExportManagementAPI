@@ -163,6 +163,17 @@ namespace ImportExportManagement_API.Repositories
             }
             return false;
         }
+
+        public async Task<List<Schedule>> GetTop10Schedule()
+        {
+            IQueryable<Schedule> rawData = null;
+            DateTime now = DateTime.Today;
+            DateTime yesterday = now.AddDays(-1);
+            DateTime tomorrow = now.AddDays(1);
+            rawData = _dbSet.Include(s => s.Partner).Where(s => s.CreatedDate > yesterday && s.CreatedDate < tomorrow && s.ScheduleStatus == ScheduleStatus.Approved).OrderByDescending(o=>o.ScheduleId);
+            return await rawData.Take(10).ToListAsync();
+        }
+
     }
 
     enum SystemName
