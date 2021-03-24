@@ -52,6 +52,21 @@ namespace ImportExportManagementAPI
             return partner;
         }
 
+        // GET: api/Partners/5
+        [HttpGet("account")]
+        [AllowAnonymous]
+        public async Task<ActionResult<Partner>> GetPartnerByAccount(String username)
+        {
+            var partner = await _repo.GetPartnerByUsernameAsync(username);
+
+            if (partner == null)
+            {
+                return NotFound();
+            }
+
+            return partner;
+        }
+
         // PUT: api/Partners/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]

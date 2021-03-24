@@ -29,30 +29,32 @@ namespace ImportExportManagement_API.Repositories
         {
             List<Schedule> schedules = new List<Schedule>();
             IQueryable<Schedule> rawData = null;
-            rawData = _dbSet;
+            rawData = _dbSet.Include(t => t.TimeTemplateItem);
             schedules = await DoFilterHistory(searchDate, rawData);
             return schedules;
+        }
+        public DateTime ChangeTime(DateTime dateTime, int hours, int minutes, int seconds)
+        {
+            return new DateTime(
+                dateTime.Year,
+                dateTime.Month,
+                dateTime.Day,
+                hours,
+                minutes,
+                seconds,
+                dateTime.Kind);
         }
 
         private async Task<List<Schedule>> DoFilterHistory(String searchDate, IQueryable<Schedule> queryable)
         {
-            //if (filter.PartnerId != 0)
-            //{
-            //    queryable = queryable.Where(s => s.PartnerId == filter.PartnerId);
-            //}
-            //if (filter.toDate == DateTime.MinValue)
-            //{
-            //    //todate rong
-            //    filter.toDate = DateTime.Now;
-            //}
-            if(DateTime.TryParse(searchDate, out DateTime date))
+            if (DateTime.TryParse(searchDate, out DateTime date))
             {
                 DateTime start = DateTime.Parse(searchDate);
                 DateTime end = DateTime.Parse(searchDate).AddDays(1);
                 queryable = queryable.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
             }
-            
-            return await queryable.ToListAsync();
+            queryable = queryable.Where(s => !s.UpdatedBy.Contains("update action"));
+            return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
         }
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
         {
@@ -106,12 +108,16 @@ namespace ImportExportManagement_API.Repositories
             return pagination;
         }
 
+        /// <summary>
+        /// Change all approved schedules to cancel
+        /// </summary>
         public async void DisableAll()
         {
-            List<Schedule> schedules = await _dbSet.Where(p => p.IsCanceled == false).ToListAsync();
+            List<Schedule> schedules = await _dbSet.Where(p => p.ScheduleStatus == ScheduleStatus.Approved).ToListAsync();
             foreach (var item in schedules)
             {
-                item.IsCanceled = true;
+                item.ScheduleStatus = ScheduleStatus.Cancel;
+                item.UpdatedBy = SystemName.System.ToString();
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
             await SaveAsync();
@@ -152,5 +158,10 @@ namespace ImportExportManagement_API.Repositories
             }
             return false;
         }
+    }
+
+    enum SystemName
+    {
+        System
     }
 }

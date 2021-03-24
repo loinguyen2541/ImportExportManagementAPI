@@ -21,6 +21,13 @@ namespace ImportExportManagementAPI.Repositories
             return partners;
         }
 
+        public async Task<Partner> GetPartnerByUsernameAsync(String username)
+        {
+            Partner partner = new Partner();
+            partner = await _dbSet.Include(p => p.PartnerTypes).Where(p => p.Username.Equals(username)).SingleOrDefaultAsync();
+            return partner;
+        }
+
         private async Task<Pagination<Partner>> DoFilter(PaginationParam paging, PartnerFilter filter, IQueryable<Partner> queryable)
         {
             if (filter.Name != null && filter.Name.Length > 0)
