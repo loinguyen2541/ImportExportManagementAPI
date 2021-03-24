@@ -74,7 +74,7 @@ namespace ImportExportManagementAPI.Repositories
         public List<Partner> GetPartners()
         {
             List<Partner> partners = null;
-            partners = _dbSet.Where(p => p.PartnerStatus == PartnerStatus.Active).ToList();
+            partners = _dbSet.Include(o => o.PartnerType).Where(p => p.PartnerStatus == PartnerStatus.Active).ToList();
             return partners;
         }
         public bool Exist(int id)
