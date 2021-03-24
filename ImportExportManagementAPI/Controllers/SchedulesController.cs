@@ -59,7 +59,7 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Schedule>> GetSchedule(int id)
         {
-            var schedule = await _repo.GetByIDAsync(id);
+            var schedule = await _repo.GetScheduleById(id);
 
             if (schedule == null)
             {
@@ -139,11 +139,11 @@ namespace ImportExportManagementAPI.Controllers
             }
             return NotFound();
         }
-        [HttpGet("list-today")]
+        [HttpGet("search-partner")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<Schedule>>> GetScheduleToday()
+        public async Task<ActionResult<Pagination<Schedule>>> GetScheduleByPartner([FromQuery] ScheduleFilterParam filter, [FromQuery] PaginationParam paging)
         {
-            List<Schedule> schedules = await _repo.DoFilter();
+            Pagination<Schedule> schedules = await _repo.DoFilterSearchPartner(filter, paging);
             return Ok(schedules);
         }
 

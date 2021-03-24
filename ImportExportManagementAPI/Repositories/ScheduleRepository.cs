@@ -16,6 +16,17 @@ namespace ImportExportManagement_API.Repositories
 {
     public class ScheduleRepository : BaseRepository<Schedule>
     {
+        public async Task<Schedule> GetScheduleById(int id)
+        {
+            var schedule = await _dbSet.Include(s => s.Goods).Where(s => s.ScheduleId == id).SingleOrDefaultAsync();
+
+            if (schedule == null)
+            {
+                return null;
+            }
+
+            return schedule;
+        }
         public async ValueTask<Pagination<Schedule>> GetAllAsync(PaginationParam paging, ScheduleFilterParam filter)
         {
             Pagination<Schedule> schedules = new Pagination<Schedule>();
@@ -102,14 +113,78 @@ namespace ImportExportManagement_API.Repositories
             return count;
         }
 
-        public async Task<List<Schedule>> DoFilter()
+        public async Task<Pagination<Schedule>> DoFilterSearchPartner(ScheduleFilterParam filter, PaginationParam paging)
         {
-            IQueryable<Schedule> queryable = _dbSet;
-            DateTime start = DateTime.Now.AddDays(-1);
-            DateTime end = DateTime.Now.AddDays(1);
-            queryable = queryable.Include(p=> p.Partner).Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
+            IQueryable<Schedule> queryable = _dbSet.Include(s => s.Partner);
+            if(filter == null)
+            {
+                DateTime start = DateTime.Now.AddDays(-1);
+                DateTime end = DateTime.Now.AddDays(1);
+                queryable = queryable.Include(p => p.Partner).Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
+            }
+            else
+            {
+                if(filter.PartnerName != null)
+                {
+                    queryable = queryable.Where(s => s.Partner.DisplayName.Contains(filter.PartnerName));
+                }
+                if(filter.TransactionType != null)
+                {
+                    TransactionType typeTrans = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
+                    queryable = queryable.Where(s => s.TransactionType.Equals(typeTrans));
+                }
+                if(filter.fromDate!= null)
+                {
+                    if (filter.fromDate.Equals(filter.toDate))
+                    {
+                        var dateAndTime = DateTime.Now;
+                        var date = dateAndTime.Date;
+                        DateTime dateFrom = DateTime.Parse(filter.fromDate).Date;
+                        DateTime dateTo = dateFrom.AddDays(1).Date;
+                        queryable = queryable.Where(s => dateFrom <= s.ScheduleDate && s.ScheduleDate <= dateTo);
+                    }
+                    else
+                    {
+                        if (DateTime.TryParse(filter.fromDate, out DateTime date))
+                        {
+                            DateTime dateFrom = DateTime.Parse(filter.fromDate).Date;
+                            queryable = queryable.Where(s => s.ScheduleDate >= dateFrom);
+                        }
+                        if (DateTime.TryParse(filter.toDate, out DateTime date2))
+                        {
+                            DateTime dateTo = DateTime.Parse(filter.fromDate).Date;
+                            queryable = queryable.Where(s => s.ScheduleDate >= dateTo);
+                        }
+                    }
+                }
+            }
 
-            return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
+            if (paging.Page < 1)
+            {
+                paging.Page = 1;
+            }
+            if (paging.Size < 1)
+            {
+                paging.Size = 1;
+            }
+
+            int count = queryable.Count();
+
+            if (((paging.Page - 1) * paging.Size) > count)
+            {
+                paging.Page = 1;
+            }
+
+            queryable = queryable.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
+
+            Pagination<Schedule> pagination = new Pagination<Schedule>();
+            pagination.Page = paging.Page;
+            pagination.Size = paging.Size;
+            double totalPage = (count * 1.0) / (pagination.Size * 1.0);
+            pagination.TotalPage = (int)Math.Ceiling(totalPage);
+            pagination.Data = await queryable.ToListAsync();
+
+            return pagination;
         }
 
         private async Task<List<Schedule>> DoFilterHistory(String searchDate, IQueryable<Schedule> queryable, String type)
@@ -137,19 +212,22 @@ namespace ImportExportManagement_API.Repositories
 
         private async Task<Pagination<Schedule>> DoFilter(PaginationParam paging, ScheduleFilterParam filter, IQueryable<Schedule> queryable)
         {
-            if (filter.PartnerName != null && filter.PartnerName.Length > 0)
+            if (filter != null)
             {
-                queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
-            }
-            if (DateTime.TryParse(filter.ScheduleDate, out DateTime date))
-            {
-                DateTime scheduleDate = DateTime.Parse(filter.ScheduleDate);
-                queryable = queryable.Where(p => p.ScheduleDate.Date == scheduleDate.Date);
-            }
-            if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
-            {
-                TransactionType type = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
-                queryable = queryable.Where(p => p.TransactionType == type);
+                if (filter.PartnerName != null && filter.PartnerName.Length > 0)
+                {
+                    queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
+                }
+                if (DateTime.TryParse(filter.ScheduleDate, out DateTime date))
+                {
+                    DateTime scheduleDate = DateTime.Parse(filter.ScheduleDate);
+                    queryable = queryable.Where(p => p.ScheduleDate.Date == scheduleDate.Date);
+                }
+                if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
+                {
+                    TransactionType type = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
+                    queryable = queryable.Where(p => p.TransactionType == type);
+                }
             }
 
             if (paging.Page < 1)
