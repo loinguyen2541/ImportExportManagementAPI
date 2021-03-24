@@ -142,6 +142,7 @@ namespace ImportExportManagementAPI
                 endpoints.MapControllers();
                 endpoints.MapHub<ChartHub>("/transaction");
                 endpoints.MapHub<TransactionHub>("/transaction-hub");
+                endpoints.MapHub<ScheduleHub>("/schedule");
             });
 
         }
