@@ -15,6 +15,7 @@ namespace ImportExportManagement_API.Models
 {
     public class Account
     {
+        [MaxLength(25)]
         public String Username { get; set; }
         [MaxLength(25)]
         public String Password { get; set; }
