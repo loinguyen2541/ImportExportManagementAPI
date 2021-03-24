@@ -183,7 +183,7 @@ namespace ImportExportManagementAPI.Repositories
 
         public async Task<Schedule> ChangeSchedule(Schedule updateSchedule, Schedule existedSchedule)
         {
-            bool cancelSchedule = await CancelSchedule(existedSchedule, "system");
+            bool cancelSchedule = await CancelSchedule(existedSchedule, "update action");
             if (cancelSchedule)
             {
                 if (CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId))
