@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ImportExportManagementAPI.Hubs;
 
 namespace ImportExportManagementAPI
 {
@@ -105,7 +106,7 @@ namespace ImportExportManagementAPI
                 options.AddPolicy("AllowOrigin",
                 builder =>
                 {
-                    builder.WithOrigins("http://localhost:4200", 
+                    builder.WithOrigins("http://localhost:4200",
                                         "https://ican.azurewebsites.net")
                                         .AllowAnyHeader()
                                         .AllowAnyMethod()
@@ -140,6 +141,7 @@ namespace ImportExportManagementAPI
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<ChartHub>("/transaction");
+                endpoints.MapHub<TransactionHub>("/transaction-hub");
             });
 
         }

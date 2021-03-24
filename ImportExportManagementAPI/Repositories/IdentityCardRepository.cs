@@ -15,7 +15,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<IdentityCard> IdentityCards = new Pagination<IdentityCard>();
             IQueryable<IdentityCard> rawData = null;
-            rawData = _dbSet.Include(p=>p.Partner);
+            rawData = _dbSet.Include(p => p.Partner);
             IdentityCards = await DoFilterAsync(paging, filter, rawData);
             //schedules = _dbSet.ToList();
             return IdentityCards;
@@ -32,9 +32,9 @@ namespace ImportExportManagementAPI.Repositories
             {
                 queryable = queryable.Where(p => p.IdentityCardStatus == identityCardStatus);
             }
-            if (filter.PartnerType != null && filter.PartnerType.Length > 0)
+            if (filter.PartnerTypeId > 0)
             {
-                queryable = queryable.Where(p => p.Partner.PartnerTypes.Any(t => t.PartnerTypeName.Equals(filter.PartnerType)));
+                queryable = queryable.Where(p => p.Partner.PartnerTypeId == filter.PartnerTypeId);
             }
             if (paging.Page < 1)
             {

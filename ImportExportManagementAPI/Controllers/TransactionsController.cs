@@ -1,4 +1,5 @@
 ﻿using ImportExportManagement_API.Models;
+using ImportExportManagementAPI.Hubs;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.ModelWeb;
 using ImportExportManagementAPI.Repositories;
@@ -21,12 +22,14 @@ namespace ImportExportManagementAPI.Controllers
         private readonly TransactionRepository _repo;
         private readonly GoodsRepository _goodsRepository;
         private readonly IHubContext<ChartHub> chartHub;
+        private readonly IHubContext<TransactionHub> _transactionHub;
 
-        public TransactionsController(IHubContext<ChartHub> chartHub)
+        public TransactionsController(IHubContext<ChartHub> chartHub, IHubContext<TransactionHub> transactionHub)
         {
             this.chartHub = chartHub;
             _repo = new TransactionRepository();
             _goodsRepository = new GoodsRepository();
+            _transactionHub = transactionHub;
         }
         //get transaction
         [HttpGet]
@@ -77,6 +80,7 @@ namespace ImportExportManagementAPI.Controllers
             if (check != null)
             {
                 await _repo.SaveAsync();
+                await _transactionHub.Clients.All.SendAsync("ReloadTransaction", "reload");
                 return CreatedAtAction("GetTransaction", new { id = check.TransactionId }, check);
             }
             return BadRequest("Card is not exist");
@@ -111,7 +115,8 @@ namespace ImportExportManagementAPI.Controllers
             if (transaction != null)
             {
                 _goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, transaction.WeightIn - transaction.WeightOut);
-                await chartHub.Clients.All.SendAsync("TransactionSuccess" , cardId);
+                await chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
+                await _transactionHub.Clients.All.SendAsync("ReloadTransaction", "reload");
                 return NoContent();
             }
             else
@@ -157,10 +162,10 @@ namespace ImportExportManagementAPI.Controllers
         {
             return Ok(Enum.GetValues(typeof(TransactionStatus)).Cast<TransactionStatus>().ToList());
         }
-      /*  [HttpGet("top")]
-        public ActionResult<Object> GetTopPartner([FromQuery] PaginationParam paging, [FromQuery] TransactionFilter filter)
-        {
-            return Ok(_repo.GetTopPartner(paging, filter));
-        }*/
+        /*  [HttpGet("top")]
+          public ActionResult<Object> GetTopPartner([FromQuery] PaginationParam paging, [FromQuery] TransactionFilter filter)
+          {
+              return Ok(_repo.GetTopPartner(paging, filter));
+          }*/
     }
 }

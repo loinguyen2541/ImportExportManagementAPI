@@ -49,23 +49,6 @@ namespace ImportExportManagement_API
             //IdentityCard
             modelBuilder.Entity<IdentityCard>().HasKey(i => i.IdentityCardId);
 
-            //PartnerPartnerType
-            modelBuilder.Entity<PartnerPartnerType>().HasKey(p => new { p.PartnerId, p.PartnerTypeId });
-
-            modelBuilder.Entity<Partner>()
-            .HasMany(p => p.PartnerTypes)
-            .WithMany(p => p.Partners)
-            .UsingEntity<PartnerPartnerType>(
-                j => j
-                    .HasOne(pt => pt.PartnerType)
-                    .WithMany(t => t.PartnerPartnerTypes)
-                    .HasForeignKey(pt => pt.PartnerTypeId),
-                j => j
-                    .HasOne(pt => pt.Partner)
-                    .WithMany(p => p.PartnerPartnerTypes)
-                    .HasForeignKey(pt => pt.PartnerId)
-         );
-
             //Transaction
             modelBuilder.Entity<Transaction>().HasOne(t => t.IdentityCard).WithMany(c => c.Transactions).HasForeignKey(t => t.IdentityCardId);
             modelBuilder.Entity<Transaction>().Property(t => t.WeightOut).HasDefaultValue(0);
@@ -95,7 +78,6 @@ namespace ImportExportManagement_API
         public DbSet<Account> Account { get; set; }
         public DbSet<Role> Role { get; set; }
         public DbSet<ImportExportManagementAPI.Models.PartnerType> PartnerType { get; set; }
-        public DbSet<ImportExportManagementAPI.Models.PartnerPartnerType> PartnerPartnerType { get; set; }
         public DbSet<TimeTemplate> TimeTemplate { get; set; }
         public DbSet<TimeTemplateItem> TimeTemplateItem { get; set; }
         public DbSet<SystemConfig> SystemConfig { get; set; }
