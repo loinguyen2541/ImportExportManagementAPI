@@ -32,8 +32,8 @@ namespace ImportExportManagement_API.Models
 
         public List<Transaction> Transactions { get; set; }
 
-        public List<PartnerType> PartnerTypes { get; set; }
-        public List<PartnerPartnerType> PartnerPartnerTypes { get; set; }
+        public int PartnerTypeId { get; set; }
+        public PartnerType PartnerType { get; set; }
 
         public List<InventoryDetail> InventoryDetails { get; set; }
 

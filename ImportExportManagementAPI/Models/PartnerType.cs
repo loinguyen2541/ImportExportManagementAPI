@@ -18,6 +18,5 @@ namespace ImportExportManagementAPI.Models
         public String PartnerTypeName { get; set; }
 
         public List<Partner> Partners { get; set; }
-        public List<PartnerPartnerType> PartnerPartnerTypes { get; set; }
     }
 }

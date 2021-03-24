@@ -15,7 +15,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<Partner> partners = new Pagination<Partner>();
             IQueryable<Partner> rawData = null;
-            rawData = _dbSet.Include(p => p.PartnerTypes);
+            rawData = _dbSet.Include(p => p.PartnerType);
             partners = await DoFilter(paging, filter, rawData);
             //schedules = _dbSet.ToList();
             return partners;
@@ -24,7 +24,7 @@ namespace ImportExportManagementAPI.Repositories
         public async Task<Partner> GetPartnerByUsernameAsync(String username)
         {
             Partner partner = new Partner();
-            partner = await _dbSet.Include(p => p.PartnerTypes).Where(p => p.Username.Equals(username)).SingleOrDefaultAsync();
+            partner = await _dbSet.Include(p => p.PartnerType).Where(p => p.Username.Equals(username)).SingleOrDefaultAsync();
             return partner;
         }
 
@@ -96,17 +96,6 @@ namespace ImportExportManagementAPI.Repositories
             account.RoleId = 3;
             account.Status = AccountStatus.Active;
             account.Partner = partner;
-            partner.PartnerPartnerTypes = new List<PartnerPartnerType>();
-            foreach (var item in partner.PartnerTypes)
-            {
-                PartnerPartnerType partnerPartnerType = new PartnerPartnerType();
-                partnerPartnerType.PartnerId = partner.PartnerId;
-                partnerPartnerType.PartnerTypeId = item.PartnerTypeId;
-                partner.PartnerPartnerTypes.Add(partnerPartnerType);
-            }
-            partner.PartnerTypes = null;
-
-
 
             _dbContext.Account.Add(account);
             Save();

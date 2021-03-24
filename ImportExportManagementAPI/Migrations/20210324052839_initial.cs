@@ -142,7 +142,8 @@ namespace ImportExportManagementAPI.Migrations
                     PhoneNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     PartnerStatus = table.Column<int>(type: "int", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(25)", nullable: true)
+                    Username = table.Column<string>(type: "nvarchar(25)", nullable: true),
+                    PartnerTypeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -153,6 +154,12 @@ namespace ImportExportManagementAPI.Migrations
                         principalTable: "Account",
                         principalColumn: "Username",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Partner_PartnerType_PartnerTypeId",
+                        column: x => x.PartnerTypeId,
+                        principalTable: "PartnerType",
+                        principalColumn: "PartnerTypeId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -207,30 +214,6 @@ namespace ImportExportManagementAPI.Migrations
                         column: x => x.PartnerId,
                         principalTable: "Partner",
                         principalColumn: "PartnerId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PartnerPartnerType",
-                columns: table => new
-                {
-                    PartnerId = table.Column<int>(type: "int", nullable: false),
-                    PartnerTypeId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PartnerPartnerType", x => new { x.PartnerId, x.PartnerTypeId });
-                    table.ForeignKey(
-                        name: "FK_PartnerPartnerType_Partner_PartnerId",
-                        column: x => x.PartnerId,
-                        principalTable: "Partner",
-                        principalColumn: "PartnerId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PartnerPartnerType_PartnerType_PartnerTypeId",
-                        column: x => x.PartnerTypeId,
-                        principalTable: "PartnerType",
-                        principalColumn: "PartnerTypeId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -325,7 +308,7 @@ namespace ImportExportManagementAPI.Migrations
             migrationBuilder.InsertData(
                 table: "SystemConfig",
                 columns: new[] { "AttributeKey", "AttributeValue" },
-                values: new object[] { "AutoSchedule", "18:00:00" });
+                values: new object[] { "AutoSchedule", "20:00:00" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Account_RoleId",
@@ -353,16 +336,16 @@ namespace ImportExportManagementAPI.Migrations
                 column: "PartnerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Partner_PartnerTypeId",
+                table: "Partner",
+                column: "PartnerTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Partner_Username",
                 table: "Partner",
                 column: "Username",
                 unique: true,
                 filter: "[Username] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PartnerPartnerType_PartnerTypeId",
-                table: "PartnerPartnerType",
-                column: "PartnerTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Schedule_GoodsId",
@@ -406,9 +389,6 @@ namespace ImportExportManagementAPI.Migrations
                 name: "InventoryDetail");
 
             migrationBuilder.DropTable(
-                name: "PartnerPartnerType");
-
-            migrationBuilder.DropTable(
                 name: "Schedule");
 
             migrationBuilder.DropTable(
@@ -419,9 +399,6 @@ namespace ImportExportManagementAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "Inventory");
-
-            migrationBuilder.DropTable(
-                name: "PartnerType");
 
             migrationBuilder.DropTable(
                 name: "TimeTemplateItem");
@@ -440,6 +417,9 @@ namespace ImportExportManagementAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "Account");
+
+            migrationBuilder.DropTable(
+                name: "PartnerType");
 
             migrationBuilder.DropTable(
                 name: "Role");
