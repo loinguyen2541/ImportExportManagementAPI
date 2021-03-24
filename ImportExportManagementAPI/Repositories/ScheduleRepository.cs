@@ -154,7 +154,7 @@ namespace ImportExportManagement_API.Repositories
 
         public Boolean TryToUpdate(Schedule schedule)
         {
-            Schedule currentSchedule = _dbSet.Where(s => s.IsCanceled == false && s.TransactionType == schedule.TransactionType && s.TimeTemplateItemId == schedule.TimeTemplateItemId).SingleOrDefault();
+            Schedule currentSchedule = _dbSet.Where(s => s.ScheduleStatus == ScheduleStatus.Approved && s.TransactionType == schedule.TransactionType && s.TimeTemplateItemId == schedule.TimeTemplateItemId).SingleOrDefault();
             if (currentSchedule != null)
             {
                 currentSchedule.RegisteredWeight += schedule.RegisteredWeight;
