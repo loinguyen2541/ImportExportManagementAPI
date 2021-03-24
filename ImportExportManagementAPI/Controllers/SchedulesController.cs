@@ -115,9 +115,10 @@ namespace ImportExportManagementAPI.Controllers
                 if (!_repo.TryToUpdate(schedule))
                 {
                     _repo.Insert(schedule);
-                    await hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
+                 
                 }
                 await _repo.SaveAsync();
+                await hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
                 return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
             }
             return BadRequest();
