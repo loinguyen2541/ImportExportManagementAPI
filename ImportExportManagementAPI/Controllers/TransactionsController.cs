@@ -80,7 +80,7 @@ namespace ImportExportManagementAPI.Controllers
             if (check != null)
             {
                 await _repo.SaveAsync();
-                await _transactionHub.Clients.All.SendAsync("ReloadTransaction", "reload");
+                await _transactionHub.Clients.All.SendAsync("TransactionCreated", "reload");
                 return CreatedAtAction("GetTransaction", new { id = check.TransactionId }, check);
             }
             return BadRequest("Card is not exist");
@@ -116,7 +116,7 @@ namespace ImportExportManagementAPI.Controllers
             {
                 _goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, transaction.WeightIn - transaction.WeightOut);
                 await chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
-                await _transactionHub.Clients.All.SendAsync("ReloadTransaction", "reload");
+                await _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
                 return NoContent();
             }
             else

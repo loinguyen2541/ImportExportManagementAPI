@@ -158,10 +158,10 @@ namespace ImportExportManagementAPI.Repositories
             return details;
         }
         //get list detail by datetime and type
-        public async Task<List<InventoryDetail>> GetDateInventoryDetail(int inventoryId, int detailType)
+        public async Task<List<InventoryDetail>> GetDateInventoryDetail(int inventoryId, InventoryDetailType detailType)
         {
             List<InventoryDetail> details = new List<InventoryDetail>();
-            details = await _dbSet.Where(d => d.InventoryId == inventoryId && (int)d.Type == detailType).ToListAsync();
+            details = await _dbSet.Where(d => d.InventoryId == inventoryId && d.Type == detailType).ToListAsync();
             return details;
         }
 

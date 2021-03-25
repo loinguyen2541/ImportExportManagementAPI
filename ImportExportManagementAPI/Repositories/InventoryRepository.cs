@@ -83,9 +83,9 @@ namespace ImportExportManagementAPI.Repositories
             return inventory.Result;
         }
 
-        public async Task<string> TotalWeightInventory(DateTime dateRecord, int type)
+        public async Task<string> TotalWeightInventory(DateTime dateRecord, InventoryDetailType type)
         {
-            String total = "0.0 KG";
+            String total = "0.0 kg";
             //check ngày này có inventory chưa
             Inventory inventory = await CheckExistDateRecord(dateRecord);
             if (inventory != null)
@@ -101,7 +101,7 @@ namespace ImportExportManagementAPI.Repositories
                         weightTotal += item.Weight;
                     }
                 }
-                total = weightTotal.ToString() + " KG";
+                total = weightTotal.ToString() + " kg";
             }
             return total;
         }
@@ -115,8 +115,8 @@ namespace ImportExportManagementAPI.Repositories
                 float weightTotal = 0;
                 //get list detail
                 InventoryDetailRepository detailRepo = new InventoryDetailRepository();
-                List<InventoryDetail> listImport = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, 0);
-                List<InventoryDetail> listExport = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, 1);
+                List<InventoryDetail> listImport = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, InventoryDetailType.Import);
+                List<InventoryDetail> listExport = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, InventoryDetailType.Export);
                 if (listImport != null && listImport.Count > 0)
                 {
                     foreach (var item in listImport)
@@ -187,7 +187,7 @@ namespace ImportExportManagementAPI.Repositories
         public List<Inventory> ReportPartner(DateTime DateFrom, DateTime DateTo, string partnerName)
         {
             return _dbSet.Where(p => p.RecordedDate.Date >= DateFrom.Date && p.RecordedDate.Date <= DateTo.Date).Include(p => p.InventoryDetails.Where(i => i.Partner.DisplayName.Contains(partnerName))).ToList();
-        }   
+        }
 
 
         public Inventory ReportTransaction(DateTime currentDate, int partnerID)
