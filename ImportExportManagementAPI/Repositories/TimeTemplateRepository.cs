@@ -96,8 +96,6 @@ namespace ImportExportManagementAPI.Repositories
         {
             TimeTemplate timeTemplate = await _dbSet.Where(t => t.ApplyingDate == DateTime.Today && t.TimeTemplateStatus == TimeTemplateStatus.Applied)
                 .Include(t => t.TimeTemplateItems.Where( i => i.ScheduleTime > DateTime.Now.TimeOfDay)).SingleOrDefaultAsync();
-            Console.WriteLine(DateTime.Now.TimeOfDay);
-            Console.WriteLine(DateTime.Now.TimeOfDay);
             return timeTemplate;
         }
         public TimeTemplate GetCurrentTimeTemplate()
