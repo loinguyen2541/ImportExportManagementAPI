@@ -145,6 +145,12 @@ namespace ImportExportManagementAPI
             Partner partner = await _repo.GetCards(id);
             return Ok(partner);
         }
-
+        [HttpGet("report-schedule")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<Partner>>> ReportSchedule(string fromDate, string toDate, int caseSearch)
+        {
+            List<Partner> schedules = await _repo.GetPartnerReport(fromDate, toDate, caseSearch);
+            return Ok(schedules);
+        }
     }
 }

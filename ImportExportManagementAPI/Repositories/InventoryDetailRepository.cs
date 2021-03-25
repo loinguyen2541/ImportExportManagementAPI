@@ -73,6 +73,7 @@ namespace ImportExportManagementAPI.Repositories
 
             //check da co phieu nhao kho vao ngay chua va detail cua type nay da co chua
             Inventory checkInventoryExisted = await inventRepo.CheckExistDateRecord(date);
+            //check type nay partner co chua
             Task<InventoryDetail> checkTypeExisted = CheckExistedDetailType(trans.PartnerId, transType, checkInventoryExisted.InventoryId);
             //neu inven da co && type chua co => tao moi
             if (checkTypeExisted.Result == null)

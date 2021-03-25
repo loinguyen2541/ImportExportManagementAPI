@@ -52,9 +52,9 @@ namespace ImportExportManagementAPI.Controllers
         }
         [HttpGet("schedulehistory")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate)
+        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate, String type)
         {
-            List<Schedule> schedules = await _repo.GetHistory(searchDate);
+            List<Schedule> schedules = await _repo.GetHistory(searchDate, type);
             return Ok(schedules);
         }
 
@@ -63,7 +63,7 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Schedule>> GetSchedule(int id)
         {
-            var schedule = await _repo.GetByIDAsync(id);
+            var schedule = await _repo.GetScheduleById(id);
 
             if (schedule == null)
             {
@@ -133,7 +133,8 @@ namespace ImportExportManagementAPI.Controllers
             {
                 if (schedule.ScheduleStatus == ScheduleStatus.Approved)
                 {
-                    bool checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule, username);
+                    Schedule checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule, username);
+                    _repo.Update(checkCancel);
                     await _repo.SaveAsync();
                     return NoContent();
                 }
@@ -149,7 +150,21 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<List<Schedule>>> GetTop10Schedule()
         {
-            return Ok(await _repo.GetTop10Schedule());
+            return Ok(await _repo.GetTop10Schedule());}
+        [HttpGet("search-partner")]
+        [AllowAnonymous]
+        public async Task<ActionResult<Pagination<Schedule>>> GetScheduleByPartner([FromQuery] ScheduleFilterParam filter, [FromQuery] PaginationParam paging)
+        {
+            Pagination<Schedule> schedules = await _repo.DoFilterSearchPartner(filter, paging);
+            return Ok(schedules);
+        }
+
+        [HttpGet("count-total")]
+        [AllowAnonymous]
+        public async Task<int> GetCountTotal(int type)
+        {
+            int count = _repo.GetTotalByType(type);
+            return count;
         }
     }
 }
