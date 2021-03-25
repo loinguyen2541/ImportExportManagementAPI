@@ -11,6 +11,8 @@ using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using ImportExportManagementAPI.Hubs;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -22,12 +24,14 @@ namespace ImportExportManagementAPI.Controllers
         private readonly TimeTemplateItemRepository _timeTemplateItemRepo;
         private readonly GoodsRepository _goodsRepository;
         private readonly SystemConfigRepository _systemConfigRepository;
-        public SchedulesController(SystemConfigRepository systemConfigRepository)
+        private readonly IHubContext<ScheduleHub> hubContext;
+        public SchedulesController(SystemConfigRepository systemConfigRepository, IHubContext<ScheduleHub> scheduleHub)
         {
             _repo = new ScheduleRepository();
             _timeTemplateItemRepo = new TimeTemplateItemRepository();
             _goodsRepository = new GoodsRepository();
             _systemConfigRepository = systemConfigRepository;
+            hubContext = scheduleHub;
         }
 
         [HttpGet]
@@ -111,8 +115,10 @@ namespace ImportExportManagementAPI.Controllers
                 if (!_repo.TryToUpdate(schedule))
                 {
                     _repo.Insert(schedule);
+                 
                 }
                 await _repo.SaveAsync();
+                await hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
                 return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
             }
             return BadRequest();
@@ -139,6 +145,12 @@ namespace ImportExportManagementAPI.Controllers
             }
             return NotFound();
         }
+
+        [HttpGet("top10")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<Schedule>>> GetTop10Schedule()
+        {
+            return Ok(await _repo.GetTop10Schedule());}
         [HttpGet("search-partner")]
         [AllowAnonymous]
         public async Task<ActionResult<Pagination<Schedule>>> GetScheduleByPartner([FromQuery] ScheduleFilterParam filter, [FromQuery] PaginationParam paging)

@@ -198,14 +198,14 @@ namespace ImportExportManagementAPI.Repositories
             listTransaction = await DoFilter(paging, filter, rawData);
             return listTransaction;
         }
-        public Pagination<TopPartner> GetTopPartner(PaginationParam paging, TransactionFilter filter)
+      /*  public Pagination<TopPartner> GetTopPartner(PaginationParam paging, TransactionFilter filter)
         {
             Pagination<TopPartner> listTopPartner = new Pagination<TopPartner>();
             IQueryable<Transaction> rawData = null;
             rawData = _dbSet.Include(t => t.Partner).Where(p => p.TransactionStatus == TransactionStatus.Success);
             listTopPartner = DoFilterTop10(paging, filter, rawData);
             return listTopPartner;
-        }
+        }*/
         public async ValueTask<Pagination<Transaction>> GetLastIndex(PaginationParam paging)
         {
             Pagination<Transaction> listTransaction = new Pagination<Transaction>();
@@ -267,7 +267,7 @@ namespace ImportExportManagementAPI.Repositories
             pagination.Data = await queryable.ToListAsync();
             return pagination;
         }
-        private Pagination<TopPartner> DoFilterTop10(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)
+        /*private Pagination<TopPartner> DoFilterTop10(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)
         {
             if (filter != null)
             {
@@ -331,7 +331,7 @@ namespace ImportExportManagementAPI.Repositories
             pagination.Data = listTop;
 
             return pagination;
-        }
+        }*/
         public async ValueTask<Pagination<Transaction>> GetTransByPartnerIdAsync(PaginationParam paging, int id)
         {
             Pagination<Transaction> listTransaction = new Pagination<Transaction>();

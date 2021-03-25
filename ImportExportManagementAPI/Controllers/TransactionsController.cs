@@ -1,4 +1,5 @@
 ﻿using ImportExportManagement_API.Models;
+using ImportExportManagementAPI.Hubs;
 using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.ModelWeb;
@@ -23,12 +24,14 @@ namespace ImportExportManagementAPI.Controllers
         private readonly GoodsRepository _goodsRepository;
         private readonly ScheduleRepository _scheduleRepository;
         private readonly IHubContext<ChartHub> chartHub;
+        private readonly IHubContext<TransactionHub> _transactionHub;
 
-        public TransactionsController(IHubContext<ChartHub> chartHub)
+        public TransactionsController(IHubContext<ChartHub> chartHub, IHubContext<TransactionHub> transactionHub)
         {
             this.chartHub = chartHub;
             _repo = new TransactionRepository();
             _goodsRepository = new GoodsRepository();
+            _transactionHub = transactionHub;
             _scheduleRepository = new ScheduleRepository();
         }
         //get transaction
@@ -80,6 +83,7 @@ namespace ImportExportManagementAPI.Controllers
             if (check != null)
             {
                 await _repo.SaveAsync();
+                await _transactionHub.Clients.All.SendAsync("ReloadTransaction", "reload");
                 return CreatedAtAction("GetTransaction", new { id = check.TransactionId }, check);
             }
             return BadRequest("Card is not exist");
@@ -115,8 +119,8 @@ namespace ImportExportManagementAPI.Controllers
             if (transaction != null)
             {
                 _goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, transaction.WeightIn - transaction.WeightOut);
-                await _scheduleRepository.UpdateRealWeight(transaction.PartnerId, transaction.WeightIn - transaction.WeightOut);
-                await chartHub.Clients.All.SendAsync("TransactionSuccess" , cardId);
+                await chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
+                await _transactionHub.Clients.All.SendAsync("ReloadTransaction", "reload");
                 return NoContent();
             }
             else

@@ -306,7 +306,7 @@ namespace ImportExportManagement_API.Repositories
 
         public Boolean TryToUpdate(Schedule schedule)
         {
-            Schedule currentSchedule = _dbSet.Where(s => s.IsCanceled == false && s.TransactionType == schedule.TransactionType && s.TimeTemplateItemId == schedule.TimeTemplateItemId).SingleOrDefault();
+            Schedule currentSchedule = _dbSet.Where(s => s.ScheduleStatus == ScheduleStatus.Approved && s.TransactionType == schedule.TransactionType && s.TimeTemplateItemId == schedule.TimeTemplateItemId).SingleOrDefault();
             if (currentSchedule != null)
             {
                 currentSchedule.RegisteredWeight += schedule.RegisteredWeight;
@@ -315,6 +315,18 @@ namespace ImportExportManagement_API.Repositories
             }
             return false;
         }
+
+        public async Task<List<Schedule>> GetTop10Schedule()
+        {
+            IQueryable<Schedule> rawData = null;
+            DateTime now = DateTime.Today;
+            DateTime yesterday = now.AddDays(-1);
+            DateTime tomorrow = now.AddDays(1);
+            rawData = _dbSet.Include(s => s.Partner).Where(s => s.CreatedDate > yesterday && s.CreatedDate < tomorrow && s.ScheduleStatus == ScheduleStatus.Approved).OrderByDescending(o=>o.ScheduleId);
+            return await rawData.Take(10).ToListAsync();
+        }
+
+    }
 
         public async Task<List<Schedule>> GetBookedScheduleInDate(int partnerId)
         {

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    [Migration("20210323020841_initial")]
+    [Migration("20210324052839_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,21 +20,6 @@ namespace ImportExportManagementAPI.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.3")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("ImportExportManagementAPI.Models.PartnerPartnerType", b =>
-                {
-                    b.Property<int>("PartnerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PartnerTypeId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PartnerId", "PartnerTypeId");
-
-                    b.HasIndex("PartnerTypeId");
-
-                    b.ToTable("PartnerPartnerType");
-                });
 
             modelBuilder.Entity("ImportExportManagementAPI.Models.PartnerType", b =>
                 {
@@ -72,7 +57,7 @@ namespace ImportExportManagementAPI.Migrations
                         new
                         {
                             AttributeKey = "AutoSchedule",
-                            AttributeValue = "18:00:00"
+                            AttributeValue = "20:00:00"
                         });
                 });
 
@@ -264,6 +249,9 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("PartnerStatus")
                         .HasColumnType("int");
 
+                    b.Property<int>("PartnerTypeId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
@@ -272,6 +260,8 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("nvarchar(25)");
 
                     b.HasKey("PartnerId");
+
+                    b.HasIndex("PartnerTypeId");
 
                     b.HasIndex("Username")
                         .IsUnique()
@@ -405,25 +395,6 @@ namespace ImportExportManagementAPI.Migrations
                     b.ToTable("Transaction");
                 });
 
-            modelBuilder.Entity("ImportExportManagementAPI.Models.PartnerPartnerType", b =>
-                {
-                    b.HasOne("ImportExportManagement_API.Models.Partner", "Partner")
-                        .WithMany("PartnerPartnerTypes")
-                        .HasForeignKey("PartnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ImportExportManagementAPI.Models.PartnerType", "PartnerType")
-                        .WithMany("PartnerPartnerTypes")
-                        .HasForeignKey("PartnerTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Partner");
-
-                    b.Navigation("PartnerType");
-                });
-
             modelBuilder.Entity("ImportExportManagementAPI.Models.TimeTemplateItem", b =>
                 {
                     b.HasOne("ImportExportManagementAPI.Models.TimeTemplate", "TimeTemplate")
@@ -486,11 +457,19 @@ namespace ImportExportManagementAPI.Migrations
 
             modelBuilder.Entity("ImportExportManagement_API.Models.Partner", b =>
                 {
+                    b.HasOne("ImportExportManagementAPI.Models.PartnerType", "PartnerType")
+                        .WithMany("Partners")
+                        .HasForeignKey("PartnerTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ImportExportManagement_API.Models.Account", "Account")
                         .WithOne("Partner")
                         .HasForeignKey("ImportExportManagement_API.Models.Partner", "Username");
 
                     b.Navigation("Account");
+
+                    b.Navigation("PartnerType");
                 });
 
             modelBuilder.Entity("ImportExportManagement_API.Models.Schedule", b =>
@@ -547,7 +526,7 @@ namespace ImportExportManagementAPI.Migrations
 
             modelBuilder.Entity("ImportExportManagementAPI.Models.PartnerType", b =>
                 {
-                    b.Navigation("PartnerPartnerTypes");
+                    b.Navigation("Partners");
                 });
 
             modelBuilder.Entity("ImportExportManagementAPI.Models.TimeTemplate", b =>
@@ -589,8 +568,6 @@ namespace ImportExportManagementAPI.Migrations
                     b.Navigation("IdentityCards");
 
                     b.Navigation("InventoryDetails");
-
-                    b.Navigation("PartnerPartnerTypes");
 
                     b.Navigation("Schedules");
 
