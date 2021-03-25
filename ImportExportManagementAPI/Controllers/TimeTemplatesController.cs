@@ -117,6 +117,15 @@ namespace ImportExportManagementAPI.Controllers
             return timeTemplate;
         }
 
+        [HttpGet("forecastInven")]
+        [AllowAnonymous]
+        public async Task<ActionResult<TimeTemplate>> GetForecastInventoryToday()
+
+        {
+            TimeTemplate timeTemplate = await _timeTemplateRepository.GetForecastInventoryToday();
+            return Ok(timeTemplate);
+        }
+
         private bool TimeTemplateExists(int id)
         {
             return _context.TimeTemplate.Any(e => e.TimeTemplateId == id);

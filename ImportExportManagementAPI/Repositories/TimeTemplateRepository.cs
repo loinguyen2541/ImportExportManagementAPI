@@ -92,7 +92,12 @@ namespace ImportExportManagementAPI.Repositories
                 .SingleOrDefaultAsync();
             return timeTemplate;
         }
-
+        public async Task<TimeTemplate> GetForecastInventoryToday()
+        {
+            TimeTemplate timeTemplate = await _dbSet.Where(t => t.ApplyingDate == DateTime.Today && t.TimeTemplateStatus == TimeTemplateStatus.Applied)
+                .Include(t => t.TimeTemplateItems.Where( i => i.ScheduleTime > DateTime.Now.TimeOfDay).OrderBy(o =>o.ScheduleTime)).SingleOrDefaultAsync();
+            return timeTemplate;
+        }
         public TimeTemplate GetCurrentTimeTemplate()
         {
             TimeTemplate timeTemplate = _dbSet.AsNoTracking().
