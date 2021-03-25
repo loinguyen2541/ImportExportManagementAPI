@@ -326,8 +326,6 @@ namespace ImportExportManagement_API.Repositories
             return await rawData.Take(10).ToListAsync();
         }
 
-    }
-
         public async Task<List<Schedule>> GetBookedScheduleInDate(int partnerId)
         {
             var current = DateTime.Now.Date;
