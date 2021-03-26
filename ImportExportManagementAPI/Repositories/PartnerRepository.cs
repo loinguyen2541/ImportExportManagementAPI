@@ -31,11 +31,11 @@ namespace ImportExportManagementAPI.Repositories
             {
                 case 1:
                     //đặt lịch mà giao => check by realweight
-                    rawData = _dbSet.Include(p => p.Schedules.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.ActualWeight != null));
+                    //rawData = _dbSet.Include(p => p.Schedules.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.ActualWeight != null));
                     break;
                 case 2:
                     //đặt lịch mà không giao => bị hủy bởi hệ thống => check by iscancel và update by hệ thống
-                    rawData = _dbSet.Include(p => p.Schedules.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("System")));
+                    //rawData = _dbSet.Include(p => p.Schedules.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("System")));
                     break;
             }
             partners = await rawData.ToListAsync();
@@ -46,7 +46,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             if (filter.Name != null && filter.Name.Length > 0)
             {
-                queryable = queryable.Where(p => p.DisplayName == filter.Name);
+                queryable = queryable.Where(p => p.DisplayName.Contains(filter.Name));
             }
             if (filter.Email != null && filter.Email.Length > 0)
             {
@@ -55,6 +55,10 @@ namespace ImportExportManagementAPI.Repositories
             if (filter.Phone != null && filter.Phone.Length > 0)
             {
                 queryable = queryable.Where(p => p.PhoneNumber.Contains(filter.Phone));
+            }
+            if (filter.Type != null && filter.Type.Length > 0)
+            {
+                queryable = queryable.Where(p => p.PartnerType.PartnerTypeName.Contains(filter.Type));
             }
 
             if (paging.Page < 1)
@@ -103,6 +107,7 @@ namespace ImportExportManagementAPI.Repositories
         }
         public new void Insert(Partner partner)
         {
+            partner.PartnerStatus = PartnerStatus.Active;
             Account account = new Account();
 
             account.Username = partner.Email;

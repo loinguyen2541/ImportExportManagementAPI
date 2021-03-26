@@ -31,7 +31,7 @@ namespace ImportExportManagement_API.Repositories
         {
             Pagination<Schedule> schedules = new Pagination<Schedule>();
             IQueryable<Schedule> rawData = null;
-            rawData = _dbSet.Include(s => s.Partner);
+            rawData = _dbSet.Include(s => s.Partner).OrderByDescending(p => p.ScheduleId);
             schedules = await DoFilter(paging, filter, rawData);
             return schedules;
         }
@@ -82,17 +82,17 @@ namespace ImportExportManagement_API.Repositories
                 DateTime end = DateTime.Parse(toDate);
                 queryable = queryable.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
             }
-            if(queryable != null)
+            if (queryable != null)
             {
                 switch (caseSearch)
                 {
                     case 1:
                         //đặt lịch mà giao => check by realweight
-                        queryable = queryable.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.ActualWeight != null);
+                        //queryable = queryable.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.ActualWeight != null);
                         break;
                     case 2:
                         //đặt lịch mà không giao => bị hủy bởi hệ thống => check by iscancel và update by hệ thống
-                        queryable = queryable.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("system"));
+                        //queryable = queryable.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("system"));                        //queryable = queryable.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("system"));
                         break;
                     default:
                         break;
@@ -109,14 +109,13 @@ namespace ImportExportManagement_API.Repositories
             DateTime end = DateTime.Now.AddDays(1);
             IQueryable<Schedule> rawData = _dbSet.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end && s.TransactionType.Equals(typeTrans));
             count = rawData.Count();
-
             return count;
         }
 
         public async Task<Pagination<Schedule>> DoFilterSearchPartner(ScheduleFilterParam filter, PaginationParam paging)
         {
             IQueryable<Schedule> queryable = _dbSet.Include(s => s.Partner);
-            if(filter == null)
+            if (filter == null)
             {
                 DateTime start = DateTime.Now.AddDays(-1);
                 DateTime end = DateTime.Now.AddDays(1);
@@ -124,40 +123,35 @@ namespace ImportExportManagement_API.Repositories
             }
             else
             {
-                if(filter.PartnerName != null)
+                if (filter.PartnerName != null)
                 {
                     queryable = queryable.Where(s => s.Partner.DisplayName.Contains(filter.PartnerName));
                 }
-                if(filter.TransactionType != null)
+                if (filter.TransactionType != null)
                 {
                     TransactionType typeTrans = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
                     queryable = queryable.Where(s => s.TransactionType.Equals(typeTrans));
                 }
-                if(filter.fromDate!= null)
+                if ((filter.fromDate == DateTime.MinValue) && (filter.toDate == DateTime.MinValue))
                 {
-                    if (filter.fromDate.Equals(filter.toDate))
-                    {
-                        var dateAndTime = DateTime.Now;
-                        var date = dateAndTime.Date;
-                        DateTime dateFrom = DateTime.Parse(filter.fromDate).Date;
-                        DateTime dateTo = dateFrom.AddDays(1).Date;
-                        queryable = queryable.Where(s => dateFrom <= s.ScheduleDate && s.ScheduleDate <= dateTo);
-                    }
-                    else
-                    {
-                        if (DateTime.TryParse(filter.fromDate, out DateTime date))
-                        {
-                            DateTime dateFrom = DateTime.Parse(filter.fromDate).Date;
-                            queryable = queryable.Where(s => s.ScheduleDate >= dateFrom);
-                        }
-                        if (DateTime.TryParse(filter.toDate, out DateTime date2))
-                        {
-                            DateTime dateTo = DateTime.Parse(filter.fromDate).Date;
-                            queryable = queryable.Where(s => s.ScheduleDate >= dateTo);
-                        }
-                    }
+                    DateTime dateFrom = DateTime.Now.AddDays(-1).Date;
+                    DateTime dateTo = DateTime.Now.AddDays(1).Date;
+                    queryable = queryable.Where(s => dateFrom <= s.ScheduleDate && s.ScheduleDate <= dateTo);
+                }
+                else
+                {
+                    queryable = queryable.Where(s =>
+                    s.ScheduleDate >= filter.fromDate
+                    && s.ScheduleDate <= filter.toDate
+                 /*   &&
+                    && s.ScheduleDate.Minute >= filter.fromDate.Minute
+                    && s.ScheduleDate.Minute <= filter.toDate.Minute*/
+                    ).Where(s => s.ScheduleDate.Hour >= filter.fromDate.Hour
+                    && s.ScheduleDate.Hour <= filter.toDate.Hour).Where(s=> s.ScheduleDate.Minute >= filter.fromDate.Minute
+                    && s.ScheduleDate.Minute <= filter.toDate.Minute);
                 }
             }
+            queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
 
             if (paging.Page < 1)
             {
@@ -200,13 +194,13 @@ namespace ImportExportManagement_API.Repositories
                 TransactionType typeTrans = (TransactionType)Enum.Parse(typeof(TransactionType), type);
                 queryable = queryable.Where(s => s.TransactionType.Equals(typeTrans));
             }
-            queryable = queryable.Where(s => !s.UpdatedBy.Contains("system"));
+            queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
             return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
         }
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
         {
             List<Schedule> schedules = await _dbSet
-                .Where(s => s.PartnerId == partnerId && s.IsCanceled == false).OrderBy(s => s.ScheduleDate).ToListAsync();
+                .Where(s => s.PartnerId == partnerId && !s.UpdatedBy.Equals("Update action")).OrderBy(s => s.ScheduleDate).ToListAsync();
             return schedules;
         }
 
@@ -218,10 +212,9 @@ namespace ImportExportManagement_API.Repositories
                 {
                     queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
                 }
-                if (DateTime.TryParse(filter.ScheduleDate, out DateTime date))
+                if (filter.ScheduleDate != DateTime.MinValue)
                 {
-                    DateTime scheduleDate = DateTime.Parse(filter.ScheduleDate);
-                    queryable = queryable.Where(p => p.ScheduleDate.Date == scheduleDate.Date);
+                    queryable = queryable.Where(p => p.ScheduleDate.Date == filter.ScheduleDate.Date);
                 }
                 if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
                 {
@@ -229,7 +222,7 @@ namespace ImportExportManagement_API.Repositories
                     queryable = queryable.Where(p => p.TransactionType == type);
                 }
             }
-
+            queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
             if (paging.Page < 1)
             {
                 paging.Page = 1;
@@ -289,13 +282,11 @@ namespace ImportExportManagement_API.Repositories
 
         public new void Delete(Schedule schedule)
         {
-            schedule.IsCanceled = true;
             Update(schedule);
         }
         public new void Delete(object id)
         {
             Schedule schedule = _dbSet.Find(id);
-            schedule.IsCanceled = true;
             Update(schedule);
         }
 
@@ -322,7 +313,7 @@ namespace ImportExportManagement_API.Repositories
             DateTime now = DateTime.Today;
             DateTime yesterday = now.AddDays(-1);
             DateTime tomorrow = now.AddDays(1);
-            rawData = _dbSet.Include(s => s.Partner).Where(s => s.CreatedDate > yesterday && s.CreatedDate < tomorrow && s.ScheduleStatus == ScheduleStatus.Approved).OrderByDescending(o=>o.ScheduleId);
+            rawData = _dbSet.Include(s => s.Partner).Where(s => s.CreatedDate > yesterday && s.CreatedDate < tomorrow && s.ScheduleStatus == ScheduleStatus.Approved && !s.UpdatedBy.Equals("Update action")).OrderByDescending(o => o.ScheduleId);
             return await rawData.Take(10).ToListAsync();
         }
 
@@ -330,7 +321,7 @@ namespace ImportExportManagement_API.Repositories
         {
             var current = DateTime.Now.Date;
             List<Schedule> listSchedule = new List<Schedule>();
-            listSchedule = await _dbSet.OrderBy(s => s.RegisteredWeight).Where(s => s.PartnerId == partnerId && s.ScheduleDate.Date == current).ToListAsync();
+            listSchedule = await _dbSet.OrderBy(s => s.RegisteredWeight).Where(s => s.PartnerId == partnerId && s.ScheduleDate.Date == current && !s.UpdatedBy.Equals("Update action")).ToListAsync();
             return listSchedule;
         }
 
