@@ -31,11 +31,11 @@ namespace ImportExportManagementAPI.Repositories
             {
                 case 1:
                     //đặt lịch mà giao => check by realweight
-                    rawData = _dbSet.Include(p => p.Schedules.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.ActualWeight != null));
+                    //rawData = _dbSet.Include(p => p.Schedules.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.ActualWeight != null));
                     break;
                 case 2:
                     //đặt lịch mà không giao => bị hủy bởi hệ thống => check by iscancel và update by hệ thống
-                    rawData = _dbSet.Include(p => p.Schedules.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("System")));
+                    //rawData = _dbSet.Include(p => p.Schedules.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("System")));
                     break;
             }
             partners = await rawData.ToListAsync();
