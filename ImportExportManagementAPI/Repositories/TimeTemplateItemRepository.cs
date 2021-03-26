@@ -129,7 +129,6 @@ namespace ImportExportManagementAPI.Repositories
                     timeTemplateItems = await _dbSet
                 .Where(i => i.TimeTemplateId == timeTemplateItem.TimeTemplateId)
                 .OrderBy(p => p.ScheduleTime).ToListAsync();
-                    RedefineByTimeClick(timeTemplateItems);
                 }
             }
             if (timeTemplateItems != null && timeTemplateItems.Count > 0)
@@ -144,7 +143,6 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 schedule.ScheduleStatus = ScheduleStatus.Cancel;
                 schedule.UpdatedBy = username;
-                schedule.ScheduleStatus = ScheduleStatus.Cancel;
                 try
                 {
                     await _dbContext.SaveChangesAsync();
@@ -182,7 +180,7 @@ namespace ImportExportManagementAPI.Repositories
 
         public async Task<Schedule> ChangeSchedule(Schedule updateSchedule, Schedule existedSchedule)
         {
-            Schedule cancelSchedule = await CancelSchedule(existedSchedule, "system");
+            Schedule cancelSchedule = await CancelSchedule(existedSchedule, "Update action");
             if (cancelSchedule!=null)
             {
                 if (CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId))
