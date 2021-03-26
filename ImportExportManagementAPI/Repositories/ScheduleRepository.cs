@@ -140,7 +140,15 @@ namespace ImportExportManagement_API.Repositories
                 }
                 else
                 {
-                    queryable = queryable.Where(s => s.ScheduleDate >= filter.fromDate && s.ScheduleDate <= filter.toDate);
+                    queryable = queryable.Where(s =>
+                    s.ScheduleDate >= filter.fromDate
+                    && s.ScheduleDate <= filter.toDate
+                 /*   &&
+                    && s.ScheduleDate.Minute >= filter.fromDate.Minute
+                    && s.ScheduleDate.Minute <= filter.toDate.Minute*/
+                    ).Where(s => s.ScheduleDate.Hour >= filter.fromDate.Hour
+                    && s.ScheduleDate.Hour <= filter.toDate.Hour).Where(s=> s.ScheduleDate.Minute >= filter.fromDate.Minute
+                    && s.ScheduleDate.Minute <= filter.toDate.Minute);
                 }
             }
             queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
