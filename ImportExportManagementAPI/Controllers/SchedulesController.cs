@@ -163,7 +163,7 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<int> GetCountTotal(int type)
         {
-            int count = _repo.GetTotalByType(type);
+            int count =  _repo.GetTotalByType(type);
             return count;
         }
     }
