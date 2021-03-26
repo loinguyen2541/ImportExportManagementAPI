@@ -46,7 +46,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             if (filter.Name != null && filter.Name.Length > 0)
             {
-                queryable = queryable.Where(p => p.DisplayName == filter.Name);
+                queryable = queryable.Where(p => p.DisplayName.Contains(filter.Name));
             }
             if (filter.Email != null && filter.Email.Length > 0)
             {
@@ -55,6 +55,10 @@ namespace ImportExportManagementAPI.Repositories
             if (filter.Phone != null && filter.Phone.Length > 0)
             {
                 queryable = queryable.Where(p => p.PhoneNumber.Contains(filter.Phone));
+            }
+            if (filter.Type != null && filter.Type.Length > 0)
+            {
+                queryable = queryable.Where(p => p.PartnerType.PartnerTypeName.Contains(filter.Type));
             }
 
             if (paging.Page < 1)
@@ -103,6 +107,7 @@ namespace ImportExportManagementAPI.Repositories
         }
         public new void Insert(Partner partner)
         {
+            partner.PartnerStatus = PartnerStatus.Active;
             Account account = new Account();
 
             account.Username = partner.Email;
