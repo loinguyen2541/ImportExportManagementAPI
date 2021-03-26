@@ -88,7 +88,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             TimeTemplate timeTemplate = await _dbSet.
                 Where(t => t.TimeTemplateStatus == TimeTemplateStatus.Applied)
-                .Include(t => t.TimeTemplateItems).ThenInclude(t => t.Schedules.Where(p => p.PartnerId == partnerId && p.IsCanceled == false))
+                .Include(t => t.TimeTemplateItems).ThenInclude(t => t.Schedules.Where(p => p.PartnerId == partnerId && p.ScheduleStatus.Equals(ScheduleStatus.Cancel)))
                 .SingleOrDefaultAsync();
             return timeTemplate;
         }

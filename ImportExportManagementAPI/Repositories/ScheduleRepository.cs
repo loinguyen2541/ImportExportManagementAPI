@@ -88,11 +88,11 @@ namespace ImportExportManagement_API.Repositories
                 {
                     case 1:
                         //đặt lịch mà giao => check by realweight
-                        queryable = queryable.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.ActualWeight != null);
+                        //queryable = queryable.Where(s => s.IsCanceled == false && s.ScheduleStatus == ScheduleStatus.Success && s.ActualWeight != null);
                         break;
                     case 2:
                         //đặt lịch mà không giao => bị hủy bởi hệ thống => check by iscancel và update by hệ thống
-                        queryable = queryable.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("system"));
+                        //queryable = queryable.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("system"));                        //queryable = queryable.Where(s => s.IsCanceled == true && s.ScheduleStatus == ScheduleStatus.Cancel && s.UpdatedBy.Equals("system"));
                         break;
                     default:
                         break;
@@ -199,7 +199,7 @@ namespace ImportExportManagement_API.Repositories
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
         {
             List<Schedule> schedules = await _dbSet
-                .Where(s => s.PartnerId == partnerId && s.IsCanceled == false).OrderBy(s => s.ScheduleDate).ToListAsync();
+                .Where(s => s.PartnerId == partnerId).OrderBy(s => s.ScheduleDate).ToListAsync();
             return schedules;
         }
 
@@ -281,13 +281,11 @@ namespace ImportExportManagement_API.Repositories
 
         public new void Delete(Schedule schedule)
         {
-            schedule.IsCanceled = true;
             Update(schedule);
         }
         public new void Delete(object id)
         {
             Schedule schedule = _dbSet.Find(id);
-            schedule.IsCanceled = true;
             Update(schedule);
         }
 

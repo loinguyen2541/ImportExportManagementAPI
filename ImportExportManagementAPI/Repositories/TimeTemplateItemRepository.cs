@@ -142,7 +142,7 @@ namespace ImportExportManagementAPI.Repositories
                 {
                     CancelExport(timeTemplateItems, timeTemplateItem.ScheduleTime, schedule.RegisteredWeight);
                 }
-                schedule.IsCanceled = true;
+                schedule.ScheduleStatus = ScheduleStatus.Cancel;
                 schedule.UpdatedBy = username;
                 schedule.ScheduleStatus = ScheduleStatus.Cancel;
                 try
@@ -188,7 +188,7 @@ namespace ImportExportManagementAPI.Repositories
                 if (CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId))
                 {
                     UpdateCurrent(updateSchedule.TransactionType, updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId);
-                    updateSchedule.IsCanceled = false;
+                    updateSchedule.ScheduleStatus = ScheduleStatus.Cancel;
                     updateSchedule.RegisteredWeight = updateSchedule.RegisteredWeight;
                     return updateSchedule;
                 }
