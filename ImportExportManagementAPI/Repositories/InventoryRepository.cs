@@ -149,7 +149,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             List<TotalInventoryDetailedByDate> listDetail = new List<TotalInventoryDetailedByDate>();
             //check ngày này có inventory chưa
-            if (dateFrom != null && dateTo != null)
+            if (dateFrom != DateTime.MinValue && dateTo != DateTime.MinValue)
             {
                 IQueryable<Inventory> rawData = null;
                 rawData = _dbSet.Where(p => p.RecordedDate >= dateFrom && p.RecordedDate <= dateTo);

@@ -153,15 +153,15 @@ namespace ImportExportManagementAPI.Controllers
             return Ok(await _repo.GetTop10Schedule());}
         [HttpGet("search-partner")]
         [AllowAnonymous]
-        public async Task<ActionResult<Pagination<Schedule>>> GetScheduleByPartner([FromQuery] ScheduleFilterParam filter, [FromQuery] PaginationParam paging)
+        public ActionResult<Pagination<Schedule>> GetScheduleByPartner([FromQuery] ScheduleFilterParam filter, [FromQuery] PaginationParam paging)
         {
-            Pagination<Schedule> schedules = await _repo.DoFilterSearchPartner(filter, paging);
+            Pagination<Schedule> schedules =  _repo.DoFilterSearchPartner(filter, paging);
             return Ok(schedules);
         }
 
         [HttpGet("count-total")]
         [AllowAnonymous]
-        public async Task<int> GetCountTotal(int type)
+        public  int GetCountTotal(int type)
         {
             int count =  _repo.GetTotalByType(type);
             return count;

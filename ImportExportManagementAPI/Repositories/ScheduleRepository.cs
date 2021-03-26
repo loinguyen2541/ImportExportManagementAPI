@@ -112,7 +112,7 @@ namespace ImportExportManagement_API.Repositories
             return count;
         }
 
-        public async Task<Pagination<Schedule>> DoFilterSearchPartner(ScheduleFilterParam filter, PaginationParam paging)
+        public  Pagination<Schedule> DoFilterSearchPartner(ScheduleFilterParam filter, PaginationParam paging)
         {
             IQueryable<Schedule> queryable = _dbSet.Include(s => s.Partner);
             List<Schedule> schedules = new List<Schedule>();
@@ -195,7 +195,7 @@ namespace ImportExportManagement_API.Repositories
             pagination.Size = paging.Size;
             double totalPage = (count * 1.0) / (pagination.Size * 1.0);
             pagination.TotalPage = (int)Math.Ceiling(totalPage);
-            pagination.Data = schedules;
+            pagination.Data = schedules.OrderByDescending(o => o.ScheduleDate).ToList();
 
             return pagination;
         }
