@@ -97,7 +97,7 @@ namespace ImportExportManagementAPI.Controllers
             Transaction transactionUpdated = await _repo.UpdateTransactionByManual(trans, id);
             if (transactionUpdated != null)
             {
-                _goodsRepository.UpdateQuantityOfGood(transactionUpdated.GoodsId, transactionUpdated.WeightIn - transactionUpdated.WeightOut);
+                _goodsRepository.UpdateQuantityOfGood(transactionUpdated.GoodsId, transactionUpdated.WeightIn - transactionUpdated.WeightOut, transactionUpdated.TransactionType);
 
                 return NoContent();
             }
@@ -118,10 +118,11 @@ namespace ImportExportManagementAPI.Controllers
             Transaction transaction = await _repo.UpdateTransactionArduino(cardId, weightOut, "UpdateArduino");
             if (transaction != null)
             {
-                _goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, transaction.WeightIn - transaction.WeightOut);
-                await chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
-                await _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
-                return NoContent();
+                Task charHub = chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
+                Task transactionhub = _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
+                Task<String> updateMiscellaneous = _repo.UpdateMiscellaneousAsync(transaction);
+
+                return Ok();
             }
             else
             {

@@ -198,14 +198,14 @@ namespace ImportExportManagementAPI.Repositories
             listTransaction = await DoFilter(paging, filter, rawData);
             return listTransaction;
         }
-      /*  public Pagination<TopPartner> GetTopPartner(PaginationParam paging, TransactionFilter filter)
-        {
-            Pagination<TopPartner> listTopPartner = new Pagination<TopPartner>();
-            IQueryable<Transaction> rawData = null;
-            rawData = _dbSet.Include(t => t.Partner).Where(p => p.TransactionStatus == TransactionStatus.Success);
-            listTopPartner = DoFilterTop10(paging, filter, rawData);
-            return listTopPartner;
-        }*/
+        /*  public Pagination<TopPartner> GetTopPartner(PaginationParam paging, TransactionFilter filter)
+          {
+              Pagination<TopPartner> listTopPartner = new Pagination<TopPartner>();
+              IQueryable<Transaction> rawData = null;
+              rawData = _dbSet.Include(t => t.Partner).Where(p => p.TransactionStatus == TransactionStatus.Success);
+              listTopPartner = DoFilterTop10(paging, filter, rawData);
+              return listTopPartner;
+          }*/
         public async ValueTask<Pagination<Transaction>> GetLastIndex(PaginationParam paging)
         {
             Pagination<Transaction> listTransaction = new Pagination<Transaction>();
@@ -423,7 +423,7 @@ namespace ImportExportManagementAPI.Repositories
         public async Task<Transaction> UpdateTransactionArduino(String cardId, float weightOut, String method)
         {
             Partner partner;
-            if (cardId != null && cardId.Length > 0) //insert by arduino
+            if (cardId != null && cardId.Length > 0) //update by arduino
             {
                 //find provider and check card status
                 IdentityCardRepository cardRepo = new IdentityCardRepository();
@@ -458,8 +458,6 @@ namespace ImportExportManagementAPI.Repositories
                 var trans = FindTransToWeightOut(cardId);
                 if (trans.WeightIn <= 0) return null;
 
-                //set type
-                SetTransactionType(trans, weightOut);
                 //set time out
                 trans.TimeOut = DateTime.Now;
                 //set weight out
@@ -512,12 +510,14 @@ namespace ImportExportManagementAPI.Repositories
                 }
             }
 
-            //check card || provider
+            //check card and provider
             Partner partner;
             if (trans.IdentityCardId != null) //insert by arduino
             {
                 //find provider and check card status
                 IdentityCardRepository cardRepo = new IdentityCardRepository();
+
+                //check valid card
                 Task<IdentityCard> checkCard = cardRepo.checkCard(trans.IdentityCardId);
                 if (checkCard.Result == null)
                 {
@@ -542,9 +542,12 @@ namespace ImportExportManagementAPI.Repositories
             //check hợp lệ => tạo transaction
             trans.PartnerId = partner.PartnerId;
             trans.GoodsId = _dbContext.Goods.First().GoodsId;
-            SetTransactionType(trans, trans.WeightOut);
+
+            if (partner.PartnerTypeId == 1) trans.TransactionType = TransactionType.Export;
+            if (partner.PartnerTypeId == 2) trans.TransactionType = TransactionType.Import;
+
             Insert(trans);
-            if(method.Equals("manual"))
+            if (method.Equals("manual"))
             {
                 if (trans.TransactionStatus.Equals(TransactionStatus.Success))
                 {
@@ -569,7 +572,7 @@ namespace ImportExportManagementAPI.Repositories
             else
             {
                 var partner = cardRepo.GetPartnerCard(checkCard.Result.PartnerId).Result;
-                if(partner == null)
+                if (partner == null)
                 {
                     check = false;
                 }
@@ -588,6 +591,45 @@ namespace ImportExportManagementAPI.Repositories
                         check = false;
                     }
                 }
+            }
+            return check;
+        }
+        public async Task<string> UpdateMiscellaneousAsync(Transaction transaction)
+        {
+            GoodsRepository goodsRepository = new GoodsRepository();
+            goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, transaction.WeightIn - transaction.WeightOut, transaction.TransactionType);
+
+            String check = "";
+            //update schedule
+            if ((bool)transaction.IsScheduled)
+            {
+                ScheduleRepository scheduleRepo = new ScheduleRepository();
+                bool checkUpdateSchedule = await scheduleRepo.UpdateActualWeight(transaction.PartnerId, transaction.WeightIn - transaction.WeightOut);
+                if (!checkUpdateSchedule)
+                {
+                    check = "Weight is not valid with register weight";
+                }
+            }
+            else
+            {
+                //transaction chưa đặt lịch
+                TimeTemplateItemRepository timeTemplateItemRepository = new TimeTemplateItemRepository();
+                List<TimeTemplateItem> listItem = await timeTemplateItemRepository.GetAppliedItem();
+                TimeSpan timeOut = TimeSpan.Parse(transaction.TimeOut.ToString("HH:mm"));
+                TimeTemplateItem timeItem = null;
+                foreach (var item in listItem)
+                {
+                    if (timeOut > item.ScheduleTime)
+                    {
+                        timeItem = item;
+                        break;
+                    }
+                }
+                if (timeItem == null)
+                    timeItem = listItem[0];
+                float totalWeight = transaction.WeightIn - transaction.WeightOut;
+                if (totalWeight < 0) totalWeight = totalWeight * -1;
+                timeTemplateItemRepository.UpdateCurrent((TransactionType)transaction.TransactionType, totalWeight, timeItem.TimeTemplateItemId);
             }
             return check;
         }

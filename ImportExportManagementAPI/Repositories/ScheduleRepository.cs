@@ -334,15 +334,17 @@ namespace ImportExportManagement_API.Repositories
             return listSchedule;
         }
 
-        public async Task<bool> UpdateRealWeight(int partnerId, float weight)
+        public async Task<bool> UpdateActualWeight(int partnerId, float weight)
         {
             List<Schedule> listScheduled = await GetBookedScheduleInDate(partnerId);
             if (listScheduled != null && listScheduled.Count > 0)
             {
+                //approximate
                 if (weight < 0) weight = weight * -1;
                 float deviation = (float)(weight * 0.1);
                 float max = weight + deviation;
                 float min = weight - deviation;
+
                 foreach (var item in listScheduled)
                 {
                     if (min < item.RegisteredWeight && item.RegisteredWeight < max)

@@ -11,13 +11,13 @@ namespace ImportExportManagement_API.Models
         public int TransactionId { get; set; }
 
         public DateTime TimeIn { get; set; }
-        public DateTime? TimeOut { get; set; }
+        public DateTime TimeOut { get; set; }
         public float WeightIn { get; set; }
         public DateTime CreatedDate { get; set; }
         public String Description { get; set; }
         public float WeightOut { get; set; }
-        public bool? IsScheduled { get; set; }
-        public TransactionType? TransactionType { get; set; }
+        public bool IsScheduled { get; set; }
+        public TransactionType TransactionType { get; set; }
         public TransactionStatus TransactionStatus { get; set; }
         public int PartnerId { get; set; }
         public Partner Partner { get; set; }
