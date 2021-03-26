@@ -143,11 +143,11 @@ namespace ImportExportManagement_API.Repositories
                     queryable = queryable.Where(s =>
                     s.ScheduleDate >= filter.fromDate
                     && s.ScheduleDate <= filter.toDate
-                 /*   &&
-                    && s.ScheduleDate.Minute >= filter.fromDate.Minute
-                    && s.ScheduleDate.Minute <= filter.toDate.Minute*/
+                    /*   &&
+                       && s.ScheduleDate.Minute >= filter.fromDate.Minute
+                       && s.ScheduleDate.Minute <= filter.toDate.Minute*/
                     ).Where(s => s.ScheduleDate.Hour >= filter.fromDate.Hour
-                    && s.ScheduleDate.Hour <= filter.toDate.Hour).Where(s=> s.ScheduleDate.Minute >= filter.fromDate.Minute
+                    && s.ScheduleDate.Hour <= filter.toDate.Hour).Where(s => s.ScheduleDate.Minute >= filter.fromDate.Minute
                     && s.ScheduleDate.Minute <= filter.toDate.Minute);
                 }
             }
@@ -212,9 +212,13 @@ namespace ImportExportManagement_API.Repositories
                 {
                     queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
                 }
-                if (filter.ScheduleDate != DateTime.MinValue)
+                DateTime scheduleDate;
+                if (DateTime.TryParse(filter.ScheduleDate, out scheduleDate))
                 {
-                    queryable = queryable.Where(p => p.ScheduleDate.Date == filter.ScheduleDate.Date);
+                    if (scheduleDate != DateTime.MinValue)
+                    {
+                        queryable = queryable.Where(p => p.ScheduleDate.Date == scheduleDate.Date);
+                    }
                 }
                 if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
                 {
