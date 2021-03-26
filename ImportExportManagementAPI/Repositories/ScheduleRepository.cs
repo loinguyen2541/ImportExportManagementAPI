@@ -170,6 +170,7 @@ namespace ImportExportManagement_API.Repositories
                  
                 }
             }
+            queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
 
             if (paging.Page < 1)
             {
@@ -212,13 +213,13 @@ namespace ImportExportManagement_API.Repositories
                 TransactionType typeTrans = (TransactionType)Enum.Parse(typeof(TransactionType), type);
                 queryable = queryable.Where(s => s.TransactionType.Equals(typeTrans));
             }
-            queryable = queryable.Where(s => !s.UpdatedBy.Contains("system"));
+            queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
             return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
         }
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
         {
             List<Schedule> schedules = await _dbSet
-                .Where(s => s.PartnerId == partnerId).OrderBy(s => s.ScheduleDate).ToListAsync();
+                .Where(s => s.PartnerId == partnerId && !s.UpdatedBy.Equals("Update action")).OrderBy(s => s.ScheduleDate).ToListAsync();
             return schedules;
         }
 
@@ -230,9 +231,13 @@ namespace ImportExportManagement_API.Repositories
                 {
                     queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
                 }
-                if (filter.ScheduleDate != DateTime.MinValue)
+                DateTime scheduleDate;
+                if (DateTime.TryParse(filter.ScheduleDate, out scheduleDate))
                 {
-                    queryable = queryable.Where(p => p.ScheduleDate.Date == filter.ScheduleDate.Date);
+                    if (scheduleDate != DateTime.MinValue)
+                    {
+                        queryable = queryable.Where(p => p.ScheduleDate.Date == scheduleDate.Date);
+                    }
                 }
                 if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
                 {
@@ -240,7 +245,7 @@ namespace ImportExportManagement_API.Repositories
                     queryable = queryable.Where(p => p.TransactionType == type);
                 }
             }
-
+            queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
             if (paging.Page < 1)
             {
                 paging.Page = 1;
@@ -331,7 +336,7 @@ namespace ImportExportManagement_API.Repositories
             DateTime now = DateTime.Today;
             DateTime yesterday = now.AddDays(-1);
             DateTime tomorrow = now.AddDays(1);
-            rawData = _dbSet.Include(s => s.Partner).Where(s => s.CreatedDate > yesterday && s.CreatedDate < tomorrow && s.ScheduleStatus == ScheduleStatus.Approved).OrderByDescending(o => o.ScheduleId);
+            rawData = _dbSet.Include(s => s.Partner).Where(s => s.CreatedDate > yesterday && s.CreatedDate < tomorrow && s.ScheduleStatus == ScheduleStatus.Approved && !s.UpdatedBy.Equals("Update action")).OrderByDescending(o => o.ScheduleId);
             return await rawData.Take(10).ToListAsync();
         }
 
@@ -339,7 +344,7 @@ namespace ImportExportManagement_API.Repositories
         {
             var current = DateTime.Now.Date;
             List<Schedule> listSchedule = new List<Schedule>();
-            listSchedule = await _dbSet.OrderBy(s => s.RegisteredWeight).Where(s => s.PartnerId == partnerId && s.ScheduleDate.Date == current).ToListAsync();
+            listSchedule = await _dbSet.OrderBy(s => s.RegisteredWeight).Where(s => s.PartnerId == partnerId && s.ScheduleDate.Date == current && !s.UpdatedBy.Equals("Update action")).ToListAsync();
             return listSchedule;
         }
 
