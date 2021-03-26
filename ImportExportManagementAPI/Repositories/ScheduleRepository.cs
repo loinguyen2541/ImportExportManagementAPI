@@ -14,7 +14,7 @@ using ImportExportManagementAPI.Models;
 
 namespace ImportExportManagement_API.Repositories
 {
-    public class ScheduleRepository : BaseRepository<Schedule>
+    public class ScheduleRepository : BaseRepository<Schedule> 
     {
         public async Task<Schedule> GetScheduleById(int id)
         {
@@ -115,6 +115,7 @@ namespace ImportExportManagement_API.Repositories
         public async Task<Pagination<Schedule>> DoFilterSearchPartner(ScheduleFilterParam filter, PaginationParam paging)
         {
             IQueryable<Schedule> queryable = _dbSet.Include(s => s.Partner);
+            List<Schedule> schedules = new List<Schedule>();
             if (filter == null)
             {
                 DateTime start = DateTime.Now.AddDays(-1);
@@ -142,13 +143,31 @@ namespace ImportExportManagement_API.Repositories
                 {
                     queryable = queryable.Where(s =>
                     s.ScheduleDate >= filter.fromDate
-                    && s.ScheduleDate <= filter.toDate
-                 /*   &&
-                    && s.ScheduleDate.Minute >= filter.fromDate.Minute
-                    && s.ScheduleDate.Minute <= filter.toDate.Minute*/
-                    ).Where(s => s.ScheduleDate.Hour >= filter.fromDate.Hour
-                    && s.ScheduleDate.Hour <= filter.toDate.Hour).Where(s=> s.ScheduleDate.Minute >= filter.fromDate.Minute
-                    && s.ScheduleDate.Minute <= filter.toDate.Minute);
+                    && s.ScheduleDate <= filter.toDate).
+                    Where(s => s.ScheduleDate.Hour >= filter.fromDate.Hour
+                    && s.ScheduleDate.Hour <= filter.toDate.Hour);
+                    foreach (var item in queryable.ToList())
+                    {
+                        if (item.ScheduleDate.Hour > filter.fromDate.Hour && item.ScheduleDate.Hour < filter.toDate.Hour)
+                        {
+                            schedules.Add(item);
+                        }   // đk nếu thỏa 2 biên giờ là  lớn hơn giờ dateFrom và nhỏ hơn giờ dateTo thì k cần so sánh phút
+                        if (item.ScheduleDate.Hour == filter.fromDate.Hour)
+                        {
+                            if (item.ScheduleDate.Minute >= filter.fromDate.Minute)
+                            {
+                                schedules.Add(item);
+                            }
+                        }   // check biên giờ datefrom nếu bằng thì so sánh lớn hơn phút datefrom
+                        if (item.ScheduleDate.Hour == filter.toDate.Hour)
+                        {
+                            if (item.ScheduleDate.Minute <= filter.toDate.Minute)
+                            {
+                                schedules.Add(item);
+                            }
+                        } // check biên giờ dateTo nếu bằng thì so sánh nhỏ hơn phút dateTo sau đó mới add dô
+                    }   // kt giờ phút từng ngày, list này đã lọc ngày và lọc khoảng giờ 
+                 
                 }
             }
 
@@ -161,25 +180,25 @@ namespace ImportExportManagement_API.Repositories
                 paging.Size = 1;
             }
 
-            int count = queryable.Count();
+            int count = schedules.Count();
 
             if (((paging.Page - 1) * paging.Size) > count)
             {
                 paging.Page = 1;
             }
 
-            queryable = queryable.Skip((paging.Page - 1) * paging.Size).Take(paging.Size);
+            schedules = schedules.Skip((paging.Page - 1) * paging.Size).Take(paging.Size).ToList();
 
             Pagination<Schedule> pagination = new Pagination<Schedule>();
             pagination.Page = paging.Page;
             pagination.Size = paging.Size;
             double totalPage = (count * 1.0) / (pagination.Size * 1.0);
             pagination.TotalPage = (int)Math.Ceiling(totalPage);
-            pagination.Data = await queryable.ToListAsync();
+            pagination.Data = schedules;
 
             return pagination;
         }
-
+     
         private async Task<List<Schedule>> DoFilterHistory(String searchDate, IQueryable<Schedule> queryable, String type)
         {
             if (DateTime.TryParse(searchDate, out DateTime date))
