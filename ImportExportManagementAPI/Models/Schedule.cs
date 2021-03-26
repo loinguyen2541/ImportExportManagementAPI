@@ -18,13 +18,10 @@ namespace ImportExportManagement_API.Models
         public ScheduleStatus ScheduleStatus { get; set; }
         public bool IsCanceled { get; set; }
         public String UpdatedBy { get; set; }
-
         public int PartnerId { get; set; }
         public Partner Partner { get; set; }
-
         public int GoodsId { get; set; }
         public Goods Goods { get; set; }
-
         public int TimeTemplateItemId { get; set; }
         public TimeTemplateItem TimeTemplateItem { get; set; }
 
