@@ -27,9 +27,8 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<PartnerType>>> GetPartnerType()
         {
-            return await _context.PartnerType.Include(p => p.Partners).ToListAsync();
+            return await _context.PartnerType.ToListAsync();
         }
-
 
         [HttpGet("partnerTypeName")]
         [AllowAnonymous]

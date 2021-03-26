@@ -31,7 +31,7 @@ namespace ImportExportManagement_API.Repositories
         {
             Pagination<Schedule> schedules = new Pagination<Schedule>();
             IQueryable<Schedule> rawData = null;
-            rawData = _dbSet.Include(s => s.Partner);
+            rawData = _dbSet.Include(s => s.Partner).OrderByDescending(p => p.ScheduleId);
             schedules = await DoFilter(paging, filter, rawData);
             return schedules;
         }
