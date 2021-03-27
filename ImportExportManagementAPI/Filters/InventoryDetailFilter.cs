@@ -16,5 +16,6 @@ namespace ImportExportManagement_API.Models
     {
         public String PartnerName { get; set; }
         public int GoodsId { get; set; }
+        public TransactionType TransactionType { get; set; }
     }
 }
