@@ -160,11 +160,11 @@ namespace ImportExportManagementAPI.Repositories
             float OpeningStock = _dbSet.Where(o => o.RecordedDate == date && o.InventoryId == id).Select(o => o.OpeningStock).FirstOrDefault().Value;
             return OpeningStock;
         }
-        public Object TotalWeightInventoryFloatByMonth(DateTime dateFrom, DateTime dateTo)
+        public List<TotalInventoryDetailedByDate> TotalWeightInventoryFloatByMonth(DateTime dateFrom, DateTime dateTo)
         {
             List<TotalInventoryDetailedByDate> listDetail = new List<TotalInventoryDetailedByDate>();
             //check ngày này có inventory chưa
-            if (dateFrom != null && dateTo != null)
+            if (dateFrom != DateTime.MinValue && dateTo != DateTime.MinValue)
             {
                 IQueryable<Inventory> rawData = null;
                 rawData = _dbSet.Where(p => p.RecordedDate >= dateFrom && p.RecordedDate <= dateTo);
@@ -194,11 +194,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
 
             }
-            return new
-            {
-                listAsc = listDetail.OrderBy(o => o.date).ToList(),
-                listDes = listDetail.OrderByDescending(o => o.date).ToList(),
-            };
+            return listDetail.OrderBy(o=>o.date).ToList();
         }
         public List<Inventory> ReportPartner(DateTime DateFrom, DateTime DateTo, string partnerName)
         {
