@@ -338,7 +338,7 @@ namespace ImportExportManagementAPI.Repositories
             IQueryable<Transaction> rawData = null;
             rawData = _dbSet.Where(t => t.PartnerId == id);
             listTransaction = await DoPaging(paging, rawData);
-            return listTransaction; ;
+            return listTransaction;
 
         }
         private async Task<Pagination<Transaction>> DoPaging(PaginationParam paging, IQueryable<Transaction> queryable)
@@ -446,7 +446,7 @@ namespace ImportExportManagementAPI.Repositories
             }
 
 
-            bool checkProcessingCard = await CheckProcessingCard(cardId, method); ;
+            bool checkProcessingCard = await CheckProcessingCard(cardId, method); 
 
             if (checkProcessingCard)
             {
@@ -497,6 +497,8 @@ namespace ImportExportManagementAPI.Repositories
         //tạo transaction
         public async Task<Transaction> CreateTransaction(Transaction trans, String method)
         {
+            bool checkSchedule = await CheckTransactionScheduled(trans.IdentityCardId);
+            trans.IsScheduled = checkSchedule;
             //check validate weight in weight out
             if (trans.WeightIn <= 0)
             {

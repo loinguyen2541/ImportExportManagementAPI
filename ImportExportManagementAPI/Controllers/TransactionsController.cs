@@ -75,10 +75,9 @@ namespace ImportExportManagementAPI.Controllers
         }
         //add transaction
         [HttpPost("automatic")]
-        [AllowAnonymous]
-        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn, bool isScheduled)
+        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn)
         {
-            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing, IsScheduled = isScheduled };
+            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing };
             Transaction check = await _repo.CreateTransaction(trans, "Insert");
             if (check != null)
             {
