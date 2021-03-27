@@ -204,8 +204,8 @@ namespace ImportExportManagement_API.Repositories
         {
             if (DateTime.TryParse(searchDate, out DateTime date))
             {
-                DateTime start = DateTime.Parse(searchDate).AddDays(1);
-                DateTime end = DateTime.Parse(searchDate).AddDays(2);
+                DateTime start = DateTime.Parse(searchDate);
+                DateTime end = DateTime.Parse(searchDate).AddDays(1);
                 queryable = queryable.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
             }
             if (type != null && type.Length != 0)
