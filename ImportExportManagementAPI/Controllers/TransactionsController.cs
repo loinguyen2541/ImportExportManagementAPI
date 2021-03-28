@@ -172,12 +172,19 @@ namespace ImportExportManagementAPI.Controllers
         //    return Ok(_repo.GetTopPartner(paging, filter));
         //}
 
-        [HttpGet("checkSchedule")]
-        public async Task<bool> CheckScheduleAsync(String identityCardId)
+        //[HttpGet("checkSchedule")]
+        //public async Task<bool> CheckScheduleAsync(String identityCardId)
+        //{
+        //    bool check = false;
+        //    check = await _repo.CheckTransactionScheduled(identityCardId);
+        //    return check;
+        //}
+
+        [HttpGet("partners/searchdate")]
+        public async Task<List<Transaction>> GetTransactionOfPartnerByDate(int partnerId, DateTime searchDate)
         {
-            bool check = false;
-            check = await _repo.CheckTransactionScheduled(identityCardId);
-            return check;
+            List<Transaction> listTrans = await _repo.GetTransOfPartnerByDate(partnerId, searchDate);
+            return listTrans;
         }
     }
 }
