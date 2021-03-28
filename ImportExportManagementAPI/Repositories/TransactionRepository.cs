@@ -646,5 +646,17 @@ namespace ImportExportManagementAPI.Repositories
             }
             return check;
         }
+
+        public async void CancelProcessing()
+        {
+            List<Transaction> transactions = await _dbSet.Where(t => t.TransactionStatus == TransactionStatus.Progessing).ToListAsync();
+            foreach (var item in transactions)
+            {
+                item.TransactionStatus = TransactionStatus.Disable;
+                item.Description = "Disable " + SystemName.System.ToString();
+                _dbContext.Entry(item).State = EntityState.Modified;
+            }
+            await SaveAsync();
+        }
     }
 }
