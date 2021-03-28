@@ -341,6 +341,17 @@ namespace ImportExportManagementAPI.Repositories
             return listTransaction;
 
         }
+        public async ValueTask<List<Transaction>> GetTransOfPartnerByDate(int partnerId, DateTime searchDate)
+        {
+            List<Transaction> listTransaction = new List<Transaction>();
+            IQueryable<Transaction> rawData = null;
+            var date = Convert.ToDateTime(searchDate).Date;
+            var nextDay = date.AddDays(1);
+
+            rawData = _dbSet.Where(t => t.PartnerId == partnerId && date <= t.CreatedDate && t.CreatedDate < nextDay);
+            listTransaction = await rawData.OrderBy(t => t.CreatedDate).ToListAsync();
+            return listTransaction;
+        }
         private async Task<Pagination<Transaction>> DoPaging(PaginationParam paging, IQueryable<Transaction> queryable)
         {
 
@@ -446,7 +457,7 @@ namespace ImportExportManagementAPI.Repositories
             }
 
 
-            bool checkProcessingCard = await CheckProcessingCard(cardId, method); 
+            bool checkProcessingCard = await CheckProcessingCard(cardId, method);
 
             if (checkProcessingCard)
             {
@@ -634,6 +645,18 @@ namespace ImportExportManagementAPI.Repositories
                 timeTemplateItemRepository.UpdateCurrent((TransactionType)transaction.TransactionType, totalWeight, timeItem.TimeTemplateItemId);
             }
             return check;
+        }
+
+        public async void CancelProcessing()
+        {
+            List<Transaction> transactions = await _dbSet.Where(t => t.TransactionStatus == TransactionStatus.Progessing).ToListAsync();
+            foreach (var item in transactions)
+            {
+                item.TransactionStatus = TransactionStatus.Disable;
+                item.Description = "Disable " + SystemName.System.ToString();
+                _dbContext.Entry(item).State = EntityState.Modified;
+            }
+            await SaveAsync();
         }
     }
 }

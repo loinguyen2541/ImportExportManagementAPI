@@ -25,6 +25,7 @@ namespace ImportExportManagementAPI.Workers
         private readonly TimeTemplateRepository _timeTemplateRepository;
         private readonly GoodsRepository _goodsRepository;
         private readonly ScheduleRepository _scheduleRepository;
+        private readonly TransactionRepository _transactionRepository;
         private readonly SystemConfigRepository _systemConfigRepository;
 
         public TimedGenerateScheduleService(ILogger<TimedGenerateScheduleService> logger)
@@ -34,6 +35,7 @@ namespace ImportExportManagementAPI.Workers
             _goodsRepository = new GoodsRepository();
             _scheduleRepository = new ScheduleRepository();
             _systemConfigRepository = new SystemConfigRepository();
+            _transactionRepository = new TransactionRepository();
         }
 
         public Task StartAsync(CancellationToken stoppingToken)
@@ -120,6 +122,8 @@ namespace ImportExportManagementAPI.Workers
             float capacity = _goodsRepository.GetGoodCapacity();
             _timeTemplateRepository.ResetTimeTemplate(capacity);
             _scheduleRepository.DisableAll();
+            _transactionRepository.CancelProcessing();
+
             if (count == 2)
             {
                 _timer?.Change(TimeSpan.FromDays(1), TimeSpan.FromDays(1));
