@@ -23,11 +23,20 @@ namespace ImportExportManagementAPI.Controllers
         // GET: api/inventories
         [HttpGet]
         [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<Inventory>>> GetAll()
+        {
+            List<Inventory> listInventory = await _repo.GetAllAsync();
+            return Ok(listInventory);
+        }
+
+        [HttpGet("search")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Inventory>>> SearchInventory([FromQuery] PaginationParam paging, [FromQuery] InventoryFilter filter)
         {
             Pagination<Inventory> listInventory = await _repo.GetAllInventory(paging, filter);
             return Ok(listInventory);
         }
+
         //check ngày này có tồn tại phiếu nhập kho chưa
         [HttpGet("{dateRecord}")]
         [AllowAnonymous]
@@ -109,7 +118,7 @@ namespace ImportExportManagementAPI.Controllers
         public async Task<ActionResult<float>> TotalWeightByDateOfPartner(DateTime fromDate, DateTime toDate, int partnerId, int type)
         {
             InventoryDetailType typeDetail = InventoryDetailType.Import;
-            if(type == 1)
+            if (type == 1)
             {
                 typeDetail = InventoryDetailType.Export;
             }

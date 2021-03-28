@@ -16,19 +16,23 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<Inventory> listInventory = new Pagination<Inventory>();
             IQueryable<Inventory> rawData = null;
-            rawData = _dbSet;
+            rawData = _dbSet.Include(p => p.InventoryDetails);
             listInventory = await DoFilter(paging, filter, rawData);
             return listInventory;
         }
 
         private async Task<Pagination<Inventory>> DoFilter(PaginationParam paging, InventoryFilter filter, IQueryable<Inventory> queryable)
         {
-            if (DateTime.TryParse(filter.RecordedDate, out DateTime date))
+            DateTime fromDate;
+            DateTime toDate;
+            if (DateTime.TryParse(filter.FromDate, out fromDate))
             {
-                DateTime recoredDate = DateTime.Parse(filter.RecordedDate);
-                queryable = queryable.Where(p => p.RecordedDate == recoredDate.Date);
+                queryable = queryable.Where(p => p.RecordedDate >= fromDate.Date);
             }
-
+            if (DateTime.TryParse(filter.ToDate, out toDate))
+            {
+                queryable = queryable.Where(p => p.RecordedDate <= toDate.Date);
+            }
 
             //check giá trị page client truyền
             if (paging.Page < 1)
@@ -157,7 +161,7 @@ namespace ImportExportManagementAPI.Repositories
         }
         public float GetOpeningStockByDate(DateTime date, int id)
         {
-            float OpeningStock = _dbSet.Where(o => o.RecordedDate == date && o.InventoryId == id).Select(o => o.OpeningStock).FirstOrDefault().Value;
+            float OpeningStock = _dbSet.Where(o => o.RecordedDate == date && o.InventoryId == id).Select(o => o.OpeningStock).FirstOrDefault();
             return OpeningStock;
         }
         public List<TotalInventoryDetailedByDate> TotalWeightInventoryFloatByMonth(DateTime dateFrom, DateTime dateTo)
@@ -194,7 +198,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
 
             }
-            return listDetail.OrderBy(o=>o.date).ToList();
+            return listDetail.OrderBy(o => o.date).ToList();
         }
         public List<Inventory> ReportPartner(DateTime DateFrom, DateTime DateTo, string partnerName)
         {
@@ -217,7 +221,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             float total = 0;
             InventoryDetail detail = await CheckExistDateRecordOfPartner(dateRecord, partnerId, type);
-            if(detail!= null)
+            if (detail != null)
             {
                 total = detail.Weight;
             }
@@ -286,7 +290,8 @@ namespace ImportExportManagementAPI.Repositories
                         }
                         temp = null;
                     }
-                }else if(type < 0)
+                }
+                else if (type < 0)
                 {
                     List<InventoryDetail> temp = null;
                     foreach (var item in listInventory)
