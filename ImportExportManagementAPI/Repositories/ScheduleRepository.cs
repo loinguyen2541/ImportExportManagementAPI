@@ -133,6 +133,11 @@ namespace ImportExportManagement_API.Repositories
                     TransactionType typeTrans = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
                     queryable = queryable.Where(s => s.TransactionType.Equals(typeTrans));
                 }
+                if (filter.ScheduleStatus != null)
+                {
+                    ScheduleStatus scheduleStatus = (ScheduleStatus)Enum.Parse(typeof(ScheduleStatus), filter.ScheduleStatus);
+                    queryable = queryable.Where(s => s.ScheduleStatus.Equals(scheduleStatus));
+                }
                 if ((filter.fromDate == DateTime.MinValue) && (filter.toDate == DateTime.MinValue))
                 {
                     DateTime dateFrom = DateTime.Now.AddDays(-1).Date;
