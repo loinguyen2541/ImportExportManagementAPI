@@ -19,5 +19,6 @@ namespace ImportExportManagement_API.Models
         public int PartnerId { get; set; }
         public DateTime fromDate { get; set; }
         public DateTime toDate { get; set; }
+        public String ScheduleStatus { get; set; }
     }
 }
