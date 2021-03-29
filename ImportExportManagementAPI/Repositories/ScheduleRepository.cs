@@ -377,6 +377,10 @@ namespace ImportExportManagement_API.Repositories
                 return false;
             }
         }
+        public  List<ScheduleStatus> getScheduleType()
+        {
+            return Enum.GetValues(typeof(ScheduleStatus)).Cast<ScheduleStatus>().ToList();
+        }
     }
     enum SystemName
     {
