@@ -207,10 +207,10 @@ namespace ImportExportManagementAPI.Repositories
                 queryable = queryable.Where(p => p.Partner.DisplayName.Contains(filter.PartnerName));
             }
 
-            if (DateTime.TryParse(filter.dateFrom, out DateTime FromDate) && DateTime.TryParse(filter.dateTo, out DateTime ToDate))
+            if (DateTime.TryParse(filter.FromDate, out DateTime FromDate) && DateTime.TryParse(filter.ToDate, out DateTime ToDate))
             {
-                DateTime dateFrom = DateTime.Parse(filter.dateFrom);
-                DateTime dateTo = DateTime.Parse(filter.dateTo);
+                DateTime dateFrom = DateTime.Parse(filter.FromDate);
+                DateTime dateTo = DateTime.Parse(filter.ToDate);
                 queryable = queryable.Where(p => p.Inventory.RecordedDate >= dateFrom && p.Inventory.RecordedDate <= dateTo);
             }
             if (Enum.TryParse(filter.TransactionType, out TransactionType transactionType))
