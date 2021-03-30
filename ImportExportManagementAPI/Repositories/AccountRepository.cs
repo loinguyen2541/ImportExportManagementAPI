@@ -40,6 +40,17 @@ namespace ImportExportManagementAPI.Repositories
             return await _dbSet.Include(p => p.Partner).Where(a => a.Username.Equals(username)).FirstAsync();
         }
 
+        public async Task<List<Account>> GetAccountByRole(int roleId)
+        {
+            List<Account> accounts = await _dbSet.Include(p => p.Partner).Include(r => r.Role).Where(a => a.RoleId == roleId).ToListAsync();
+            foreach (var item in accounts)
+            {
+                WithoutPassword(item);
+                WithoutToken(item);
+            }
+            return accounts;
+        }
+
         public bool Exist(string username)
         {
             return _dbSet.Any(e => e.Username.Equals(username));
@@ -55,6 +66,13 @@ namespace ImportExportManagementAPI.Repositories
             if (account == null) return null;
 
             account.Password = null;
+            return account;
+        }
+        private Account WithoutToken(Account account)
+        {
+            if (account == null) return null;
+
+            account.Token = null;
             return account;
         }
         public async Task<Account> Login(AuthenticateModel model, AppSettings _appSettings)

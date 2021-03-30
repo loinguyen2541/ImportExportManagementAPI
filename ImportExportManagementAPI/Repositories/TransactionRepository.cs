@@ -162,6 +162,7 @@ namespace ImportExportManagementAPI.Repositories
             if (trans != null)
             {
                 trans.TransactionStatus = TransactionStatus.Disable;
+                trans.TimeOut = DateTime.Now;
                 Update(trans);
                 try
                 {
@@ -223,9 +224,19 @@ namespace ImportExportManagementAPI.Repositories
 
                 if ((DateTime.TryParse(filter.DateFrom, out DateTime dateFrom) && (DateTime.TryParse(filter.DateTo, out DateTime dateTo))))
                 {
-                    DateTime fromDate = DateTime.Parse(filter.DateFrom);
-                    DateTime toDate = DateTime.Parse(filter.DateTo);
-                    queryable = queryable.Where(p => p.CreatedDate.Date > fromDate && p.CreatedDate.Date < toDate);
+                    if (filter.DateFrom.Equals(filter.DateTo))
+                    {
+                        var convert = Convert.ToDateTime(filter.DateFrom).Date;
+                        var nextDay = convert.AddDays(1);
+                        queryable = queryable.Where(t => convert <= t.CreatedDate && t.CreatedDate < nextDay);
+                    }
+                    else
+                    {
+                        DateTime fromDate = DateTime.Parse(filter.DateFrom);
+                        DateTime toDate = DateTime.Parse(filter.DateTo);
+                        queryable = queryable.Where(t => fromDate <= t.CreatedDate.Date && t.CreatedDate.Date <= toDate);
+
+                    }
                 }
                 if (filter.PartnerName != null && filter.PartnerName.Length > 0)
                 {
@@ -240,6 +251,11 @@ namespace ImportExportManagementAPI.Repositories
                 {
                     TransactionType type = (TransactionType)Enum.Parse(typeof(TransactionType), filter.TransactionType);
                     queryable = queryable.Where(p => p.TransactionType == type);
+                }
+                if (filter.PartnerId != 0)
+                {
+                    queryable = queryable.Where(p => p.PartnerId == filter.PartnerId);
+                    Console.WriteLine(queryable.ToList().Count);
                 }
             }
             if (paging.Page < 1)
@@ -264,7 +280,7 @@ namespace ImportExportManagementAPI.Repositories
             pagination.Size = paging.Size;
             double totalPage = (count * 1.0) / (pagination.Size * 1.0);
             pagination.TotalPage = (int)Math.Ceiling(totalPage);
-            pagination.Data = await queryable.ToListAsync();
+            pagination.Data = await queryable.OrderBy(t => t.CreatedDate).ToListAsync();
             return pagination;
         }
         /*private Pagination<TopPartner> DoFilterTop10(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)
@@ -653,6 +669,7 @@ namespace ImportExportManagementAPI.Repositories
             foreach (var item in transactions)
             {
                 item.TransactionStatus = TransactionStatus.Disable;
+                if(item.TimeOut == null) item.TimeOut = DateTime.Now;
                 item.Description = "Disable " + SystemName.System.ToString();
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
