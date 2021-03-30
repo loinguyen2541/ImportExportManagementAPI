@@ -166,5 +166,12 @@ namespace ImportExportManagementAPI.Controllers
             int count =  _repo.GetTotalByType(type);
             return count;
         }
+        [HttpGet("getScheduleStatus")]
+        [AllowAnonymous]
+        public List<ScheduleStatus> getScheduleStatus()
+        {
+            List<ScheduleStatus> scheduleStatuses = _repo.getScheduleType();
+            return scheduleStatuses;
+        }
     }
 }

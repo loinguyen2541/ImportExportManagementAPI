@@ -46,9 +46,14 @@ namespace ImportExportManagementAPI.Controllers
 
             return account;
         }
+        [HttpGet("account/role")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<Account>>> GetAccountByRole(int roleId)
+        {
+            var accounts = await _repo.GetAccountByRole(roleId);
+            return accounts;
+        }
 
-        // PUT: api/Partners/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut()]
         [AllowAnonymous]
         public async Task<IActionResult> PutAccount(string username, Account account)
