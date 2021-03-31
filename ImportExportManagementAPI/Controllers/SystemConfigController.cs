@@ -41,5 +41,11 @@ namespace ImportExportManagementAPI.Controllers
             return BadRequest();
         }
 
+        [HttpGet("auto-schedule")]
+        public ActionResult<String> GetAutoSchedule()
+        {
+            return Ok(_systemConfigRepository.GetAutoSchedule());
+        }
+
     }
 }
