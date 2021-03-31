@@ -120,7 +120,6 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("forecastInven")]
         [AllowAnonymous]
         public async Task<ActionResult<TimeTemplate>> GetForecastInventoryToday()
-
         {
             TimeTemplate timeTemplate = await _timeTemplateRepository.GetForecastInventoryToday();
             return Ok(timeTemplate);
