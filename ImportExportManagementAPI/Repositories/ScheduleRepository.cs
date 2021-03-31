@@ -339,7 +339,7 @@ namespace ImportExportManagement_API.Repositories
         {
             IQueryable<Schedule> rawData = null;
             DateTime now = DateTime.Today;
-            DateTime yesterday = now.AddDays(-1);
+            DateTime yesterday = now;
             DateTime tomorrow = now.AddDays(1);
             rawData = _dbSet.Include(s => s.Partner).Where(s => s.CreatedDate > yesterday && s.CreatedDate < tomorrow && s.ScheduleStatus == ScheduleStatus.Approved && !s.UpdatedBy.Equals("Update action")).OrderByDescending(o => o.ScheduleId);
             return await rawData.Take(10).ToListAsync();
