@@ -27,7 +27,7 @@ namespace ImportExportManagementAPI.Controllers
 
         // GET: api/TimeTemplates
         [HttpGet]
-        [Authorize(Roles = "Manager")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<TimeTemplate>>> GetTimeTemplate()
         {
             return await _context.TimeTemplate.ToListAsync();
