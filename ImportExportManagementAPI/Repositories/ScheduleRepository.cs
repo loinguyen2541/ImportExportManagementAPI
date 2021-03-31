@@ -125,6 +125,10 @@ namespace ImportExportManagement_API.Repositories
             else
             {
                 queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
+                if(filter.RegisteredWeight != 0)
+                {
+                    queryable = queryable.Where(s => filter.RegisteredWeight <=  s.RegisteredWeight);
+                }
                 if (filter.PartnerName != null)
                 {
                     queryable = queryable.Where(s => s.Partner.DisplayName.Contains(filter.PartnerName));

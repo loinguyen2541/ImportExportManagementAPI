@@ -20,5 +20,6 @@ namespace ImportExportManagement_API.Models
         public DateTime fromDate { get; set; }
         public DateTime toDate { get; set; }
         public String ScheduleStatus { get; set; }
+        public float RegisteredWeight { get; set; }
     }
 }
