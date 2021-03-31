@@ -31,7 +31,7 @@ namespace ImportExportManagement_API.Repositories
         {
             Pagination<Schedule> schedules = new Pagination<Schedule>();
             IQueryable<Schedule> rawData = null;
-            rawData = _dbSet.Include(s => s.Partner).OrderByDescending(p => p.ScheduleId);
+            rawData = _dbSet;
             schedules = await DoFilter(paging, filter, rawData);
             return schedules;
         }
@@ -118,12 +118,13 @@ namespace ImportExportManagement_API.Repositories
             List<Schedule> schedules = new List<Schedule>();
             if (filter == null)
             {
-                DateTime start = DateTime.Now.AddDays(-1);
+                DateTime start = DateTime.Now;
                 DateTime end = DateTime.Now.AddDays(1);
                 queryable = queryable.Include(p => p.Partner).Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
             }
             else
             {
+                queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
                 if (filter.PartnerName != null)
                 {
                     queryable = queryable.Where(s => s.Partner.DisplayName.Contains(filter.PartnerName));
@@ -140,8 +141,8 @@ namespace ImportExportManagement_API.Repositories
                 }
                 if ((filter.fromDate == DateTime.MinValue) && (filter.toDate == DateTime.MinValue))
                 {
-                    DateTime dateFrom = DateTime.Now.AddDays(-1).Date;
-                    DateTime dateTo = DateTime.Now.AddDays(1).Date;
+                    DateTime dateFrom = DateTime.Now;
+                    DateTime dateTo = DateTime.Now.AddDays(1);
                     queryable = queryable.Where(s => dateFrom <= s.ScheduleDate && s.ScheduleDate <= dateTo);
                 }
                 else
@@ -175,7 +176,7 @@ namespace ImportExportManagement_API.Repositories
                  
                 }
             }
-            queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
+            
 
             if (paging.Page < 1)
             {
