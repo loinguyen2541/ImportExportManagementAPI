@@ -97,14 +97,17 @@ namespace ImportExportManagementAPI.Repositories
             TimeTemplate timeTemplate =
                 await _dbSet.Where(t => t.ApplyingDate.Date == DateTime.Now.Date && t.TimeTemplateStatus == TimeTemplateStatus.Applied).Include(i => i.TimeTemplateItems).FirstOrDefaultAsync();
             List<TimeTemplateItem> tempList = new List<TimeTemplateItem>();
-            foreach (var item in timeTemplate.TimeTemplateItems)
+           if(timeTemplate != null)
             {
-                if(TimeSpan.Compare(item.ScheduleTime,DateTime.Now.TimeOfDay) >= 0)
+                foreach (var item in timeTemplate.TimeTemplateItems)
                 {
-                    tempList.Add(item);
+                    if (TimeSpan.Compare(item.ScheduleTime, DateTime.Now.TimeOfDay) >= 0)
+                    {
+                        tempList.Add(item);
+                    }
                 }
+                timeTemplate.TimeTemplateItems = tempList;
             }
-            timeTemplate.TimeTemplateItems = tempList;
             return timeTemplate;
         }
         public TimeTemplate GetCurrentTimeTemplate()
