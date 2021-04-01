@@ -104,15 +104,6 @@ namespace ImportExportManagementAPI.Controllers
             return Ok(total);
         }
 
-
-        //lấy tổng khối lượng nhập/xuất theo ngày
-        [HttpGet("reportTransaction")]
-        public ActionResult<Inventory> ReportTransaction(DateTime currentDate, int partnerID)
-        {
-            Inventory total = _repo.ReportTransaction(currentDate, partnerID);
-            return Ok(total);
-        }
-
         //lấy tổng khối lượng nhập/xuất theo ngày của partner
         [HttpGet("partner-totalweight")]
         public async Task<ActionResult<float>> TotalWeightByDateOfPartner(DateTime fromDate, DateTime toDate, int partnerId, int type)
