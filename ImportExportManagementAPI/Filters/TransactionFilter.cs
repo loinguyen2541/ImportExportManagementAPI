@@ -14,5 +14,6 @@ namespace ImportExportManagementAPI.Models
         public String PartnerName { get; set; }
         public String TransactionType { get; set; }
         public int PartnerId { get; set; }
+        public TransactionStatus transactionStatus { get; set; }
     }
 }

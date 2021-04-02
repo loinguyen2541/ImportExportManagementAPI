@@ -221,7 +221,10 @@ namespace ImportExportManagementAPI.Repositories
 
             if (filter != null)
             {
-
+                if(filter.transactionStatus != null)
+                {
+                    queryable = queryable.Where(t => t.TransactionStatus == filter.transactionStatus);
+                }
                 if ((DateTime.TryParse(filter.DateFrom, out DateTime dateFrom) && (DateTime.TryParse(filter.DateTo, out DateTime dateTo))))
                 {
                     if (filter.DateFrom.Equals(filter.DateTo))
@@ -262,12 +265,11 @@ namespace ImportExportManagementAPI.Repositories
             {
                 paging.Page = 1;
             }
+            int count = queryable.Count();
             if (paging.Size < 1)
             {
-                paging.Size = 1;
+                paging.Size = count;
             }
-
-            int count = queryable.Count();
 
             if (((paging.Page - 1) * paging.Size) > count)
             {
