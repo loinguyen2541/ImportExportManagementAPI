@@ -137,7 +137,7 @@ namespace ImportExportManagementAPI.Controllers
         //update
         [HttpPut]
         [AllowAnonymous]
-        public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId,int partnerId, float weightOut)
+        public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, int partnerId, float weightOut)
         {
             Transaction transaction = await _repo.UpdateTransactionArduino(cardId, weightOut, partnerId);
             if (transaction != null)

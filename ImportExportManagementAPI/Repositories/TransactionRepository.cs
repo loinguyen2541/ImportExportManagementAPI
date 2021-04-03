@@ -30,7 +30,7 @@ namespace ImportExportManagementAPI.Repositories
                     //insert
                     check = await DisableProcessingTransInInsert(listProcessingTrans, cardId);
                 }
-                else if (method.Equals("UpdateArduino"))
+                else if (method.Equals("Update"))
                 {
                     //update by arduino
                     check = await DisableProcessingInUpdateByArduino(listProcessingTrans, cardId);
@@ -230,7 +230,7 @@ namespace ImportExportManagementAPI.Repositories
 
             if (filter != null)
             {
-                if(filter.transactionStatus != null)
+                if (filter.transactionStatus != null)
                 {
                     queryable = queryable.Where(t => t.TransactionStatus == filter.transactionStatus);
                 }
@@ -464,7 +464,7 @@ namespace ImportExportManagementAPI.Repositories
             if (cardId != null && cardId.Length > 0) //update by nfc
             {
                 //find provider and check card status
-                IdentityCardRepository cardRepo = new IdentityCardRepository();
+                IdentificationCodeRepository cardRepo = new IdentificationCodeRepository();
                 Task<IdentityCard> checkCard = cardRepo.checkCard(cardId);
                 if (checkCard.Result == null)
                 {
@@ -488,7 +488,7 @@ namespace ImportExportManagementAPI.Repositories
             bool checkProcessingCard = false;
             if (cardId != null && cardId.Length != 0)
             {
-                checkProcessingCard = await CheckProcessingCard(cardId, "update");
+                checkProcessingCard = await CheckProcessingCard(cardId, "Update");
             }
 
             if (checkProcessingCard)
@@ -498,25 +498,40 @@ namespace ImportExportManagementAPI.Repositories
             else
             {
                 if (weightOut <= 0) return null;
-                //ddang cấn khúc này
                 var trans = FindTransToWeightOut(cardId);
                 if (trans != null)
                 {
                     if (trans.WeightIn <= 0) return null;
+                    float totalweight = 0;
+                    if (trans.TransactionType.Equals(TransactionType.Import))
+                    {
+                        totalweight = trans.WeightIn - trans.WeightOut;
+                        if (totalweight < 0) return null;
+                    }
+                    else if (trans.TransactionType.Equals(TransactionType.Export))
+                    {
+                        totalweight = trans.WeightOut - trans.WeightIn;
+                        if (totalweight < 0) return null;
+                    }
                     //set time out
-                    trans.TimeOut = DateTime.UtcNow;
+                    trans.TimeOut = DateTime.Now;
                     //set weight out
-                    trans.WeightOut = weightOut;
+                    trans.WeightOut = Rounding(weightOut, trans.TransactionType);
                     //change status
                     trans.TransactionStatus = TransactionStatus.Success;
+                    if (trans.IdentificationCode == null || trans.IdentificationCode.Length == 0) trans.Description = "Forget identity card";
                     //update transaction
                     Update(trans);
                     try
                     {
                         await SaveAsync();
                         //update transaction thành công => tạo inventory detail
-                        await UpdateInventoryDetail(trans);
-                        return trans;
+                        bool updateDetail = await UpdateInventoryDetail(trans);
+                        if (updateDetail)
+                        {
+                            return trans;
+                        }
+                        return null;
                     }
                     catch (Exception)
                     {
@@ -538,10 +553,11 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //tao inventory detail
-        private async Task UpdateInventoryDetail(Transaction trans)
+        private async Task<Boolean> UpdateInventoryDetail(Transaction trans)
         {
             InventoryDetailRepository detailRepo = new InventoryDetailRepository();
-            await detailRepo.UpdateInventoryDetail(trans.CreatedDate, trans);
+            bool check = await detailRepo.UpdateInventoryDetail(trans.CreatedDate, trans);
+            return check;
         }
 
         //tạo transaction
@@ -560,7 +576,7 @@ namespace ImportExportManagementAPI.Repositories
                 //insert by nfc
 
                 //find provider and check card status
-                IdentityCardRepository cardRepo = new IdentityCardRepository();
+                IdentificationCodeRepository cardRepo = new IdentificationCodeRepository();
 
                 //check valid card
                 Task<IdentityCard> checkCard = cardRepo.checkCard(trans.IdentificationCode);
@@ -579,7 +595,7 @@ namespace ImportExportManagementAPI.Repositories
             }
 
 
-            bool checkSchedule = await CheckTransactionScheduled(trans.IdentificationCode);
+            bool checkSchedule = await CheckTransactionScheduled(trans.PartnerId);
             trans.IsScheduled = checkSchedule;
             //check validate weight in weight out
             if (trans.WeightIn <= 0)
@@ -601,6 +617,7 @@ namespace ImportExportManagementAPI.Repositories
             //check hợp lệ => tạo transaction
             trans.PartnerId = partner.PartnerId;
             trans.GoodsId = _dbContext.Goods.First().GoodsId;
+            trans.WeightIn = Rounding(trans.WeightIn, trans.TransactionType);
 
 
             Insert(trans);
@@ -616,50 +633,45 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //check transaction is scheduled or not
-        public async Task<bool> CheckTransactionScheduled(String IdentificationCode)
+        public async Task<bool> CheckTransactionScheduled(int partnerId)
         {
             bool check = false;
-            IdentityCard card = _dbContext.IdentityCard.Find(IdentificationCode);
-            Partner partner = null;
-            if (card != null) partner = _dbContext.Partner.Find(card.PartnerId);
-            if (partner == null)
+            ScheduleRepository scheduleRepo = new ScheduleRepository();
+            //get list schedule that partner is booked in date
+            List<Schedule> listBookedSchedule = await scheduleRepo.GetBookedScheduleInDate(partnerId);
+            if (listBookedSchedule != null && listBookedSchedule.Count != 0)
             {
-                check = false;
+                //partner co datlich
+                check = true;
             }
             else
             {
-                ScheduleRepository scheduleRepo = new ScheduleRepository();
-                //get list schedule that partner is booked in date
-                List<Schedule> listBookedSchedule = await scheduleRepo.GetBookedScheduleInDate(partner.PartnerId);
-                if (listBookedSchedule != null && listBookedSchedule.Count != 0)
-                {
-                    //partner co datlich
-                    check = true;
-                }
-                else
-                {
-                    check = false;
-                }
+                check = false;
             }
             return check;
         }
         public async Task<string> UpdateMiscellaneousAsync(Transaction transaction)
         {
+
+            float totalWeight = transaction.WeightIn - transaction.WeightOut;
+            if (totalWeight < 0) totalWeight = totalWeight * -1;
+
             GoodsRepository goodsRepository = new GoodsRepository();
-            goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, transaction.WeightIn - transaction.WeightOut, transaction.TransactionType);
+            goodsRepository.UpdateQuantityOfGood(transaction.GoodsId, totalWeight, transaction.TransactionType);
 
             String check = "";
+            bool checkUpdateSchedule = false;
             //update schedule
-            if ((bool)transaction.IsScheduled)
+            if (transaction.IsScheduled)
             {
                 ScheduleRepository scheduleRepo = new ScheduleRepository();
-                bool checkUpdateSchedule = await scheduleRepo.UpdateActualWeight(transaction.PartnerId, transaction.WeightIn - transaction.WeightOut);
+                checkUpdateSchedule = await scheduleRepo.UpdateActualWeight(transaction.PartnerId, totalWeight);
                 if (!checkUpdateSchedule)
                 {
                     check = "Weight is not valid with register weight";
                 }
             }
-            else
+            if (!transaction.IsScheduled || !checkUpdateSchedule)
             {
                 //transaction chưa đặt lịch
                 TimeTemplateItemRepository timeTemplateItemRepository = new TimeTemplateItemRepository();
@@ -675,9 +687,11 @@ namespace ImportExportManagementAPI.Repositories
                     }
                 }
                 if (timeItem == null)
-                    timeItem = listItem[0];
-                float totalWeight = transaction.WeightIn - transaction.WeightOut;
-                if (totalWeight < 0) totalWeight = totalWeight * -1;
+                {
+                    if (listItem.First().ScheduleTime > timeOut) timeItem = listItem.First();
+                    if (listItem.Last().ScheduleTime < timeOut) timeItem = listItem.Last();
+
+                }
                 timeTemplateItemRepository.UpdateCurrent((TransactionType)transaction.TransactionType, totalWeight, timeItem.TimeTemplateItemId);
             }
             return check;
@@ -694,6 +708,21 @@ namespace ImportExportManagementAPI.Repositories
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
             await SaveAsync();
+        }
+        private float Rounding(float weight, TransactionType type)
+        {
+            if (type.Equals(TransactionType.Export))
+            {
+                return (float)Math.Floor(weight);
+            }
+            else if (type.Equals(TransactionType.Import))
+            {
+                return (float)Math.Floor(weight);
+            }
+            else
+            {
+                return 0;
+            }
         }
     }
 }

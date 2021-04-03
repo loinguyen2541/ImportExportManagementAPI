@@ -17,11 +17,11 @@ namespace ImportExportManagementAPI.Controllers
     [ApiController]
     public class IdentityCardsController : ControllerBase
     {
-        private readonly IdentityCardRepository _repo;
+        private readonly IdentificationCodeRepository _repo;
 
         public IdentityCardsController(IEDbContext context)
         {
-            _repo = new IdentityCardRepository();
+            _repo = new IdentificationCodeRepository();
         }
 
         // GET: api/IdentityCards

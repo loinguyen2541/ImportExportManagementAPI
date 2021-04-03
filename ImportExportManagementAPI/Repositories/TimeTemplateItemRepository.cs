@@ -102,15 +102,15 @@ namespace ImportExportManagementAPI.Repositories
         {
             foreach (var item in timeTemplateItems)
             {
-                if (item.ScheduleTime < targetTime && item.Inventory < targetInventory)
+                if (item.ScheduleTime == targetTime)
                 {
                     item.Inventory = targetInventory;
                 }
-                else if (item.ScheduleTime == targetTime)
+                else if (item.ScheduleTime < targetTime && item.Inventory >= targetInventory)
                 {
                     item.Inventory = targetInventory;
                 }
-                else
+                else if (item.ScheduleTime > targetTime)
                 {
                     item.Inventory -= registeredWeight;
                 }

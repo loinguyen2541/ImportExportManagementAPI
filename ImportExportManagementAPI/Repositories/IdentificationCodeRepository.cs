@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Repositories
 {
-    public class IdentityCardRepository : BaseRepository<IdentityCard>
+    public class IdentificationCodeRepository : BaseRepository<IdentityCard>
     {
         public async Task<Pagination<IdentityCard>> GetAllAsync(PaginationParam paging, IdentityCardFilter filter)
         {

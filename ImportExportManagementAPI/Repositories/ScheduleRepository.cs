@@ -367,12 +367,16 @@ namespace ImportExportManagement_API.Repositories
         {
             var current = DateTime.Now.Date;
             List<Schedule> listSchedule = new List<Schedule>();
-            listSchedule = await _dbSet.OrderBy(s => s.RegisteredWeight).Where(s => s.PartnerId == partnerId && s.ScheduleDate.Date == current && !s.UpdatedBy.Equals("Update action")).ToListAsync();
+            listSchedule = await _dbSet.OrderBy(s => s.RegisteredWeight).
+                Where(s => s.PartnerId == partnerId && 
+            s.ScheduleDate.Date == current && 
+            s.ScheduleStatus.Equals(ScheduleStatus.Approved)).ToListAsync();
             return listSchedule;
         }
 
         public async Task<bool> UpdateActualWeight(int partnerId, float weight)
         {
+            if (weight < 0) weight = weight * -1;
             List<Schedule> listScheduled = await GetBookedScheduleInDate(partnerId);
             if (listScheduled != null && listScheduled.Count > 0)
             {
