@@ -74,16 +74,19 @@ namespace ImportExportManagementAPI.Repositories
             Inventory checkInventoryExisted = await inventRepo.CheckExistDateRecord(date);
             //check type nay partner co chua
             Task<InventoryDetail> checkTypeExisted = CheckExistedDetail(trans.PartnerId, checkInventoryExisted.InventoryId);
+            bool check = false;
             //neu inven da co && type chua co => tao moi
             if (checkTypeExisted.Result == null)
             {
                 //nếu chưa có => tạo mới
-                return AddNewInventoryDetail(trans, checkInventoryExisted).Result;
+                check = await AddNewInventoryDetail(trans, checkInventoryExisted);
+                return check;
             }
             else if (checkTypeExisted.Result != null)
             {
                 //neu inventory da co && type da co roi => update weight
-                return UpdateInventoryDetailByType(trans, checkTypeExisted.Result).Result;
+                check = await UpdateInventoryDetailByType(trans, checkTypeExisted.Result);
+                return check;
             }
             return false;
         }
@@ -158,8 +161,12 @@ namespace ImportExportManagementAPI.Repositories
         //get list detail by partner
         private async Task<InventoryDetail> GetPartnerInventoryDetail(int partnerId, int inventoryId)
         {
-            InventoryDetail details = new InventoryDetail();
-            details = await _dbSet.Where(d => d.PartnerId == partnerId && d.InventoryId == inventoryId).SingleAsync();
+            InventoryDetail details = null;
+            if (_dbSet.ToList().Count != 0)
+            {
+                details = await _dbSet.Where(d => d.PartnerId == partnerId && d.InventoryId == inventoryId).SingleAsync();
+            }
+
             return details;
         }
         //get list detail by datetime and type
