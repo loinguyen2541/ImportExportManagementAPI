@@ -4,14 +4,16 @@ using ImportExportManagement_API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    partial class IEDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210403030221_update-transaction-identitycard")]
+    partial class updatetransactionidentitycard
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -351,6 +353,9 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<string>("IdentificationCode")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("IdentityCardId")
+                        .HasColumnType("nvarchar(25)");
+
                     b.Property<bool>("IsScheduled")
                         .HasColumnType("bit");
 
@@ -380,6 +385,8 @@ namespace ImportExportManagementAPI.Migrations
                     b.HasKey("TransactionId");
 
                     b.HasIndex("GoodsId");
+
+                    b.HasIndex("IdentityCardId");
 
                     b.HasIndex("PartnerId");
 
@@ -498,6 +505,10 @@ namespace ImportExportManagementAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ImportExportManagement_API.Models.IdentityCard", null)
+                        .WithMany("Transactions")
+                        .HasForeignKey("IdentityCardId");
+
                     b.HasOne("ImportExportManagement_API.Models.Partner", "Partner")
                         .WithMany("Transactions")
                         .HasForeignKey("PartnerId")
@@ -535,6 +546,11 @@ namespace ImportExportManagementAPI.Migrations
 
                     b.Navigation("Schedules");
 
+                    b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("ImportExportManagement_API.Models.IdentityCard", b =>
+                {
                     b.Navigation("Transactions");
                 });
 

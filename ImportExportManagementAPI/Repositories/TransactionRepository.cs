@@ -92,10 +92,10 @@ namespace ImportExportManagementAPI.Repositories
             bool check = false;
             for (int i = 0; i < listDisable.Count; i++)
             {
-                if (listDisable[i].IdentityCardId != null)
+                if (listDisable[i].IdentificationCode != null)
                 {
                     //insert => disable all processing transaction
-                    if (listDisable[i].IdentityCardId.Equals(cardId))
+                    if (listDisable[i].IdentificationCode.Equals(cardId))
                     {
                         check = await UpdateStatusProcessingTransactionAsync(listDisable[i]);
                         if (check)
@@ -115,10 +115,10 @@ namespace ImportExportManagementAPI.Repositories
             {
                 for (int i = 0; i < listDisable.Count; i++)
                 {
-                    if (listDisable[i].IdentityCardId != null)
+                    if (listDisable[i].IdentificationCode != null)
                     {
                         //update => disable all processing transaction except it
-                        if (listDisable[i].IdentityCardId.Equals(cardId) && (listDisable[i].TransactionId != transId))
+                        if (listDisable[i].IdentificationCode.Equals(cardId) && (listDisable[i].TransactionId != transId))
                         {
                             check = await UpdateStatusProcessingTransactionAsync(listDisable[i]);
                             if (check)
@@ -139,10 +139,10 @@ namespace ImportExportManagementAPI.Repositories
             {
                 for (int i = 0; i < listDisable.Count; i++)
                 {
-                    if (listDisable[i].IdentityCardId != null)
+                    if (listDisable[i].IdentificationCode != null)
                     {
                         //update => disable all processing transaction except it
-                        if (listDisable[i].IdentityCardId.Equals(cardId) && (i != (listDisable.Count - 1)))
+                        if (listDisable[i].IdentificationCode.Equals(cardId) && (i != (listDisable.Count - 1)))
                         {
                             check = await UpdateStatusProcessingTransactionAsync(listDisable[i]);
                             if (check)
@@ -414,7 +414,7 @@ namespace ImportExportManagementAPI.Repositories
         //tìm transaction mới nhất của thẻ ở trạng thái processing
         public Transaction FindTransToWeightOut(String cardId)
         {
-            Transaction existed = _dbSet.OrderBy(t => t.TransactionId).Where(t => t.IdentityCardId.Equals(cardId) && t.TransactionStatus.Equals(TransactionStatus.Progessing)).LastOrDefault();
+            Transaction existed = _dbSet.OrderBy(t => t.TransactionId).Where(t => t.IdentificationCode.Equals(cardId) && t.TransactionStatus.Equals(TransactionStatus.Progessing)).LastOrDefault();
             return existed;
         }
 
@@ -555,7 +555,7 @@ namespace ImportExportManagementAPI.Repositories
                 partner = _dbContext.Partner.Find(trans.PartnerId);
                 if (partner != null && partner.PartnerStatus.Equals(PartnerStatus.Block)) return null;
             }
-            if (trans.IdentityCardId != null && trans.IdentityCardId.Length != 0)
+            if (trans.IdentificationCode != null && trans.IdentificationCode.Length != 0)
             {
                 //insert by nfc
 
@@ -563,7 +563,7 @@ namespace ImportExportManagementAPI.Repositories
                 IdentityCardRepository cardRepo = new IdentityCardRepository();
 
                 //check valid card
-                Task<IdentityCard> checkCard = cardRepo.checkCard(trans.IdentityCardId);
+                Task<IdentityCard> checkCard = cardRepo.checkCard(trans.IdentificationCode);
                 if (checkCard.Result == null)
                 {
                     //card not available
@@ -579,7 +579,7 @@ namespace ImportExportManagementAPI.Repositories
             }
 
 
-            bool checkSchedule = await CheckTransactionScheduled(trans.IdentityCardId);
+            bool checkSchedule = await CheckTransactionScheduled(trans.IdentificationCode);
             trans.IsScheduled = checkSchedule;
             //check validate weight in weight out
             if (trans.WeightIn <= 0)
@@ -588,9 +588,9 @@ namespace ImportExportManagementAPI.Repositories
             }
 
             //disable transaction before
-            if (trans.IdentityCardId != null && trans.IdentityCardId.Length != 0)
+            if (trans.IdentificationCode != null && trans.IdentificationCode.Length != 0)
             {
-                bool checkProceesingCard = await CheckProcessingCard(trans.IdentityCardId, "Insert");
+                bool checkProceesingCard = await CheckProcessingCard(trans.IdentificationCode, "Insert");
                 if (checkProceesingCard) return null;
             }
 
@@ -616,10 +616,10 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //check transaction is scheduled or not
-        public async Task<bool> CheckTransactionScheduled(String identityCardId)
+        public async Task<bool> CheckTransactionScheduled(String IdentificationCode)
         {
             bool check = false;
-            IdentityCard card = _dbContext.IdentityCard.Find(identityCardId);
+            IdentityCard card = _dbContext.IdentityCard.Find(IdentificationCode);
             Partner partner = null;
             if (card != null) partner = _dbContext.Partner.Find(card.PartnerId);
             if (partner == null)
@@ -689,7 +689,7 @@ namespace ImportExportManagementAPI.Repositories
             foreach (var item in transactions)
             {
                 item.TransactionStatus = TransactionStatus.Disable;
-                if (item.TimeOut == null) item.TimeOut = DateTime.Now;
+                item.TimeOut = DateTime.Now;
                 item.Description = "Disable " + SystemName.System.ToString();
                 _dbContext.Entry(item).State = EntityState.Modified;
             }

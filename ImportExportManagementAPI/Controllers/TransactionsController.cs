@@ -102,7 +102,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Transaction>> CreateTransactionByNFCCard(String cardId, float weightIn, int partnerId)
         {
-            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TimeOut = DateTime.Now, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId };
+            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentificationCode = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TimeOut = DateTime.Now, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId };
             Transaction check = await _repo.CreateTransaction(trans);
             if (check != null)
             {
