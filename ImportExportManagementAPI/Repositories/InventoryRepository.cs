@@ -89,14 +89,14 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //check coi partner đã có phiếu kiểm kho vào ngày này chưa
-        public async Task<InventoryDetail> CheckExistDateRecordOfPartner(DateTime dateRecord, int partnerId, InventoryDetailType type)
+        public async Task<InventoryDetail> CheckExistDateRecordOfPartner(DateTime dateRecord, int partnerId)
         {
             var getDate = dateRecord.Date;
             Inventory inventory = await _dbSet.Where(i => i.RecordedDate.Equals(getDate)).SingleOrDefaultAsync();
             if (inventory != null)
             {
                 //kiểm detail loại này của partner trong này đã có chưa
-                InventoryDetail detailByDate = await _dbContext.InventoryDetail.Where(d => d.InventoryId == inventory.InventoryId && d.PartnerId == partnerId && d.Type == type).SingleOrDefaultAsync();
+                InventoryDetail detailByDate = await _dbContext.InventoryDetail.Where(d => d.InventoryId == inventory.InventoryId && d.PartnerId == partnerId).SingleOrDefaultAsync();
                 return detailByDate;
             }
             //chua co tra ve null
@@ -215,10 +215,10 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //lấy tổng khối lượng nhập/xuất theo ngày của partner
-        public async Task<float> TotalWeightInventoryOfPartnerByDate(DateTime dateRecord, InventoryDetailType type, int partnerId)
+        public async Task<float> TotalWeightInventoryOfPartnerByDate(DateTime dateRecord, int partnerId)
         {
             float total = 0;
-            InventoryDetail detail = await CheckExistDateRecordOfPartner(dateRecord, partnerId, type);
+            InventoryDetail detail = await CheckExistDateRecordOfPartner(dateRecord, partnerId);
             if (detail != null)
             {
                 total = detail.Weight;
@@ -227,7 +227,7 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //lấy tổng khối lượng nhập/xuất theo khoảng thời gian của partner
-        public async Task<float> TotalWeightInventoryOfPartnerByTime(DateTime fromDate, DateTime toDate, int type, int partnerId)
+        public async Task<float> TotalWeightInventoryOfPartnerByTime(DateTime fromDate, DateTime toDate, int partnerId)
         {
             float total = 0;
 
@@ -240,7 +240,7 @@ namespace ImportExportManagementAPI.Repositories
                 List<InventoryDetail> temp = null;
                 foreach (var item in listInventory)
                 {
-                    temp = await _dbContext.InventoryDetail.Where(d => d.InventoryId == item.InventoryId && d.PartnerId == partnerId && d.Type == (InventoryDetailType)type).ToListAsync();
+                    temp = await _dbContext.InventoryDetail.Where(d => d.InventoryId == item.InventoryId && d.PartnerId == partnerId).ToListAsync();
                     if (temp != null)
                     {
                         foreach (var itemDetail in temp)
@@ -263,7 +263,7 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //lấy list import/export trong khoảng thời gian
-        public async Task<List<InventoryDetail>> GetImportExportByTime(DateTime fromDate, DateTime toDate, int type, int partnerId)
+        public async Task<List<InventoryDetail>> GetImportExportByTime(DateTime fromDate, DateTime toDate, int partnerId)
         {
             //lấy list inventory trong khoảng thgian này
             List<Inventory> listInventory = new List<Inventory>();
@@ -273,37 +273,19 @@ namespace ImportExportManagementAPI.Repositories
             listInventory = await _dbSet.Where(i => fromDate <= i.RecordedDate && i.RecordedDate <= toDate).ToListAsync();
             if (listInventory.Count != 0)
             {
-                if (type >= 0)
+                List<InventoryDetail> temp = null;
+                foreach (var item in listInventory)
                 {
-                    List<InventoryDetail> temp = null;
-                    foreach (var item in listInventory)
+                   if(partnerId != 0) temp = await _dbContext.InventoryDetail.Where(d => d.InventoryId == item.InventoryId && d.PartnerId == partnerId).ToListAsync();
+                    else temp = await _dbContext.InventoryDetail.Where(d => d.InventoryId == item.InventoryId).ToListAsync();
+                    if (temp.Count != 0)
                     {
-                        temp = await _dbContext.InventoryDetail.Where(d => d.InventoryId == item.InventoryId && d.PartnerId == partnerId && d.Type == (InventoryDetailType)type).ToListAsync();
-                        if (temp.Count != 0)
+                        foreach (var itemDetail in temp)
                         {
-                            foreach (var itemDetail in temp)
-                            {
-                                listDetail.Add(itemDetail);
-                            }
+                            listDetail.Add(itemDetail);
                         }
-                        temp = null;
                     }
-                }
-                else if (type < 0)
-                {
-                    List<InventoryDetail> temp = null;
-                    foreach (var item in listInventory)
-                    {
-                        temp = await _dbContext.InventoryDetail.Where(d => d.InventoryId == item.InventoryId && d.PartnerId == partnerId).ToListAsync();
-                        if (temp.Count != 0)
-                        {
-                            foreach (var itemDetail in temp)
-                            {
-                                listDetail.Add(itemDetail);
-                            }
-                        }
-                        temp = null;
-                    }
+                    temp = null;
                 }
             }
             return listDetail;

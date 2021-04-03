@@ -21,22 +21,42 @@ namespace ImportExportManagementAPI.Repositories
 
         public bool CheckInventory(float registeredWeight, int id, TransactionType type, float storageCapacity)
         {
-
-            float inventory = _dbSet.Find(id).Inventory;
-            if (type == TransactionType.Import)
+            //check tồn kho đã đạt giới hạn chưa
+            GoodsRepository _goodsRepo = new GoodsRepository();
+            Goods goods = _dbContext.Goods.First();
+            if (goods != null)
             {
-                float availableStorageCapacity = storageCapacity - inventory;
-                if (availableStorageCapacity >= registeredWeight)
+                float inventory = _dbSet.Find(id).Inventory;
+                if (type == TransactionType.Import)
                 {
-                    return true;
+                    if (goods.QuantityOfInventory == 2000)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        float availableStorageCapacity = storageCapacity - inventory;
+                        if (availableStorageCapacity >= registeredWeight)
+                        {
+                            return true;
+                        }
+                    }
                 }
-            }
-            else if (type == TransactionType.Export)
-            {
-                if (inventory >= registeredWeight)
+                else if (type == TransactionType.Export)
                 {
-                    return true;
+                    if (goods.QuantityOfInventory == 0)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        if (inventory >= registeredWeight)
+                        {
+                            return true;
+                        }
+                    }
                 }
+                return false;
             }
             return false;
         }
@@ -181,7 +201,7 @@ namespace ImportExportManagementAPI.Repositories
         public async Task<Schedule> ChangeSchedule(Schedule updateSchedule, Schedule existedSchedule)
         {
             Schedule cancelSchedule = await CancelSchedule(existedSchedule, "Update action");
-            if (cancelSchedule!=null)
+            if (cancelSchedule != null)
             {
                 if (CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId))
                 {

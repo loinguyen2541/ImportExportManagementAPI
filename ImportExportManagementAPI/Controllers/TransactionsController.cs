@@ -59,26 +59,51 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<Transaction> listTransaction = await _repo.GetLastIndex(paging);
             return Ok(listTransaction);
         }
+
+        //get number of lastest transaction
+        [HttpGet("partners/last")]
+        [AllowAnonymous]
+        public async Task<ActionResult<Pagination<Transaction>>> GetLastesOfPartner([FromQuery] PaginationParam paging, int partnerId)
+        {
+            Pagination<Transaction> listTransaction = await _repo.GetLastesOfPartner(paging, partnerId);
+            return Ok(listTransaction);
+        }
+
         //KhanhBDB
         //add transaction
-        [HttpPost("manual")]
-        [AllowAnonymous]
-        public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
-        {
-            var check = await _repo.CreateTransaction(transaction, "manual");
-            if (check == null)
-            {
-                return BadRequest("Invalid input");
-            }
-            await _repo.SaveAsync();
-            return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
-        }
+        //[HttpPost("manual")]
+        //[AllowAnonymous]
+        //public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
+        //{
+        //    var check = await _repo.CreateTransaction(transaction, "manual");
+        //    if (check == null)
+        //    {
+        //        return BadRequest("Invalid input");
+        //    }
+        //    await _repo.SaveAsync();
+        //    return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+        //}
+
+        //add transaction by android card
+        //[HttpPost("androidcard")]
+        //[AllowAnonymous]
+        //public async Task<ActionResult> CreateTransactionByAndroidCard(Transaction transaction)
+        //{
+        //    var check = await _repo.CreateTransaction(transaction);
+        //    if (check == null)
+        //    {
+        //        return BadRequest("Invalid input");
+        //    }
+        //    await _repo.SaveAsync();
+        //    return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+        //}
+
         //add transaction
-        [HttpPost("automatic")]
-        public async Task<ActionResult<Transaction>> CreateTransactionByAutomatic(String cardId, float weightIn)
+        [HttpPost]
+        public async Task<ActionResult<Transaction>> CreateTransactionByNFCCard(String cardId, float weightIn, int partnerId)
         {
-            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TransactionStatus = TransactionStatus.Progessing };
-            Transaction check = await _repo.CreateTransaction(trans, "Insert");
+            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentityCardId = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TimeOut = DateTime.Now, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId };
+            Transaction check = await _repo.CreateTransaction(trans);
             if (check != null)
             {
                 await _repo.SaveAsync();
@@ -110,17 +135,16 @@ namespace ImportExportManagementAPI.Controllers
          */
 
         //update
-        [HttpPut("automatic/{cardId}")]
+        [HttpPut]
         [AllowAnonymous]
-        public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, float weightOut)
+        public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId,int partnerId, float weightOut)
         {
-            Transaction transaction = await _repo.UpdateTransactionArduino(cardId, weightOut, "UpdateArduino");
+            Transaction transaction = await _repo.UpdateTransactionArduino(cardId, weightOut, partnerId);
             if (transaction != null)
             {
                 Task charHub = chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
                 Task transactionhub = _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
                 Task<String> updateMiscellaneous = _repo.UpdateMiscellaneousAsync(transaction);
-
                 return Ok();
             }
             else
@@ -166,19 +190,6 @@ namespace ImportExportManagementAPI.Controllers
         {
             return Ok(Enum.GetValues(typeof(TransactionStatus)).Cast<TransactionStatus>().ToList());
         }
-        //[HttpGet("top")]
-        //public ActionResult<Object> GetTopPartner([FromQuery] PaginationParam paging, [FromQuery] TransactionFilter filter)
-        //{
-        //    return Ok(_repo.GetTopPartner(paging, filter));
-        //}
-
-        //[HttpGet("checkSchedule")]
-        //public async Task<bool> CheckScheduleAsync(String identityCardId)
-        //{
-        //    bool check = false;
-        //    check = await _repo.CheckTransactionScheduled(identityCardId);
-        //    return check;
-        //}
 
         [HttpGet("partners/searchdate")]
         public async Task<List<Transaction>> GetTransactionOfPartnerByDate(int partnerId, DateTime searchDate)

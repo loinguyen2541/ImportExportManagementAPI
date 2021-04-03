@@ -216,6 +216,15 @@ namespace ImportExportManagementAPI.Repositories
             return listTransaction;
         }
 
+        public async ValueTask<Pagination<Transaction>> GetLastesOfPartner(PaginationParam paging, int partnerId)
+        {
+            Pagination<Transaction> listTransaction = new Pagination<Transaction>();
+            IQueryable<Transaction> rawData = null;
+            rawData = _dbSet.OrderByDescending(t => t.CreatedDate).Where(p => p.PartnerId == partnerId);
+            listTransaction = await DoFilter(paging, null, rawData);
+            return listTransaction;
+        }
+
         private async Task<Pagination<Transaction>> DoFilter(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)
         {
 
@@ -365,7 +374,7 @@ namespace ImportExportManagementAPI.Repositories
             var nextDay = date.AddDays(1);
 
             rawData = _dbSet.Where(t => t.PartnerId == partnerId && date <= t.CreatedDate && t.CreatedDate < nextDay);
-            listTransaction = await rawData.OrderBy(t => t.CreatedDate).ToListAsync();
+            listTransaction = await rawData.OrderByDescending(t => t.CreatedDate).ToListAsync();
             return listTransaction;
         }
         private async Task<Pagination<Transaction>> DoPaging(PaginationParam paging, IQueryable<Transaction> queryable)
@@ -447,10 +456,10 @@ namespace ImportExportManagementAPI.Repositories
             }
             return trans;
         }
-        public async Task<Transaction> UpdateTransactionArduino(String cardId, float weightOut, String method)
+        public async Task<Transaction> UpdateTransactionArduino(String cardId, float weightOut, int partnerId)
         {
-            Partner partner;
-            if (cardId != null && cardId.Length > 0) //update by arduino
+            Partner partner = null;
+            if (cardId != null && cardId.Length > 0) //update by nfc
             {
                 //find provider and check card status
                 IdentityCardRepository cardRepo = new IdentityCardRepository();
@@ -462,9 +471,10 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 partner = cardRepo.GetPartnerCard(checkCard.Result.PartnerId).Result;
             }
-            else
+            else if (partnerId != 0)
             {
-                return null;
+                partner = _dbContext.Partner.Find(partnerId);
+                if (partner != null && partner.PartnerStatus.Equals(PartnerStatus.Block)) return null;
             }
             //get partner failed
             if (partner == null)
@@ -473,7 +483,11 @@ namespace ImportExportManagementAPI.Repositories
             }
 
 
-            bool checkProcessingCard = await CheckProcessingCard(cardId, method);
+            bool checkProcessingCard = false;
+            if (cardId != null && cardId.Length != 0)
+            {
+                checkProcessingCard = await CheckProcessingCard(cardId, "update");
+            }
 
             if (checkProcessingCard)
             {
@@ -482,34 +496,41 @@ namespace ImportExportManagementAPI.Repositories
             else
             {
                 if (weightOut <= 0) return null;
+                //ddang cấn khúc này
                 var trans = FindTransToWeightOut(cardId);
-                if (trans.WeightIn <= 0) return null;
-
-                //set time out
-                trans.TimeOut = DateTime.Now;
-                //set weight out
-                trans.WeightOut = weightOut;
-                //change status
-                trans.TransactionStatus = TransactionStatus.Success;
-                //update transaction
-                Update(trans);
-                try
+                if (trans != null)
                 {
-                    await SaveAsync();
-                    //update transaction thành công => tạo inventory detail
-                    await UpdateInventoryDetail(trans);
-                    return trans;
+                    if (trans.WeightIn <= 0) return null;
+                    //set time out
+                    trans.TimeOut = DateTime.UtcNow;
+                    //set weight out
+                    trans.WeightOut = weightOut;
+                    //change status
+                    trans.TransactionStatus = TransactionStatus.Success;
+                    //update transaction
+                    Update(trans);
+                    try
+                    {
+                        await SaveAsync();
+                        //update transaction thành công => tạo inventory detail
+                        await UpdateInventoryDetail(trans);
+                        return trans;
+                    }
+                    catch (Exception)
+                    {
+                        if (GetByID(trans.TransactionId) == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
                 }
-                catch (Exception)
+                else
                 {
-                    if (GetByID(trans.TransactionId) == null)
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return null;
                 }
             }
         }
@@ -522,27 +543,20 @@ namespace ImportExportManagementAPI.Repositories
         }
 
         //tạo transaction
-        public async Task<Transaction> CreateTransaction(Transaction trans, String method)
+        public async Task<Transaction> CreateTransaction(Transaction trans)
         {
-            bool checkSchedule = await CheckTransactionScheduled(trans.IdentityCardId);
-            trans.IsScheduled = checkSchedule;
-            //check validate weight in weight out
-            if (trans.WeightIn <= 0)
-            {
-                return null;
-            }
-            if (method.Equals("manual"))
-            {
-                if (trans.WeightOut <= 0)
-                {
-                    return null;
-                }
-            }
-
             //check card and provider
-            Partner partner;
-            if (trans.IdentityCardId != null) //insert by arduino
+            Partner partner = null;
+            if (trans.PartnerId != 0)
             {
+                //insert by android card
+                partner = _dbContext.Partner.Find(trans.PartnerId);
+                if (partner != null && partner.PartnerStatus.Equals(PartnerStatus.Block)) return null;
+            }
+            if (trans.IdentityCardId != null && trans.IdentityCardId.Length != 0)
+            {
+                //insert by nfc
+
                 //find provider and check card status
                 IdentityCardRepository cardRepo = new IdentityCardRepository();
 
@@ -555,35 +569,47 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 partner = cardRepo.GetPartnerCard(checkCard.Result.PartnerId).Result;
             }
-            else
-            {
-                partner = (Partner)_dbContext.Partner.Where(p => p.PartnerId == trans.PartnerId && p.PartnerStatus.Equals(PartnerStatus.Active));
-            }
+
             //get partner failed
             if (partner == null)
             {
                 return null;
             }
 
-            bool checkProceesingCard = await CheckProcessingCard(trans.IdentityCardId, "Insert");
-            if (checkProceesingCard) return null;
+
+            bool checkSchedule = await CheckTransactionScheduled(trans.IdentityCardId);
+            trans.IsScheduled = checkSchedule;
+            //check validate weight in weight out
+            if (trans.WeightIn <= 0)
+            {
+                return null;
+            }
+
+            //disable transaction before
+            if (trans.IdentityCardId != null && trans.IdentityCardId.Length != 0)
+            {
+                bool checkProceesingCard = await CheckProcessingCard(trans.IdentityCardId, "Insert");
+                if (checkProceesingCard) return null;
+            }
+
+            //check type
+            if (partner.PartnerTypeId == 1) trans.TransactionType = TransactionType.Export;
+            if (partner.PartnerTypeId == 2) trans.TransactionType = TransactionType.Import;
 
             //check hợp lệ => tạo transaction
             trans.PartnerId = partner.PartnerId;
             trans.GoodsId = _dbContext.Goods.First().GoodsId;
 
-            if (partner.PartnerTypeId == 1) trans.TransactionType = TransactionType.Export;
-            if (partner.PartnerTypeId == 2) trans.TransactionType = TransactionType.Import;
 
             Insert(trans);
-            if (method.Equals("manual"))
-            {
-                if (trans.TransactionStatus.Equals(TransactionStatus.Success))
-                {
-                    //tạo transaction thành công => tạo inventory detail
-                    await UpdateInventoryDetail(trans);
-                }
-            }
+            //if (method.Equals("manual"))
+            //{
+            //    if (trans.TransactionStatus.Equals(TransactionStatus.Success))
+            //    {
+            //        //tạo transaction thành công => tạo inventory detail
+            //        await UpdateInventoryDetail(trans);
+            //    }
+            //}
             return trans;
         }
 
@@ -591,34 +617,26 @@ namespace ImportExportManagementAPI.Repositories
         public async Task<bool> CheckTransactionScheduled(String identityCardId)
         {
             bool check = false;
-            IdentityCardRepository cardRepo = new IdentityCardRepository();
-            Task<IdentityCard> checkCard = cardRepo.checkCard(identityCardId);
-            if (checkCard.Result == null)
+            IdentityCard card = _dbContext.IdentityCard.Find(identityCardId);
+            Partner partner = null;
+            if (card != null) partner = _dbContext.Partner.Find(card.PartnerId);
+            if (partner == null)
             {
-                //card not available
                 check = false;
             }
             else
             {
-                var partner = cardRepo.GetPartnerCard(checkCard.Result.PartnerId).Result;
-                if (partner == null)
+                ScheduleRepository scheduleRepo = new ScheduleRepository();
+                //get list schedule that partner is booked in date
+                List<Schedule> listBookedSchedule = await scheduleRepo.GetBookedScheduleInDate(partner.PartnerId);
+                if (listBookedSchedule != null && listBookedSchedule.Count != 0)
                 {
-                    check = false;
+                    //partner co datlich
+                    check = true;
                 }
                 else
                 {
-                    ScheduleRepository scheduleRepo = new ScheduleRepository();
-                    //get list schedule that partner is booked in date
-                    List<Schedule> listBookedSchedule = await scheduleRepo.GetBookedScheduleInDate(partner.PartnerId);
-                    if (listBookedSchedule != null && listBookedSchedule.Count != 0)
-                    {
-                        //partner co datlich
-                        check = true;
-                    }
-                    else
-                    {
-                        check = false;
-                    }
+                    check = false;
                 }
             }
             return check;
@@ -669,7 +687,7 @@ namespace ImportExportManagementAPI.Repositories
             foreach (var item in transactions)
             {
                 item.TransactionStatus = TransactionStatus.Disable;
-                if(item.TimeOut == null) item.TimeOut = DateTime.Now;
+                if (item.TimeOut == null) item.TimeOut = DateTime.Now;
                 item.Description = "Disable " + SystemName.System.ToString();
                 _dbContext.Entry(item).State = EntityState.Modified;
             }

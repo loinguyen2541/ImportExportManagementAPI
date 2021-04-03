@@ -52,9 +52,9 @@ namespace ImportExportManagementAPI.Controllers
         }
         [HttpGet("schedulehistory")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate, String type)
+        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate,int partnerId)
         {
-            List<Schedule> schedules = await _repo.GetHistory(searchDate, type);
+            List<Schedule> schedules = await _repo.GetHistory(searchDate, partnerId);
             return Ok(schedules);
         }
 
@@ -172,6 +172,13 @@ namespace ImportExportManagementAPI.Controllers
         {
             List<ScheduleStatus> scheduleStatuses = _repo.getScheduleType();
             return scheduleStatuses;
+        }
+        [HttpGet("total-schedule")]
+        [AllowAnonymous]
+        public async Task<float> GetTotalScheduleAsync(int partnerId, String searchDate)
+        {
+            float totalWeight = await _repo.GetTotalSchedule(partnerId, searchDate);
+            return totalWeight;
         }
     }
 }

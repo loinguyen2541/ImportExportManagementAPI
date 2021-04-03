@@ -176,6 +176,18 @@ namespace ImportExportManagementAPI.Repositories
             listInventory = await DoFilterReportPartner(paging, filter, rawData);
             return listInventory;
         }
+
+        //public async ValueTask<List<InventoryDetail>> GetPartnerInventoryByDate(InventoryFilter filter)
+        //{
+        //    List<InventoryDetail> listInventory = new List<InventoryDetail>();
+        //    IQueryable<InventoryDetail> rawData = null;
+        //    rawData = _dbSet.Include(p => p.Partner).Include(i => i.Inventory);
+        //    var date = Convert.ToDateTime(filter.SearchDate).Date;
+        //    var nextDay = date.AddDays(1);
+
+        //    rawData = _dbSet.Where(date <=  && t.CreatedDate < nextDay);
+        //    return listInventory;
+        //}
         public async Task<List<InventoryDetail>> getDataReportInventoryDetail(ReportFilter filter)
         {
             List<InventoryDetail> listInventory = new List<InventoryDetail>();

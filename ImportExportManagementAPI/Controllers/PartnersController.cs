@@ -152,5 +152,6 @@ namespace ImportExportManagementAPI
             List<Partner> schedules = await _repo.GetPartnerReport(fromDate, toDate, caseSearch);
             return Ok(schedules);
         }
+
     }
 }

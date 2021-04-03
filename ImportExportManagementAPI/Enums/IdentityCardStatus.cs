@@ -7,6 +7,6 @@ namespace ImportExportManagement_API.Models
 {
     public enum IdentityCardStatus
     {
-        Active, Block
+        Active, Block, Pending
     }
 }

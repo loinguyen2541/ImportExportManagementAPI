@@ -21,6 +21,15 @@ namespace ImportExportManagementAPI.Repositories
             return IdentityCards;
         }
 
+        public async Task<List<IdentityCard>> GetListPending()
+        {
+            List<IdentityCard> IdentityCards = new List<IdentityCard>();
+            IQueryable<IdentityCard> rawData = null;
+            rawData = _dbSet.Include(p => p.Partner).Where(i => i.IdentityCardStatus.Equals(IdentityCardStatus.Pending));
+            IdentityCards = await rawData.ToListAsync();
+            return IdentityCards;
+        }
+
         private async Task<Pagination<IdentityCard>> DoFilterAsync(PaginationParam paging, IdentityCardFilter filter, IQueryable<IdentityCard> queryable)
         {
             if (filter.PartnerName != null && filter.PartnerName.Length > 0)

@@ -106,30 +106,25 @@ namespace ImportExportManagementAPI.Controllers
 
         //lấy tổng khối lượng nhập/xuất theo ngày của partner
         [HttpGet("partner-totalweight")]
-        public async Task<ActionResult<float>> TotalWeightByDateOfPartner(DateTime fromDate, DateTime toDate, int partnerId, int type)
+        public async Task<ActionResult<float>> TotalWeightByDateOfPartner(DateTime fromDate, DateTime toDate, int partnerId)
         {
-            InventoryDetailType typeDetail = InventoryDetailType.Import;
-            if (type == 1)
-            {
-                typeDetail = InventoryDetailType.Export;
-            }
             float total = 0;
             if (fromDate.Equals(toDate))
             {
-                total = await _repo.TotalWeightInventoryOfPartnerByDate(fromDate, typeDetail, partnerId);
+                total = await _repo.TotalWeightInventoryOfPartnerByDate(fromDate, partnerId);
             }
             else
             {
-                total = await _repo.TotalWeightInventoryOfPartnerByTime(fromDate, toDate, type, partnerId);
+                total = await _repo.TotalWeightInventoryOfPartnerByTime(fromDate, toDate, partnerId);
             }
             return Ok(total);
         }
 
         //lấy import/export theo khaorng thời gian của partner
         [HttpGet("partner-import-export")]
-        public async Task<ActionResult<List<InventoryDetail>>> GetImportExportByTime(DateTime fromDate, DateTime toDate, int type, int partnerId)
+        public async Task<ActionResult<List<InventoryDetail>>> GetImportExportByTime(DateTime fromDate, DateTime toDate, int partnerId)
         {
-            List<InventoryDetail> listDetail = await _repo.GetImportExportByTime(fromDate, toDate, type, partnerId);
+            List<InventoryDetail> listDetail = await _repo.GetImportExportByTime(fromDate, toDate, partnerId);
             return Ok(listDetail);
         }
     }

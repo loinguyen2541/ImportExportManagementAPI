@@ -11,5 +11,6 @@ namespace ImportExportManagement_API.Models
         public String TransactionType { get; set; }
         public String ToDate { get; set; }
         public String FromDate { get; set; }
+        public String SearchDate { get; set; }
     }
 }
