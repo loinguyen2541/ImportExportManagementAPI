@@ -711,18 +711,7 @@ namespace ImportExportManagementAPI.Repositories
         }
         private float Rounding(float weight, TransactionType type)
         {
-            if (type.Equals(TransactionType.Export))
-            {
-                return (float)Math.Floor(weight);
-            }
-            else if (type.Equals(TransactionType.Import))
-            {
-                return (float)Math.Floor(weight);
-            }
-            else
-            {
-                return 0;
-            }
+            return (float) Math.Round(weight, 2);
         }
     }
 }
