@@ -230,9 +230,11 @@ namespace ImportExportManagementAPI.Repositories
 
             if (filter != null)
             {
-                if (filter.transactionStatus != null)
+                if (filter.TransactionStatus != null)
                 {
-                    queryable = queryable.Where(t => t.TransactionStatus == filter.transactionStatus);
+                    TransactionStatus trans;
+                    if (Enum.TryParse(filter.TransactionStatus, out trans))
+                        queryable = queryable.Where(t => t.TransactionStatus == trans);
                 }
                 if ((DateTime.TryParse(filter.DateFrom, out DateTime dateFrom) && (DateTime.TryParse(filter.DateTo, out DateTime dateTo))))
                 {
@@ -711,7 +713,7 @@ namespace ImportExportManagementAPI.Repositories
         }
         private float Rounding(float weight, TransactionType type)
         {
-            return (float) Math.Round(weight, 2);
+            return (float)Math.Round(weight, 2);
         }
     }
 }
