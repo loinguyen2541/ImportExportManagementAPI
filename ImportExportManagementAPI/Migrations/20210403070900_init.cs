@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ImportExportManagementAPI.Migrations
 {
-    public partial class initial : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -28,7 +28,7 @@ namespace ImportExportManagementAPI.Migrations
                 {
                     InventoryId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OpeningStock = table.Column<float>(type: "real", nullable: true),
+                    OpeningStock = table.Column<float>(type: "real", nullable: false),
                     RecordedDate = table.Column<DateTime>(type: "Date", nullable: false)
                 },
                 constraints: table =>
@@ -229,7 +229,6 @@ namespace ImportExportManagementAPI.Migrations
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TransactionType = table.Column<int>(type: "int", nullable: false),
                     ScheduleStatus = table.Column<int>(type: "int", nullable: false),
-                    IsCanceled = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PartnerId = table.Column<int>(type: "int", nullable: false),
                     GoodsId = table.Column<int>(type: "int", nullable: false),
@@ -265,16 +264,16 @@ namespace ImportExportManagementAPI.Migrations
                     TransactionId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TimeIn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TimeOut = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    TimeOut = table.Column<DateTime>(type: "datetime2", nullable: false),
                     WeightIn = table.Column<float>(type: "real", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     WeightOut = table.Column<float>(type: "real", nullable: false, defaultValue: 0f),
-                    IsScheduled = table.Column<bool>(type: "bit", nullable: true),
-                    TransactionType = table.Column<int>(type: "int", nullable: true),
+                    IsScheduled = table.Column<bool>(type: "bit", nullable: false),
+                    TransactionType = table.Column<int>(type: "int", nullable: false),
                     TransactionStatus = table.Column<int>(type: "int", nullable: false),
                     PartnerId = table.Column<int>(type: "int", nullable: false),
-                    IdentityCardId = table.Column<string>(type: "nvarchar(25)", nullable: true),
+                    IdentificationCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     GoodsId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -286,12 +285,6 @@ namespace ImportExportManagementAPI.Migrations
                         principalTable: "Goods",
                         principalColumn: "GoodsId",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Transaction_IdentityCard_IdentityCardId",
-                        column: x => x.IdentityCardId,
-                        principalTable: "IdentityCard",
-                        principalColumn: "IdentityCardId",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Transaction_Partner_PartnerId",
                         column: x => x.PartnerId,
@@ -373,11 +366,6 @@ namespace ImportExportManagementAPI.Migrations
                 column: "GoodsId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transaction_IdentityCardId",
-                table: "Transaction",
-                column: "IdentityCardId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Transaction_PartnerId",
                 table: "Transaction",
                 column: "PartnerId");
@@ -385,6 +373,9 @@ namespace ImportExportManagementAPI.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "IdentityCard");
+
             migrationBuilder.DropTable(
                 name: "InventoryDetail");
 
@@ -407,13 +398,10 @@ namespace ImportExportManagementAPI.Migrations
                 name: "Goods");
 
             migrationBuilder.DropTable(
-                name: "IdentityCard");
+                name: "Partner");
 
             migrationBuilder.DropTable(
                 name: "TimeTemplate");
-
-            migrationBuilder.DropTable(
-                name: "Partner");
 
             migrationBuilder.DropTable(
                 name: "Account");

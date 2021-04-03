@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    [Migration("20210330012637_test")]
-    partial class test
+    [Migration("20210403070900_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -350,8 +350,8 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("GoodsId")
                         .HasColumnType("int");
 
-                    b.Property<string>("IdentityCardId")
-                        .HasColumnType("nvarchar(25)");
+                    b.Property<string>("IdentificationCode")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsScheduled")
                         .HasColumnType("bit");
@@ -382,8 +382,6 @@ namespace ImportExportManagementAPI.Migrations
                     b.HasKey("TransactionId");
 
                     b.HasIndex("GoodsId");
-
-                    b.HasIndex("IdentityCardId");
 
                     b.HasIndex("PartnerId");
 
@@ -502,10 +500,6 @@ namespace ImportExportManagementAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ImportExportManagement_API.Models.IdentityCard", "IdentityCard")
-                        .WithMany("Transactions")
-                        .HasForeignKey("IdentityCardId");
-
                     b.HasOne("ImportExportManagement_API.Models.Partner", "Partner")
                         .WithMany("Transactions")
                         .HasForeignKey("PartnerId")
@@ -513,8 +507,6 @@ namespace ImportExportManagementAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Goods");
-
-                    b.Navigation("IdentityCard");
 
                     b.Navigation("Partner");
                 });
@@ -545,11 +537,6 @@ namespace ImportExportManagementAPI.Migrations
 
                     b.Navigation("Schedules");
 
-                    b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("ImportExportManagement_API.Models.IdentityCard", b =>
-                {
                     b.Navigation("Transactions");
                 });
 
