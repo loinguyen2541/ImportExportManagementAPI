@@ -195,7 +195,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<Transaction> listTransaction = new Pagination<Transaction>();
             IQueryable<Transaction> rawData = null;
-            rawData = _dbSet.Include(t => t.Partner);
+            rawData = _dbSet.Include(t => t.Partner).OrderByDescending(t => t.CreatedDate);
             listTransaction = await DoFilter(paging, filter, rawData);
             return listTransaction;
         }
@@ -211,7 +211,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<Transaction> listTransaction = new Pagination<Transaction>();
             IQueryable<Transaction> rawData = null;
-            rawData = _dbSet.OrderByDescending(t => t.TransactionId).Where(p => p.TransactionStatus.Equals(TransactionStatus.Progessing));
+            rawData = _dbSet.OrderByDescending(t => t.CreatedDate).Where(p => p.TransactionStatus.Equals(TransactionStatus.Progessing));
             listTransaction = await DoFilter(paging, null, rawData);
             return listTransaction;
         }
@@ -230,7 +230,10 @@ namespace ImportExportManagementAPI.Repositories
 
             if (filter != null)
             {
-
+                if(filter.transactionStatus != null)
+                {
+                    queryable = queryable.Where(t => t.TransactionStatus == filter.transactionStatus);
+                }
                 if ((DateTime.TryParse(filter.DateFrom, out DateTime dateFrom) && (DateTime.TryParse(filter.DateTo, out DateTime dateTo))))
                 {
                     if (filter.DateFrom.Equals(filter.DateTo))
@@ -271,12 +274,11 @@ namespace ImportExportManagementAPI.Repositories
             {
                 paging.Page = 1;
             }
+            int count = queryable.Count();
             if (paging.Size < 1)
             {
-                paging.Size = 1;
+                paging.Size = count;
             }
-
-            int count = queryable.Count();
 
             if (((paging.Page - 1) * paging.Size) > count)
             {
@@ -289,7 +291,7 @@ namespace ImportExportManagementAPI.Repositories
             pagination.Size = paging.Size;
             double totalPage = (count * 1.0) / (pagination.Size * 1.0);
             pagination.TotalPage = (int)Math.Ceiling(totalPage);
-            pagination.Data = await queryable.OrderBy(t => t.CreatedDate).ToListAsync();
+            pagination.Data = await queryable.ToListAsync();
             return pagination;
         }
         /*private Pagination<TopPartner> DoFilterTop10(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)

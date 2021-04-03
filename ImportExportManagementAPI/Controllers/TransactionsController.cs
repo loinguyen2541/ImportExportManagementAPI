@@ -142,8 +142,8 @@ namespace ImportExportManagementAPI.Controllers
             Transaction transaction = await _repo.UpdateTransactionArduino(cardId, weightOut, partnerId);
             if (transaction != null)
             {
-                Task charHub = chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
-                Task transactionhub = _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
+                await chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
+                await _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
                 Task<String> updateMiscellaneous = _repo.UpdateMiscellaneousAsync(transaction);
                 return Ok();
             }

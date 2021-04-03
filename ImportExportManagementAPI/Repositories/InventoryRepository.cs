@@ -133,7 +133,6 @@ namespace ImportExportManagementAPI.Repositories
             if (inventory != null)
             {
                 float weightTotal = 0;
-                //get list detail
                 InventoryDetailRepository detailRepo = new InventoryDetailRepository();
                 List<InventoryDetail> listImport = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, InventoryDetailType.Import);
                 List<InventoryDetail> listExport = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, InventoryDetailType.Export);

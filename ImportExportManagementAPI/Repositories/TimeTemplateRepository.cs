@@ -94,12 +94,20 @@ namespace ImportExportManagementAPI.Repositories
         }
         public async Task<TimeTemplate> GetForecastInventoryToday()
         {
-            TimeTemplate timeTemplate = 
-                await _dbSet.Where(t => t.ApplyingDate == DateTime.Now && t.TimeTemplateStatus == TimeTemplateStatus.Applied)
-                .Include(t => 
-                t.TimeTemplateItems.Where
-                ( i => i.ScheduleTime >= DateTime.Now.TimeOfDay)
-                .OrderBy(o =>o.ScheduleTime)).SingleOrDefaultAsync();
+            TimeTemplate timeTemplate =
+                await _dbSet.Where(t => t.ApplyingDate.Date == DateTime.Now.Date && t.TimeTemplateStatus == TimeTemplateStatus.Applied).Include(i => i.TimeTemplateItems).FirstOrDefaultAsync();
+            List<TimeTemplateItem> tempList = new List<TimeTemplateItem>();
+           if(timeTemplate != null)
+            {
+                foreach (var item in timeTemplate.TimeTemplateItems)
+                {
+                    if (TimeSpan.Compare(item.ScheduleTime, DateTime.Now.TimeOfDay) >= 0)
+                    {
+                        tempList.Add(item);
+                    }
+                }
+                timeTemplate.TimeTemplateItems = tempList;
+            }
             return timeTemplate;
         }
         public TimeTemplate GetCurrentTimeTemplate()
