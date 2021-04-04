@@ -192,9 +192,9 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpGet("partners/searchdate")]
-        public async Task<List<Transaction>> GetTransactionOfPartnerByDate(int partnerId, DateTime searchDate)
+        public async Task<List<Transaction>> GetTransactionOfPartnerByDate(int partnerId, DateTime searchDate,string transactionStatus)
         {
-            List<Transaction> listTrans = await _repo.GetTransOfPartnerByDate(partnerId, searchDate);
+            List<Transaction> listTrans = await _repo.GetTransOfPartnerByDate(partnerId, searchDate, transactionStatus);
             return listTrans;
         }
     }
