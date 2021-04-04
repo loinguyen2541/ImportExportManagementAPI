@@ -276,12 +276,16 @@ namespace ImportExportManagementAPI.Repositories
             {
                 paging.Page = 1;
             }
+           
             int count = queryable.Count();
-            if (paging.Size < 1)
+            if (paging.Size < 1 && count != 0)
             {
                 paging.Size = count;
             }
-
+            if (paging.Size < 1 )
+            {
+                paging.Size = 1;
+            }
             if (((paging.Page - 1) * paging.Size) > count)
             {
                 paging.Page = 1;
@@ -370,14 +374,19 @@ namespace ImportExportManagementAPI.Repositories
             return listTransaction;
 
         }
-        public async ValueTask<List<Transaction>> GetTransOfPartnerByDate(int partnerId, DateTime searchDate)
+        public async ValueTask<List<Transaction>> GetTransOfPartnerByDate(int partnerId, DateTime searchDate,string transactionStatus)
         {
             List<Transaction> listTransaction = new List<Transaction>();
             IQueryable<Transaction> rawData = null;
             var date = Convert.ToDateTime(searchDate).Date;
             var nextDay = date.AddDays(1);
-
-            rawData = _dbSet.Where(t => t.PartnerId == partnerId && date <= t.CreatedDate && t.CreatedDate < nextDay);
+            if (transactionStatus  != null)
+            {
+                TransactionStatus trans;
+                if (Enum.TryParse(transactionStatus, out trans))
+                    rawData = _dbSet.Where(t => t.TransactionStatus == trans);
+            }
+            rawData = rawData.Where(t => t.PartnerId == partnerId && date <= t.CreatedDate && t.CreatedDate < nextDay);
             listTransaction = await rawData.OrderByDescending(t => t.CreatedDate).ToListAsync();
             return listTransaction;
         }
