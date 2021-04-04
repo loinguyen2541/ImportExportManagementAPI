@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ImportExportManagement_API.Models;
 
 /**
 * @author Loi Nguyen
@@ -97,7 +98,7 @@ namespace ImportExportManagementAPI.Repositories
             TimeTemplate timeTemplate =
                 await _dbSet.Where(t => t.ApplyingDate.Date == DateTime.Now.Date && t.TimeTemplateStatus == TimeTemplateStatus.Applied).Include(i => i.TimeTemplateItems).FirstOrDefaultAsync();
             List<TimeTemplateItem> tempList = new List<TimeTemplateItem>();
-           if(timeTemplate != null)
+            if (timeTemplate != null)
             {
                 foreach (var item in timeTemplate.TimeTemplateItems)
                 {

@@ -443,22 +443,32 @@ namespace ImportExportManagementAPI.Repositories
                 trans.TransactionType = TransactionType.Export;
             }
         }
-        public async Task<Transaction> UpdateTransactionByManual(Transaction trans, int id)
+        public async Task<String> UpdateTransactionByManual(Transaction trans, int id)
         {
             if (id != trans.TransactionId)
             {
                 return null;
             }
-            Update(trans);
-            try
+            DateTime current = DateTime.Now.Date;
+            if(trans.CreatedDate <= current && trans.TimeIn <= current && trans.TimeOut <= current)
             {
-                await SaveAsync();
+                Transaction beforeTransaction = _dbSet.Find(id);
+                if(beforeTransaction.PartnerId != trans.PartnerId)
+                {
+                    //change partner
+                }
+                Update(trans);
+                try
+                {
+                    await SaveAsync();
+                    return "";
+                }
+                catch (Exception)
+                {
+                    return "Update failed";
+                }
             }
-            catch (Exception)
-            {
-                return null;
-            }
-            return trans;
+            return "Time is not valid";
         }
         public async Task<Transaction> UpdateTransactionArduino(String cardId, float weightOut, int partnerId)
         {
@@ -507,12 +517,12 @@ namespace ImportExportManagementAPI.Repositories
                     float totalweight = 0;
                     if (trans.TransactionType.Equals(TransactionType.Import))
                     {
-                        totalweight = trans.WeightIn - trans.WeightOut;
+                        totalweight = trans.WeightIn - weightOut;
                         if (totalweight < 0) return null;
                     }
                     else if (trans.TransactionType.Equals(TransactionType.Export))
                     {
-                        totalweight = trans.WeightOut - trans.WeightIn;
+                        totalweight = weightOut - trans.WeightIn;
                         if (totalweight < 0) return null;
                     }
                     //set time out
@@ -561,7 +571,46 @@ namespace ImportExportManagementAPI.Repositories
             bool check = await detailRepo.UpdateInventoryDetail(trans.CreatedDate, trans);
             return check;
         }
-
+        public async Task<string> CreateTransactionByManualAsync(Transaction trans)
+        {
+            //check partner
+            Partner partner = null;
+            if (trans.PartnerId != 0)
+            {
+                float totalWeight = 0;
+                partner = _dbContext.Partner.Find(trans.PartnerId);
+                if (partner != null && partner.PartnerStatus.Equals(PartnerStatus.Block)) return "Partner is not available";
+                DateTime currentTime = DateTime.Now.AddDays(1).Date;
+                if (trans.WeightIn <= 0) return "Weight in must greater than 0";
+                if (trans.WeightOut <= 0) return "Weight out must greater than 0";
+                if (trans.TimeIn > currentTime) return "Time is not available";
+                if (trans.TimeOut > currentTime) return "Time is not available";
+                if (trans.TransactionType.Equals(TransactionType.Export))
+                {
+                    totalWeight = trans.WeightOut - trans.WeightIn;
+                    if (totalWeight < 0) return "The weight does not match the transaction type";
+                }
+                if (trans.TransactionType.Equals(TransactionType.Import))
+                {
+                    totalWeight = trans.WeightIn - trans.WeightOut;
+                    if (totalWeight < 0) return "The weight does not match the transaction type";
+                }
+                if (trans.Description == null || trans.Description.Length == 0) return "Create transaction by manual must have a reason";
+                trans.CreatedDate = DateTime.Now;
+                trans.TransactionStatus = TransactionStatus.Success;
+                Insert(trans);
+                bool updateDetail = await UpdateInventoryDetail(trans);
+                if (updateDetail)
+                {
+                    return "";
+                }
+                return "Can not update inventory";
+            }
+            else
+            {
+                return "Partner is no longer existed";
+            }
+        }
         //tạo transaction
         public async Task<Transaction> CreateTransaction(Transaction trans)
         {
@@ -572,6 +621,7 @@ namespace ImportExportManagementAPI.Repositories
                 //insert by android card
                 partner = _dbContext.Partner.Find(trans.PartnerId);
                 if (partner != null && partner.PartnerStatus.Equals(PartnerStatus.Block)) return null;
+                trans.Description = "Lost card";
             }
             if (trans.IdentificationCode != null && trans.IdentificationCode.Length != 0)
             {
@@ -694,7 +744,7 @@ namespace ImportExportManagementAPI.Repositories
                     if (listItem.Last().ScheduleTime < timeOut) timeItem = listItem.Last();
 
                 }
-                timeTemplateItemRepository.UpdateCurrent((TransactionType)transaction.TransactionType, totalWeight, timeItem.TimeTemplateItemId);
+                timeTemplateItemRepository.UpdateCurrent(transaction.TransactionType, totalWeight, timeItem.TimeTemplateItemId);
             }
             return check;
         }

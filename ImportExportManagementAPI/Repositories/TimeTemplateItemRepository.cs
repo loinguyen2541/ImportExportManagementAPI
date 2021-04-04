@@ -29,7 +29,9 @@ namespace ImportExportManagementAPI.Repositories
                 float inventory = _dbSet.Find(id).Inventory;
                 if (type == TransactionType.Import)
                 {
-                    if (goods.QuantityOfInventory == 2000)
+                    SystemConfigRepository systemConfigRepository = new SystemConfigRepository();
+                    float capacity = float.Parse(systemConfigRepository.GetStorageCapacity());
+                    if (goods.QuantityOfInventory == capacity)
                     {
                         return false;
                     }
@@ -71,9 +73,27 @@ namespace ImportExportManagementAPI.Repositories
             return false;
         }
 
-        public void UpdateCurrent(TransactionType type, float registeredWeight, int id)
+        public TransactionType DefineTransactionType(int partnerId)
         {
-            TimeTemplateItem timeTemplateItem = _dbSet.Find(id);
+            TransactionType type = TransactionType.Import;
+            Partner partner = _dbContext.Partner.Find(partnerId);
+            if (partner != null)
+            {
+                if (partner.PartnerTypeId == 1)
+                {
+                    return TransactionType.Export;
+                }
+                else if (partner.PartnerTypeId == 2)
+                {
+                    return TransactionType.Import;
+                }
+            }
+            return type;
+        }
+
+        public void UpdateCurrent(TransactionType type, float registeredWeight, int timeItemId)
+        {
+            TimeTemplateItem timeTemplateItem = _dbSet.Find(timeItemId);
             float targetItemCapacity = 0;
             List<TimeTemplateItem> timeTemplateItems = null;
             if (timeTemplateItem != null)
@@ -144,7 +164,7 @@ namespace ImportExportManagementAPI.Repositories
             List<TimeTemplateItem> timeTemplateItems = new List<TimeTemplateItem>();
             if (timeTemplateItem != null)
             {
-                if (CheckValidTime(timeTemplateItem))
+                if (CheckValidTime(schedule.TimeTemplateItemId))
                 {
                     timeTemplateItems = await _dbSet
                 .Where(i => i.TimeTemplateId == timeTemplateItem.TimeTemplateId)
@@ -198,29 +218,28 @@ namespace ImportExportManagementAPI.Repositories
 
         }
 
-        public async Task<Schedule> ChangeSchedule(Schedule updateSchedule, Schedule existedSchedule)
+        public async Task<String> ChangeSchedule(Schedule updateSchedule, Schedule existedSchedule)
         {
-            Schedule cancelSchedule = await CancelSchedule(existedSchedule, "Update action");
-            if (cancelSchedule != null)
+            if (CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId))
             {
-                if (CheckCapacity(updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId))
+                Schedule cancelSchedule = await CancelSchedule(existedSchedule, "Update action");
+                if (cancelSchedule != null)
                 {
                     UpdateCurrent(updateSchedule.TransactionType, updateSchedule.RegisteredWeight, updateSchedule.TimeTemplateItemId);
-                    updateSchedule.ScheduleStatus = ScheduleStatus.Cancel;
-                    updateSchedule.RegisteredWeight = updateSchedule.RegisteredWeight;
-                    return updateSchedule;
+                    return "";
                 }
                 else
                 {
-                    return null;
+                    return "Change schedule failed";
                 }
             }
-            return null;
+            return "Inventory is not available";
         }
 
-        public Boolean CheckValidTime(TimeTemplateItem scheduleTime)
+        public Boolean CheckValidTime(int timeItemId)
         {
             bool check = false;
+            TimeTemplateItem scheduleTime = _dbSet.Find(timeItemId);
             TimeSpan current = DateTime.Now.TimeOfDay;
             TimeSpan scheduleDate = scheduleTime.ScheduleTime;
             TimeSpan result = current.Subtract(scheduleDate);

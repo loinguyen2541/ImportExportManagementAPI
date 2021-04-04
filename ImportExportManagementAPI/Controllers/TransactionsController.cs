@@ -71,18 +71,21 @@ namespace ImportExportManagementAPI.Controllers
 
         //KhanhBDB
         //add transaction
-        //[HttpPost("manual")]
-        //[AllowAnonymous]
-        //public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
-        //{
-        //    var check = await _repo.CreateTransaction(transaction, "manual");
-        //    if (check == null)
-        //    {
-        //        return BadRequest("Invalid input");
-        //    }
-        //    await _repo.SaveAsync();
-        //    return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
-        //}
+        [HttpPost("manual")]
+        [AllowAnonymous]
+        public async Task<ActionResult> CreateTransactionByManual(Transaction transaction)
+        {
+            var check = await _repo.CreateTransactionByManualAsync(transaction);
+            if (check.Length != 0)
+            {
+                return BadRequest(check);
+            }
+            await _repo.SaveAsync();
+            await _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
+            Task<String> updateMiscellaneous = _repo.UpdateMiscellaneousAsync(transaction);
+
+            return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
+        }
 
         //add transaction by android card
         //[HttpPost("androidcard")]

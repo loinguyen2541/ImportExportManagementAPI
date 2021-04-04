@@ -52,7 +52,7 @@ namespace ImportExportManagementAPI.Controllers
         }
         [HttpGet("schedulehistory")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate,int partnerId)
+        public async Task<ActionResult<List<Schedule>>> GetHistorySchedule(String searchDate, int partnerId)
         {
             List<Schedule> schedules = await _repo.GetHistory(searchDate, partnerId);
             return Ok(schedules);
@@ -78,24 +78,35 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ChangeSchedule(int id, Schedule updateSchedule)
         {
-            Schedule beforeSchedule = await _repo.GetByIDAsync(id);
-            Schedule schedule = await _timeTemplateItemRepo.ChangeSchedule(updateSchedule, beforeSchedule);
-            if (schedule != null)
+            Boolean checkTime = _timeTemplateItemRepo.CheckValidTime(updateSchedule.TimeTemplateItemId);
+            if (checkTime)
             {
-                try
+                TransactionType type = _timeTemplateItemRepo.DefineTransactionType(updateSchedule.PartnerId);
+                
+                Schedule beforeSchedule = await _repo.GetByIDAsync(id);
+                String check = await _timeTemplateItemRepo.ChangeSchedule(updateSchedule, beforeSchedule);
+                if (check.Length == 0)
                 {
-                    _repo.Insert(schedule);
-                    await _repo.SaveAsync();
-                    return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
-                }
+                    try
+                    {
+                        updateSchedule.ScheduleStatus = ScheduleStatus.Approved;
+                        _repo.Insert(updateSchedule);
+                        await _repo.SaveAsync();
+                        return CreatedAtAction("GetSchedule", new { id = updateSchedule.ScheduleId }, updateSchedule);
+                    }
 
-                catch
-                {
-                    return BadRequest("Update failed");
-                }
+                    catch
+                    {
+                        return BadRequest("Update failed");
+                    }
 
+                }
+                return BadRequest("Update failed");
             }
-            return BadRequest("Update failed");
+            else
+            {
+                return BadRequest("Out of time to change schedule");
+            }
         }
 
         // POST: api/Schedules
@@ -108,20 +119,39 @@ namespace ImportExportManagementAPI.Controllers
             {
                 return NoContent();
             }
-            if (_timeTemplateItemRepo.CheckInventory(schedule.RegisteredWeight, schedule.TimeTemplateItemId, schedule.TransactionType, storgeCapacity))
+            Boolean checkTime = _timeTemplateItemRepo.CheckValidTime(schedule.TimeTemplateItemId);
+            if (checkTime)
             {
-                _timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
-                schedule.ScheduleStatus = ScheduleStatus.Approved;
-                if (!_repo.TryToUpdate(schedule))
+                if (schedule.RegisteredWeight != 0)
                 {
-                    _repo.Insert(schedule);
-                 
+                    TransactionType type = _timeTemplateItemRepo.DefineTransactionType(schedule.PartnerId);
+                    schedule.TransactionType = type;
+
+                    if (_timeTemplateItemRepo.CheckInventory(schedule.RegisteredWeight, schedule.TimeTemplateItemId, schedule.TransactionType, storgeCapacity))
+                    {
+                        _timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
+
+                        //check date
+                        String scheduleTime = _systemConfigRepository.GetAutoSchedule();
+                        DateTime generateScheduleTime = DateTime.ParseExact(scheduleTime, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                        DateTime current = DateTime.ParseExact(DateTime.Now.ToString("HH:mm:ss"), "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                        if (current > generateScheduleTime) schedule.ScheduleDate = schedule.ScheduleDate.AddDays(1);
+                        schedule.ScheduleStatus = ScheduleStatus.Approved;
+
+                        if (!_repo.TryToUpdate(schedule))
+                        {
+                            _repo.Insert(schedule);
+
+                        }
+                        await _repo.SaveAsync();
+                        await hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
+                        return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
+                    }
+                    return BadRequest("Inventory is full");
                 }
-                await _repo.SaveAsync();
-                await hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
-                return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
+                return BadRequest("Weight must be greater than 0");
             }
-            return BadRequest();
+            return BadRequest("Out of time to schedule");
         }
 
         [HttpPut("cancel")]
@@ -150,20 +180,21 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<List<Schedule>>> GetTop10Schedule()
         {
-            return Ok(await _repo.GetTop10Schedule());}
+            return Ok(await _repo.GetTop10Schedule());
+        }
         [HttpGet("search-partner")]
         [AllowAnonymous]
         public ActionResult<Pagination<Schedule>> GetScheduleByPartner([FromQuery] ScheduleFilterParam filter, [FromQuery] PaginationParam paging)
         {
-            Pagination<Schedule> schedules =  _repo.DoFilterSearchPartner(filter, paging);
+            Pagination<Schedule> schedules = _repo.DoFilterSearchPartner(filter, paging);
             return Ok(schedules);
         }
 
         [HttpGet("count-total")]
         [AllowAnonymous]
-        public  int GetCountTotal(int type)
+        public int GetCountTotal(int type)
         {
-            int count =  _repo.GetTotalByType(type);
+            int count = _repo.GetTotalByType(type);
             return count;
         }
         [HttpGet("getScheduleStatus")]

@@ -164,7 +164,7 @@ namespace ImportExportManagementAPI.Repositories
             InventoryDetail details = null;
             if (_dbSet.ToList().Count != 0)
             {
-                details = await _dbSet.Where(d => d.PartnerId == partnerId && d.InventoryId == inventoryId).SingleAsync();
+                details = await _dbSet.Where(d => d.PartnerId == partnerId && d.InventoryId == inventoryId).FirstOrDefaultAsync();
             }
 
             return details;
