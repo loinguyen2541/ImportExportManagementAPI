@@ -276,12 +276,16 @@ namespace ImportExportManagementAPI.Repositories
             {
                 paging.Page = 1;
             }
+           
             int count = queryable.Count();
-            if (paging.Size < 1)
+            if (paging.Size < 1 && count != 0)
             {
                 paging.Size = count;
             }
-
+            if (paging.Size < 1 )
+            {
+                paging.Size = 1;
+            }
             if (((paging.Page - 1) * paging.Size) > count)
             {
                 paging.Page = 1;
