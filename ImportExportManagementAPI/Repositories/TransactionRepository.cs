@@ -276,13 +276,13 @@ namespace ImportExportManagementAPI.Repositories
             {
                 paging.Page = 1;
             }
-           
+
             int count = queryable.Count();
             if (paging.Size < 1 && count != 0)
             {
                 paging.Size = count;
             }
-            if (paging.Size < 1 )
+            if (paging.Size < 1)
             {
                 paging.Size = 1;
             }
@@ -374,13 +374,13 @@ namespace ImportExportManagementAPI.Repositories
             return listTransaction;
 
         }
-        public async ValueTask<List<Transaction>> GetTransOfPartnerByDate(int partnerId, DateTime searchDate,string transactionStatus)
+        public async ValueTask<List<Transaction>> GetTransOfPartnerByDate(int partnerId, DateTime searchDate, string transactionStatus)
         {
             List<Transaction> listTransaction = new List<Transaction>();
             IQueryable<Transaction> rawData = null;
             var date = Convert.ToDateTime(searchDate).Date;
             var nextDay = date.AddDays(1);
-            if (transactionStatus  != null)
+            if (transactionStatus != null)
             {
                 TransactionStatus trans;
                 if (Enum.TryParse(transactionStatus, out trans))
@@ -459,10 +459,10 @@ namespace ImportExportManagementAPI.Repositories
                 return null;
             }
             DateTime current = DateTime.Now.Date;
-            if(trans.CreatedDate <= current && trans.TimeIn <= current && trans.TimeOut <= current)
+            if (trans.CreatedDate <= current && trans.TimeIn <= current && trans.TimeOut <= current)
             {
                 Transaction beforeTransaction = _dbSet.Find(id);
-                if(beforeTransaction.PartnerId != trans.PartnerId)
+                if (beforeTransaction.PartnerId != trans.PartnerId)
                 {
                     //change partner
                 }
@@ -621,7 +621,7 @@ namespace ImportExportManagementAPI.Repositories
             }
         }
         //tạo transaction
-        public async Task<Transaction> CreateTransaction(Transaction trans)
+        public async Task<String> CreateTransaction(Transaction trans)
         {
             //check card and provider
             Partner partner = null;
@@ -629,7 +629,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 //insert by android card
                 partner = _dbContext.Partner.Find(trans.PartnerId);
-                if (partner != null && partner.PartnerStatus.Equals(PartnerStatus.Block)) return null;
+                if (partner != null && partner.PartnerStatus.Equals(PartnerStatus.Block)) return "Partner is not available";
                 trans.Description = "Lost card";
             }
             if (trans.IdentificationCode != null && trans.IdentificationCode.Length != 0)
@@ -644,7 +644,7 @@ namespace ImportExportManagementAPI.Repositories
                 if (checkCard.Result == null)
                 {
                     //card not available
-                    return null;
+                    return "Card is not available";
                 }
                 partner = cardRepo.GetPartnerCard(checkCard.Result.PartnerId).Result;
             }
@@ -652,7 +652,7 @@ namespace ImportExportManagementAPI.Repositories
             //get partner failed
             if (partner == null)
             {
-                return null;
+                return "Partner is not available";
             }
 
 
@@ -661,8 +661,9 @@ namespace ImportExportManagementAPI.Repositories
             //check validate weight in weight out
             if (trans.WeightIn <= 0)
             {
-                return null;
+                return "Weight in must be greater than 0";
             }
+            if (trans.WeightOut <= 0) return "Weight in must be greater than 0";
 
             //disable transaction before
             if (trans.IdentificationCode != null && trans.IdentificationCode.Length != 0)
@@ -674,23 +675,28 @@ namespace ImportExportManagementAPI.Repositories
             //check type
             if (partner.PartnerTypeId == 1) trans.TransactionType = TransactionType.Export;
             if (partner.PartnerTypeId == 2) trans.TransactionType = TransactionType.Import;
+            float totalweight = 0;
+            if (trans.TransactionType.Equals(TransactionType.Import))
+            {
+                totalweight = trans.WeightIn - trans.WeightOut;
+                if (totalweight < 0) return "The weight does not match the transaction type";
+            }
+            else if (trans.TransactionType.Equals(TransactionType.Export))
+            {
+                totalweight = trans.WeightOut - trans.WeightIn;
+                totalweight = trans.WeightOut - trans.WeightIn;
+                if (totalweight < 0) return "The weight does not match the transaction type";
+            }
 
             //check hợp lệ => tạo transaction
             trans.PartnerId = partner.PartnerId;
             trans.GoodsId = _dbContext.Goods.First().GoodsId;
             trans.WeightIn = Rounding(trans.WeightIn, trans.TransactionType);
-
+            trans.WeightOut = Rounding(trans.WeightOut, trans.TransactionType);
+            trans.TransactionStatus = TransactionStatus.Success;
 
             Insert(trans);
-            //if (method.Equals("manual"))
-            //{
-            //    if (trans.TransactionStatus.Equals(TransactionStatus.Success))
-            //    {
-            //        //tạo transaction thành công => tạo inventory detail
-            //        await UpdateInventoryDetail(trans);
-            //    }
-            //}
-            return trans;
+            return "";
         }
 
         //check transaction is scheduled or not

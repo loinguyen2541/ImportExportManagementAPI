@@ -103,17 +103,17 @@ namespace ImportExportManagementAPI.Controllers
 
         //add transaction
         [HttpPost]
-        public async Task<ActionResult<Transaction>> CreateTransactionByNFCCard(String cardId, float weightIn, int partnerId)
+        public async Task<ActionResult<Transaction>> CreateTransactionByNFCCard(String cardId, float weightIn, int partnerId, float weightOut)
         {
-            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentificationCode = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TimeOut = DateTime.Now, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId };
-            Transaction check = await _repo.CreateTransaction(trans);
-            if (check != null)
+            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentificationCode = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TimeOut = DateTime.Now, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId , WeightOut = weightOut};
+            String check = await _repo.CreateTransaction(trans);
+            if (check.Length == 0)
             {
                 await _repo.SaveAsync();
                 await _transactionHub.Clients.All.SendAsync("TransactionCreated", "reload");
-                return CreatedAtAction("GetTransaction", new { id = check.TransactionId }, check);
+                return Ok();
             }
-            return BadRequest("Card is not exist");
+            return BadRequest(check);
         }
         //KhanhBDB
         //update transaction information => manual
@@ -121,7 +121,8 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
         {
-            Transaction transactionUpdated = await _repo.UpdateTransactionByManual(trans, id);
+            //await _repo.UpdateTransactionByManual(trans, id)
+            Transaction transactionUpdated = new Transaction();
             if (transactionUpdated != null)
             {
                 _goodsRepository.UpdateQuantityOfGood(transactionUpdated.GoodsId, transactionUpdated.WeightIn - transactionUpdated.WeightOut, transactionUpdated.TransactionType);
