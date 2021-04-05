@@ -91,7 +91,7 @@ namespace ImportExportManagementAPI.Repositories
             return false;
         }
 
-        private async Task<InventoryDetail> CheckExistedDetail(int partnerId, int inventoryId)
+        public async Task<InventoryDetail> CheckExistedDetail(int partnerId, int inventoryId)
         {
             //get list detail of partner
             InventoryDetail detailOfPartner = await GetPartnerInventoryDetail(partnerId, inventoryId);
@@ -102,7 +102,7 @@ namespace ImportExportManagementAPI.Repositories
             return null;
         }
 
-        private async Task<Boolean> AddNewInventoryDetail(Transaction trans, Inventory inventory)
+        public async Task<Boolean> AddNewInventoryDetail(Transaction trans, Inventory inventory)
         {
             InventoryDetail detail = new InventoryDetail { GoodsId = trans.GoodsId, InventoryId = inventory.InventoryId, PartnerId = trans.PartnerId };
             float totalWeight = 0;
@@ -131,7 +131,7 @@ namespace ImportExportManagementAPI.Repositories
             }
         }
 
-        private async Task<Boolean> UpdateInventoryDetailByType(Transaction trans, InventoryDetail detail)
+        public async Task<Boolean> UpdateInventoryDetailByType(Transaction trans, InventoryDetail detail)
         {
             float totalWeight = 0;
             if (trans.TransactionType.Equals(TransactionType.Import))
@@ -146,6 +146,33 @@ namespace ImportExportManagementAPI.Repositories
             }
             if (totalWeight < 0) totalWeight = totalWeight * -1;
             detail.Weight = detail.Weight + totalWeight;
+            Update(detail);
+            try
+            {
+                await SaveAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<Boolean> UpdateInventoryWeight(Transaction trans, InventoryDetail detail)
+        {
+            float totalWeight = 0;
+            if (trans.TransactionType.Equals(TransactionType.Import))
+            {
+                detail.Type = InventoryDetailType.Import;
+                totalWeight = trans.WeightIn - trans.WeightOut;
+            }
+            else
+            {
+                detail.Type = InventoryDetailType.Export;
+                totalWeight = trans.WeightOut - trans.WeightIn;
+            }
+            if (totalWeight < 0) totalWeight = totalWeight * -1;
+            detail.Weight = detail.Weight - totalWeight;
             Update(detail);
             try
             {

@@ -464,7 +464,27 @@ namespace ImportExportManagementAPI.Repositories
                 Transaction beforeTransaction = _dbSet.Find(id);
                 if (beforeTransaction.PartnerId != trans.PartnerId)
                 {
-                    //change partner
+                    //change inventory detail
+                    //get inventordy today
+                    InventoryRepository inventRepo = new InventoryRepository();
+                    Inventory inventory = await inventRepo.CheckExistDateRecord(trans.CreatedDate);
+                    if (inventory != null)
+                    {
+                        InventoryDetailRepository detailRepo = new InventoryDetailRepository();
+                        InventoryDetail lastPartner = await detailRepo.CheckExistedDetail(beforeTransaction.PartnerId, inventory.InventoryId);
+                        InventoryDetail newPartner = await detailRepo.CheckExistedDetail(trans.PartnerId, inventory.InventoryId);
+                        if(newPartner == null)
+                        {
+                            //tạo detail với số kí mới
+                            await detailRepo.AddNewInventoryDetail(trans, inventory);
+                        }
+                        else
+                        {
+                            //update số kg
+                            await detailRepo.UpdateInventoryDetailByType(trans, newPartner);
+                        }
+                        await detailRepo.UpdateInventoryWeight(beforeTransaction, lastPartner);
+                    }
                 }
                 Update(trans);
                 try
@@ -694,9 +714,13 @@ namespace ImportExportManagementAPI.Repositories
             trans.WeightIn = Rounding(trans.WeightIn, trans.TransactionType);
             trans.WeightOut = Rounding(trans.WeightOut, trans.TransactionType);
             trans.TransactionStatus = TransactionStatus.Success;
-
-            Insert(trans);
-            return "";
+            bool updateDetail = await UpdateInventoryDetail(trans);
+            if (updateDetail)
+            {
+                Insert(trans);
+                return "";
+            }
+            return "Update detail inventory failed";
         }
 
         //check transaction is scheduled or not

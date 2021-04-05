@@ -110,8 +110,11 @@ namespace ImportExportManagementAPI.Controllers
             if (check.Length == 0)
             {
                 await _repo.SaveAsync();
-                await _transactionHub.Clients.All.SendAsync("TransactionCreated", "reload");
-                return Ok();
+                //await _transactionHub.Clients.All.SendAsync("TransactionCreated", "reload");
+                await chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
+                await _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
+                Task<String> updateMiscellaneous = _repo.UpdateMiscellaneousAsync(trans);
+                return Ok(trans);
             }
             return BadRequest(check);
         }
@@ -139,23 +142,23 @@ namespace ImportExportManagementAPI.Controllers
          */
 
         //update
-        [HttpPut]
-        [AllowAnonymous]
-        public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, int partnerId, float weightOut)
-        {
-            Transaction transaction = await _repo.UpdateTransactionArduino(cardId, weightOut, partnerId);
-            if (transaction != null)
-            {
-                await chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
-                await _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
-                Task<String> updateMiscellaneous = _repo.UpdateMiscellaneousAsync(transaction);
-                return Ok();
-            }
-            else
-            {
-                return BadRequest();
-            }
-        }
+        //[HttpPut]
+        //[AllowAnonymous]
+        //public async Task<ActionResult<Transaction>> UpdateTransactionByAutomatic(String cardId, int partnerId, float weightOut)
+        //{
+        //    Transaction transaction = await _repo.UpdateTransactionArduino(cardId, weightOut, partnerId);
+        //    if (transaction != null)
+        //    {
+        //        await chartHub.Clients.All.SendAsync("TransactionSuccess", cardId);
+        //        await _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
+        //        Task<String> updateMiscellaneous = _repo.UpdateMiscellaneousAsync(transaction);
+        //        return Ok();
+        //    }
+        //    else
+        //    {
+        //        return BadRequest();
+        //    }
+        //}
         //get transaction by id
         [HttpGet("{id}")]
         [AllowAnonymous]
