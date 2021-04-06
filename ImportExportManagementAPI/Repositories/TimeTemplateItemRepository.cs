@@ -42,6 +42,10 @@ namespace ImportExportManagementAPI.Repositories
                         {
                             return true;
                         }
+                        else
+                        {
+                            return false;
+                        }
                     }
                 }
                 else if (type == TransactionType.Export)
@@ -55,6 +59,10 @@ namespace ImportExportManagementAPI.Repositories
                         if (inventory >= registeredWeight)
                         {
                             return true;
+                        }
+                        else
+                        {
+                            return false;
                         }
                     }
                 }

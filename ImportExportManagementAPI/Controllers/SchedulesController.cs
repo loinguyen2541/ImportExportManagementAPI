@@ -136,6 +136,7 @@ namespace ImportExportManagementAPI.Controllers
                         DateTime generateScheduleTime = DateTime.ParseExact(scheduleTime, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                         DateTime current = DateTime.ParseExact(DateTime.Now.ToString("HH:mm:ss"), "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                         if (current > generateScheduleTime) schedule.ScheduleDate = schedule.ScheduleDate.AddDays(1);
+
                         schedule.ScheduleStatus = ScheduleStatus.Approved;
 
                         if (!_repo.TryToUpdate(schedule))
