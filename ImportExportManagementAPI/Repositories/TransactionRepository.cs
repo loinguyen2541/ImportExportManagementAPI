@@ -709,6 +709,7 @@ namespace ImportExportManagementAPI.Repositories
             }
 
             //check hợp lệ => tạo transaction
+            trans.TransactionId = 0;
             trans.PartnerId = partner.PartnerId;
             trans.GoodsId = _dbContext.Goods.First().GoodsId;
             trans.WeightIn = Rounding(trans.WeightIn, trans.TransactionType);
