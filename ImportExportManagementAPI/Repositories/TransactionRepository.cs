@@ -626,11 +626,14 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 if (trans.Description == null || trans.Description.Length == 0) return "Create transaction by manual must have a reason";
                 trans.CreatedDate = DateTime.Now;
+                trans.TransactionId = 0;
                 trans.TransactionStatus = TransactionStatus.Success;
                 Insert(trans);
+                await SaveAsync();
                 bool updateDetail = await UpdateInventoryDetail(trans);
                 if (updateDetail)
                 {
+                    await UpdateMiscellaneousAsync(trans);
                     return "";
                 }
                 return "Can not update inventory";

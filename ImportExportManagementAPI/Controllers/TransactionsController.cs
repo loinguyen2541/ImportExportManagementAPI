@@ -80,9 +80,7 @@ namespace ImportExportManagementAPI.Controllers
             {
                 return BadRequest(check);
             }
-            await _repo.SaveAsync();
             await _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
-            Task<String> updateMiscellaneous = _repo.UpdateMiscellaneousAsync(transaction);
 
             return CreatedAtAction("GetTransaction", new { id = transaction.TransactionId }, transaction);
         }
