@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    [Migration("20210403070900_init")]
+    [Migration("20210406015842_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,7 +57,7 @@ namespace ImportExportManagementAPI.Migrations
                         new
                         {
                             AttributeKey = "AutoSchedule",
-                            AttributeValue = "20:00:00"
+                            AttributeValue = "13:00:00"
                         });
                 });
 

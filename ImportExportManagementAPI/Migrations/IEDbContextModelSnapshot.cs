@@ -55,7 +55,7 @@ namespace ImportExportManagementAPI.Migrations
                         new
                         {
                             AttributeKey = "AutoSchedule",
-                            AttributeValue = "20:00:00"
+                            AttributeValue = "13:00:00"
                         });
                 });
 

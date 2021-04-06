@@ -301,7 +301,7 @@ namespace ImportExportManagementAPI.Migrations
             migrationBuilder.InsertData(
                 table: "SystemConfig",
                 columns: new[] { "AttributeKey", "AttributeValue" },
-                values: new object[] { "AutoSchedule", "20:00:00" });
+                values: new object[] { "AutoSchedule", "13:00:00" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Account_RoleId",

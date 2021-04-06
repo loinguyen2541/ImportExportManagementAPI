@@ -54,7 +54,7 @@ namespace ImportExportManagementAPI.Controllers
             return accounts;
         }
 
-        [HttpPut()]
+        [HttpPut]
         [AllowAnonymous]
         public async Task<IActionResult> PutAccount(string username, Account account)
         {
