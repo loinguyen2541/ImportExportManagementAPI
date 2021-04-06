@@ -228,15 +228,15 @@ namespace ImportExportManagement_API.Repositories
         {
             if (DateTime.TryParse(searchDate, out DateTime date))
             {
-                DateTime start = DateTime.Parse(searchDate);
-                DateTime end = DateTime.Parse(searchDate).AddDays(1);
-                queryable = queryable.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end);
+                var convert = Convert.ToDateTime(searchDate).Date;
+                var nextDay = convert.AddDays(1);
+                queryable = queryable.Where(s => convert <= s.ScheduleDate && s.ScheduleDate <= nextDay);
+                int test = queryable.ToList().Count;
             }
             if (partnerId != 0)
             {
                 queryable = queryable.Where(s => s.PartnerId == partnerId);
             }
-            queryable = queryable.Where(s => !s.UpdatedBy.Contains("Update action"));
             return await queryable.OrderBy(s => s.TimeTemplateItem.ScheduleTime).ToListAsync();
         }
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
