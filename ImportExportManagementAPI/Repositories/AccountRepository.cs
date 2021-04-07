@@ -42,12 +42,7 @@ namespace ImportExportManagementAPI.Repositories
 
         public async Task<List<Account>> GetAccountByRole(int roleId)
         {
-            List<Account> accounts = await _dbSet.Include(p => p.Partner).Include(r => r.Role).Where(a => a.RoleId == roleId).ToListAsync();
-            foreach (var item in accounts)
-            {
-                WithoutPassword(item);
-                WithoutToken(item);
-            }
+            List<Account> accounts = await _dbSet.Include(p => p.Partner).Include(r => r.Role).Where(a => a.RoleId == roleId).ToListAsync();       
             return accounts;
         }
 
@@ -60,20 +55,6 @@ namespace ImportExportManagementAPI.Repositories
         {
             account.Status = AccountStatus.Block;
             Update(account);
-        }
-        private Account WithoutPassword(Account account)
-        {
-            if (account == null) return null;
-
-            account.Password = null;
-            return account;
-        }
-        private Account WithoutToken(Account account)
-        {
-            if (account == null) return null;
-
-            account.Token = null;
-            return account;
         }
         public async Task<Account> Login(AuthenticateModel model, AppSettings _appSettings)
         {
