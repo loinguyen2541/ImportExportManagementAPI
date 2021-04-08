@@ -105,8 +105,8 @@ namespace ImportExportManagement_API.Repositories
         {
             int count = 0;
             TransactionType typeTrans = (TransactionType)type;
-            DateTime start = DateTime.Now;
-            DateTime end = DateTime.Now.AddDays(1);
+            DateTime start = DateTime.Now.Date;
+            DateTime end = DateTime.Now.Date.AddDays(1);
             IQueryable<Schedule> rawData = _dbSet.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end && s.TransactionType.Equals(typeTrans));
             count = rawData.Count();
             return count;
