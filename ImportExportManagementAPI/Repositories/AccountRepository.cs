@@ -42,7 +42,7 @@ namespace ImportExportManagementAPI.Repositories
 
         public async Task<List<Account>> GetAccountByRole(int roleId)
         {
-            List<Account> accounts = await _dbSet.Include(p => p.Partner).Include(r => r.Role).Where(a => a.RoleId == roleId).ToListAsync(); 
+            List<Account> accounts = await _dbSet.Where(a => a.RoleId == roleId).ToListAsync(); 
             return accounts;
         }
 

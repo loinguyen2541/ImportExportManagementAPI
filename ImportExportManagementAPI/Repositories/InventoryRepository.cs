@@ -128,7 +128,7 @@ namespace ImportExportManagementAPI.Repositories
         public async Task<ObjectTotalImportExportToday> TotalWeightInventoryFloat(DateTime dateRecord)
         {
             //check ngày này có inventory chưa
-            Inventory inventory = await CheckExistDateRecord(dateRecord);
+            Inventory inventory = _dbSet.Where(p => p.RecordedDate == dateRecord).FirstOrDefault();
             ObjectTotalImportExportToday objectTotal = new ObjectTotalImportExportToday();
             if (inventory != null)
             {
@@ -203,8 +203,8 @@ namespace ImportExportManagementAPI.Repositories
         {
             return _dbSet.Where
                 (p => p.RecordedDate >= DateFrom && p.RecordedDate <= DateTo).
-                Include(p => p.InventoryDetails.Where(p=>p.Partner.DisplayName == partnerName))
-                .ThenInclude(p=> p.Partner).ThenInclude(p => p.Transactions).ToList();
+                Include(p => p.InventoryDetails.Where(p => p.Partner.DisplayName == partnerName))
+                .ThenInclude(p => p.Partner).ThenInclude(p => p.Transactions).ToList();
         }
 
 
@@ -275,7 +275,7 @@ namespace ImportExportManagementAPI.Repositories
                 List<InventoryDetail> temp = null;
                 foreach (var item in listInventory)
                 {
-                   if(partnerId != 0) temp = await _dbContext.InventoryDetail.Where(d => d.InventoryId == item.InventoryId && d.PartnerId == partnerId).ToListAsync();
+                    if (partnerId != 0) temp = await _dbContext.InventoryDetail.Where(d => d.InventoryId == item.InventoryId && d.PartnerId == partnerId).ToListAsync();
                     else temp = await _dbContext.InventoryDetail.Where(d => d.InventoryId == item.InventoryId).ToListAsync();
                     if (temp.Count != 0)
                     {
