@@ -25,14 +25,16 @@ namespace ImportExportManagementAPI.Controllers
         private readonly ScheduleRepository _scheduleRepository;
         private readonly IHubContext<ChartHub> chartHub;
         private readonly IHubContext<TransactionHub> _transactionHub;
+        private readonly IHubContext<ScheduleHub> hubContext;
 
-        public TransactionsController(IHubContext<ChartHub> chartHub, IHubContext<TransactionHub> transactionHub)
+        public TransactionsController(IHubContext<ChartHub> chartHub, IHubContext<TransactionHub> transactionHub, IHubContext<ScheduleHub> scheduleHub)
         {
             this.chartHub = chartHub;
             _repo = new TransactionRepository();
             _goodsRepository = new GoodsRepository();
             _transactionHub = transactionHub;
             _scheduleRepository = new ScheduleRepository();
+            hubContext = scheduleHub;
         }
         //get transaction
         [HttpGet]
@@ -201,6 +203,14 @@ namespace ImportExportManagementAPI.Controllers
         {
             List<Transaction> listTrans = await _repo.GetTransOfPartnerByDate(partnerId, searchDate, transactionStatus);
             return listTrans;
+        }
+
+        [HttpGet("notifyhub")]
+        public async Task<ActionResult> NotifyHub()
+        {
+            await _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
+            await hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
+            return Ok();
         }
     }
 }
