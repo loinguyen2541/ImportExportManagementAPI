@@ -63,6 +63,10 @@ namespace ImportExportManagementAPI
                 };
             });
 
+            //get email server to send report
+            var smtpSection = Configuration.GetSection("Smtp");
+            services.Configure<Smtp>(smtpSection);
+            var stmp = smtpSection.Get<Smtp>();
 
             services.AddControllers().AddNewtonsoftJson(options =>
             {

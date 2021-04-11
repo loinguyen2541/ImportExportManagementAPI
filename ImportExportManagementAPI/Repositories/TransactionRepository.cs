@@ -1,11 +1,15 @@
-﻿using ImportExportManagement_API.Models;
+﻿using ClosedXML.Excel;
+using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
+using ImportExportManagementAPI.Helper;
 using ImportExportManagementAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Repositories
@@ -300,6 +304,24 @@ namespace ImportExportManagementAPI.Repositories
             pagination.Data = await queryable.ToListAsync();
             return pagination;
         }
+
+        public async ValueTask<List<Transaction>> SearchTransByDate(int partnerId, DateTime fromDate, DateTime toDate)
+        {
+            List<Transaction> listTransaction = new List<Transaction>();
+            IQueryable<Transaction> rawData = _dbSet.Where(t => t.PartnerId == partnerId);
+            if (fromDate.Date == toDate.Date)
+            {
+                var date = Convert.ToDateTime(fromDate).Date;
+                var nextDay = date.AddDays(1);
+                rawData = rawData.Where(t => date <= t.CreatedDate && t.CreatedDate < nextDay);
+            }
+            else
+            {
+                rawData = rawData.Where(t => fromDate.Date <= t.CreatedDate && t.CreatedDate <= toDate.Date);
+            }
+            listTransaction = await rawData.OrderByDescending(t => t.CreatedDate).ToListAsync();
+            return listTransaction;
+        }
         /*private Pagination<TopPartner> DoFilterTop10(PaginationParam paging, TransactionFilter filter, IQueryable<Transaction> queryable)
         {
             if (filter != null)
@@ -473,7 +495,7 @@ namespace ImportExportManagementAPI.Repositories
                         InventoryDetailRepository detailRepo = new InventoryDetailRepository();
                         InventoryDetail lastPartner = await detailRepo.CheckExistedDetail(beforeTransaction.PartnerId, inventory.InventoryId);
                         InventoryDetail newPartner = await detailRepo.CheckExistedDetail(trans.PartnerId, inventory.InventoryId);
-                        if(newPartner == null)
+                        if (newPartner == null)
                         {
                             //tạo detail với số kí mới
                             await detailRepo.AddNewInventoryDetail(trans, inventory);
@@ -808,5 +830,79 @@ namespace ImportExportManagementAPI.Repositories
         {
             return (float)Math.Round(weight, 2);
         }
+
+        public async Task<bool> GetStatictisAsync(int partnerId, DateTime fromDate, DateTime toDate, Smtp server)
+        {
+            Partner partner = _dbContext.Partner.Find(partnerId);
+            if (partner != null)
+            {
+                List<Transaction> listTransaction = await SearchTransByDate(partnerId, fromDate, toDate);
+                if (listTransaction != null && listTransaction.Count != 0)
+                {
+                    float totalWeight = 0;
+                    float temp = 0;
+                    foreach (var item in listTransaction)
+                    {
+                        temp = item.WeightIn - item.WeightOut;
+                        if (temp < 0) temp = temp * -1;
+                        totalWeight += temp;
+                    }
+                    String date = "";
+                    if(fromDate.Date!= toDate.Date)
+                    {
+                       date = fromDate.ToString("dd/MM/yyyy") + " - " + toDate.ToString("dd/MM/yyyy");
+                    }
+                    else
+                    {
+                        date = fromDate.ToString("dd/MM/yyyy");
+                    }
+                    Mail mail = new Mail(partner, date, listTransaction.Count, totalWeight, "");
+                    SendEmail(server, "", mail, partner);
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private void ExportExcel(List<Transaction> listTransaction)
+        {
+
+        }
+
+        private bool SendEmail(Smtp serverEmail, String pathFile, Mail mailContent, Partner partner)
+        {
+            bool check = false;
+            try
+            {
+                MailMessage mail = new MailMessage();
+                SmtpClient SmtpServer = new SmtpClient(serverEmail.host);
+
+                mail.From = new MailAddress(serverEmail.username);
+                mail.To.Add(partner.Email);
+                mail.Subject = mailContent.subject;
+                mail.IsBodyHtml = true;
+                mail.Body = mailContent.body;
+
+                mail.Priority = MailPriority.High;
+                //mail.Attachments.Add(new System.Net.Mail.Attachment(pathFile));
+
+                SmtpServer.Port = serverEmail.port;
+                SmtpServer.Credentials = new System.Net.NetworkCredential(serverEmail.username, serverEmail.password);
+                SmtpServer.EnableSsl = true;
+
+                SmtpServer.Send(mail);
+                Console.WriteLine("Message Sent.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            return check;
+        }
+
     }
 }

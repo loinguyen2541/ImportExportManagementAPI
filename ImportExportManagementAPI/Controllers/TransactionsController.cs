@@ -13,6 +13,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ImportExportManagementAPI.Helper;
+using Microsoft.Extensions.Options;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -26,8 +28,9 @@ namespace ImportExportManagementAPI.Controllers
         private readonly IHubContext<ChartHub> chartHub;
         private readonly IHubContext<TransactionHub> _transactionHub;
         private readonly IHubContext<ScheduleHub> hubContext;
+        private readonly Smtp _smtp;
 
-        public TransactionsController(IHubContext<ChartHub> chartHub, IHubContext<TransactionHub> transactionHub, IHubContext<ScheduleHub> scheduleHub)
+        public TransactionsController(IHubContext<ChartHub> chartHub, IHubContext<TransactionHub> transactionHub, IHubContext<ScheduleHub> scheduleHub, IOptions<Smtp> smtp)
         {
             this.chartHub = chartHub;
             _repo = new TransactionRepository();
@@ -35,6 +38,7 @@ namespace ImportExportManagementAPI.Controllers
             _transactionHub = transactionHub;
             _scheduleRepository = new ScheduleRepository();
             hubContext = scheduleHub;
+            _smtp = smtp.Value;
         }
         //get transaction
         [HttpGet]
@@ -210,6 +214,13 @@ namespace ImportExportManagementAPI.Controllers
         {
             await _transactionHub.Clients.All.SendAsync("TransactionSuccess", "reload");
             await hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
+            return Ok();
+        }
+
+        [HttpGet("statistic")]
+        public async Task<ActionResult> GetStatictisByEmail(int partnerId, DateTime startDate, DateTime endDate)
+        {
+            bool check = await _repo.GetStatictisAsync(partnerId, startDate, endDate, _smtp);
             return Ok();
         }
     }
