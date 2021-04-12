@@ -133,6 +133,7 @@ namespace ImportExportManagementAPI.Repositories
             if (inventory != null)
             {
                 float weightTotal = 0;
+                GoodsRepository GoodsRepo = new GoodsRepository();
                 InventoryDetailRepository detailRepo = new InventoryDetailRepository();
                 List<InventoryDetail> listImport = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, InventoryDetailType.Import);
                 List<InventoryDetail> listExport = await detailRepo.GetDateInventoryDetail(inventory.InventoryId, InventoryDetailType.Export);
@@ -154,7 +155,11 @@ namespace ImportExportManagementAPI.Repositories
                     objectTotal.Export = weightTotal;
                 }
                 objectTotal.OpeningStock = GetOpeningStockByDate(dateRecord, inventory.InventoryId);
-                objectTotal.Iventory = (objectTotal.OpeningStock + objectTotal.Import) - objectTotal.Export;
+                if (GoodsRepo.GetAll().FirstOrDefault() != null)
+                {
+                    objectTotal.Iventory = GoodsRepo.GetAll().FirstOrDefault().QuantityOfInventory;
+                }
+
             }
             return objectTotal;
         }
