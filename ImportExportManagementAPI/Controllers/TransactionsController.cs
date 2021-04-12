@@ -28,9 +28,9 @@ namespace ImportExportManagementAPI.Controllers
         private readonly IHubContext<ChartHub> chartHub;
         private readonly IHubContext<TransactionHub> _transactionHub;
         private readonly IHubContext<ScheduleHub> hubContext;
-        private readonly Smtp _smtp;
-
-        public TransactionsController(IHubContext<ChartHub> chartHub, IHubContext<TransactionHub> transactionHub, IHubContext<ScheduleHub> scheduleHub, IOptions<Smtp> smtp)
+        private readonly SmtpSetting _smtp;
+        private readonly FirebaseSetting _firebase;
+        public TransactionsController(IHubContext<ChartHub> chartHub, IHubContext<TransactionHub> transactionHub, IHubContext<ScheduleHub> scheduleHub, IOptions<SmtpSetting> smtp, IOptions<FirebaseSetting> firebase)
         {
             this.chartHub = chartHub;
             _repo = new TransactionRepository();
@@ -39,6 +39,7 @@ namespace ImportExportManagementAPI.Controllers
             _scheduleRepository = new ScheduleRepository();
             hubContext = scheduleHub;
             _smtp = smtp.Value;
+            _firebase = firebase.Value;
         }
         //get transaction
         [HttpGet]
@@ -220,8 +221,9 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("statistic")]
         public async Task<ActionResult> GetStatictisByEmail(int partnerId, DateTime startDate, DateTime endDate)
         {
-            bool check = await _repo.GetStatictisAsync(partnerId, startDate, endDate, _smtp);
-            return Ok();
+            bool check = await _repo.GetStatictisAsync(partnerId, startDate, endDate, _smtp, _firebase);
+            if(check) return Ok();
+            return BadRequest();
         }
     }
 }

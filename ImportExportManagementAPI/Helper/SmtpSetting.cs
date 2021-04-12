@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Helper
 {
-    public class Smtp
+    public class SmtpSetting
     {
         public string username { get; set; }
         public string password { get; set; }

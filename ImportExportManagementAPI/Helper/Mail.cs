@@ -19,13 +19,16 @@ namespace ImportExportManagementAPI.Helper
             string htmlString = @"<html>
                                     <body>
                                         <div style=""border - style: solid;"">
-                                        <div><b>IScale</b> would like to send you <b>the statistics of transactions</b> made over a period of time <b>"+date+ @"</b> on your IScale account, details are as follows:</div>
-                                        <div>Requester: "+ partner.DisplayName + @"</div>
-                                        <div>Account name: " + partner.DisplayName + @"</div>
-                                        <div>Total number of transactions: " + totalTrans + @"</div>
-                                        <div>Total weight: " + totalWeight + @"</div>
-                                        <div>Execution time: " + date + @"</div>
-                                        <div>Time to submit statistics: " + DateTime.Now.ToString("dd/MM/yyyy hh:mm") + @"</div>
+                                        <div><h3><b>IScale</b> would like to send you <b>the statistics of transactions</b> made over a period of time <b>" + date + @"</b> on your IScale account, details are as follows:</h3></div>
+                                        <br/>
+                                        <div>Requester: <b>" + partner.DisplayName + @"</b></div>
+                                        <div>Account name: <b>" + partner.Account + @"</b></div>
+                                        <div>Total number of transactions: <b>" + totalTrans + @"</b></div>
+                                        <div>Total weight: <b>" + totalWeight + @" KG</b></div>
+                                        <div>Execution time: <b>" + date + @"</b></div>
+                                        <div>Time to submit statistics: <b>" + DateTime.Now.ToString("dd/MM/yyyy hh:mm") + @"</b></div>
+                                        <br/>
+                                        <div>Download link: <b>" + filePath + @"</div>
                                         <div>Sincerely thank you,</div>
                                         <div><b>IScale</b></div>
                                         </div>

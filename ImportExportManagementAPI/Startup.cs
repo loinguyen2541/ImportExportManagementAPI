@@ -65,8 +65,12 @@ namespace ImportExportManagementAPI
 
             //get email server to send report
             var smtpSection = Configuration.GetSection("Smtp");
-            services.Configure<Smtp>(smtpSection);
-            var stmp = smtpSection.Get<Smtp>();
+            services.Configure<SmtpSetting>(smtpSection);
+            var stmp = smtpSection.Get<SmtpSetting>();
+            //firebase config
+            var firebaseSection = Configuration.GetSection("FirebaseCofig");
+            services.Configure<FirebaseSetting>(firebaseSection);
+            var firebase = firebaseSection.Get<FirebaseSetting>();
 
             services.AddControllers().AddNewtonsoftJson(options =>
             {

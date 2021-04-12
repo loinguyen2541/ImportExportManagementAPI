@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Repositories
@@ -832,7 +834,7 @@ namespace ImportExportManagementAPI.Repositories
             return (float)Math.Round(weight, 2);
         }
 
-        public async Task<bool> GetStatictisAsync(int partnerId, DateTime fromDate, DateTime toDate, Smtp server)
+        public async Task<bool> GetStatictisAsync(int partnerId, DateTime fromDate, DateTime toDate, SmtpSetting server, FirebaseSetting firebase)
         {
             Partner partner = _dbContext.Partner.Find(partnerId);
             if (partner != null)
@@ -857,11 +859,16 @@ namespace ImportExportManagementAPI.Repositories
                     {
                         date = fromDate.ToString("dd/MM/yyyy");
                     }
-                    Mail mail = new Mail(partner, date, listTransaction.Count, totalWeight, "");
-                    bool checkExport = ExportExcel(listTransaction, "C:/Users/buido/Desktop/testv44.xlsx");
+                    string path = Directory.GetCurrentDirectory();
+                    string filename = Regex.Replace(partner.DisplayName, @"\s+", "") + DateTime.Now.ToString("ddMMyyyy") + DateTime.Now.ToString("hhmmss") + ".xlsx";
+                    string filePath = path + "\\" + filename;
+                    bool checkExport = ExportExcel(listTransaction, filePath);
                     if (checkExport)
                     {
-                        SendEmail(server, "C:/Users/buido/Desktop/testv44.xlsx", mail, partner);
+                        FirebaseRepository firebaseRepo = new FirebaseRepository();
+                        String downloadUrl = await firebaseRepo.GetFile(firebase,filename, filePath);
+                        Mail mail = new Mail(partner, date, listTransaction.Count, totalWeight, downloadUrl);
+                        SendEmail(server, filePath, mail, partner);
                         return true;
                     }
                     else
@@ -909,14 +916,14 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 return true;
             }
-            catch
+            catch(Exception e)
             {
                 return false;
             }
 
         }
 
-        private bool SendEmail(Smtp serverEmail, String pathFile, Mail mailContent, Partner partner)
+        private bool SendEmail(SmtpSetting serverEmail, String pathFile, Mail mailContent, Partner partner)
         {
             bool check = false;
             try
