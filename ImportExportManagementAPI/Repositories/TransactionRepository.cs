@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Net.Mail;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Repositories
@@ -857,8 +858,16 @@ namespace ImportExportManagementAPI.Repositories
                         date = fromDate.ToString("dd/MM/yyyy");
                     }
                     Mail mail = new Mail(partner, date, listTransaction.Count, totalWeight, "");
-                    SendEmail(server, "", mail, partner);
-                    return true;
+                    bool checkExport = ExportExcel(listTransaction, "C:/Users/buido/Desktop/testv44.xlsx");
+                    if (checkExport)
+                    {
+                        SendEmail(server, "C:/Users/buido/Desktop/testv44.xlsx", mail, partner);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 return false;
             }
@@ -867,9 +876,43 @@ namespace ImportExportManagementAPI.Repositories
                 return false;
             }
         }
-
-        private void ExportExcel(List<Transaction> listTransaction)
+        static DataTable ConvertToDataTable<T>(List<T> models)
         {
+            DataTable dataTable = new DataTable(typeof(T).Name);
+            PropertyInfo[] Props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (PropertyInfo prop in Props)
+            {
+                //Setting column names as Property names    
+                dataTable.Columns.Add(prop.Name);
+            }
+            // Adding Row
+            foreach (T item in models)
+            {
+                var values = new object[Props.Length];
+                for (int i = 0; i < Props.Length; i++)
+                {  
+                    values[i] = Props[i].GetValue(item, null);
+                }
+                // Finally add value to datatable    
+                dataTable.Rows.Add(values);
+            }
+            return dataTable;
+        }
+        private bool ExportExcel(List<Transaction> listTransaction, String filePath)
+        {
+            try
+            {
+                using (XLWorkbook workbook = new XLWorkbook())
+                {
+                    workbook.Worksheets.Add(ConvertToDataTable<Transaction>(listTransaction), "Transaction");
+                    workbook.SaveAs(filePath);
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
 
         }
 
@@ -888,14 +931,13 @@ namespace ImportExportManagementAPI.Repositories
                 mail.Body = mailContent.body;
 
                 mail.Priority = MailPriority.High;
-                //mail.Attachments.Add(new System.Net.Mail.Attachment(pathFile));
+                mail.Attachments.Add(new System.Net.Mail.Attachment(pathFile));
 
                 SmtpServer.Port = serverEmail.port;
                 SmtpServer.Credentials = new System.Net.NetworkCredential(serverEmail.username, serverEmail.password);
                 SmtpServer.EnableSsl = true;
 
                 SmtpServer.Send(mail);
-                Console.WriteLine("Message Sent.");
             }
             catch (Exception ex)
             {

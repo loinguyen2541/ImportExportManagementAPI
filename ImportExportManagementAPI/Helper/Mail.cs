@@ -1,4 +1,5 @@
 ﻿using ImportExportManagement_API.Models;
+using Microsoft.AspNetCore.Html;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +15,23 @@ namespace ImportExportManagementAPI.Helper
         public Mail(Partner partner, String date, int totalTrans, float totalWeight, String filePath)
         {
             subject = "(IScale) Report Import/Export Transaction of " + partner.DisplayName;
-            body = "IScale would like to send you the statistics of transactions made over a period of time" + date + " on your IScale account, details are as follows:\r\n" +
-                "Requester : " + partner.DisplayName + "\r\n" +
-                "Account name : " + partner.Account + "\r\n" +
-                "Total of transactions : " + totalTrans + "\r\n" +
-                "Total weight : " + totalWeight + "\r\n" +
-                "Execution time : " + date + "\r\n" +
-                "Time to sent statistics : " + DateTime.Now.ToString("dd-MMMM-yyyy hh:mm") + "\r\n" +
-                "Best regards and thank you,\r\n" +
-                "IScale";
+
+            string htmlString = @"<html>
+                                    <body>
+                                        <div style=""border - style: solid;"">
+                                        <div><b>IScale</b> would like to send you <b>the statistics of transactions</b> made over a period of time <b>"+date+ @"</b> on your IScale account, details are as follows:</div>
+                                        <div>Requester: "+ partner.DisplayName + @"</div>
+                                        <div>Account name: " + partner.DisplayName + @"</div>
+                                        <div>Total number of transactions: " + totalTrans + @"</div>
+                                        <div>Total weight: " + totalWeight + @"</div>
+                                        <div>Execution time: " + date + @"</div>
+                                        <div>Time to submit statistics: " + DateTime.Now.ToString("dd/MM/yyyy hh:mm") + @"</div>
+                                        <div>Sincerely thank you,</div>
+                                        <div><b>IScale</b></div>
+                                        </div>
+                                     </body>
+                                  </html>";
+            body = htmlString;
         }
     }
 }
