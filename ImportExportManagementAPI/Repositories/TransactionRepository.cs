@@ -952,24 +952,23 @@ namespace ImportExportManagementAPI.Repositories
         {
             bool check = true;
             try
-            {
+            {  
                 using (MailMessage mail = new MailMessage())
                 {
-                    mail.From = new MailAddress("tanntse63184@fpt.edu.vn", "ICAN Automatic Mailer ", System.Text.Encoding.UTF8);
-                    mail.To.Add("khanhbdbse130392@fpt.edu.vn");
-                    mail.Subject = "Request Captcha";
-                    mail.Body = "<h1>Your Captcha is " + "test" + "</h1>" +
-                        "<h2>This Captcha will expire within 5 minutes</h2>";
+                    mail.From = new MailAddress(serverEmail.username, mailContent.subject, System.Text.Encoding.UTF8);
+                    mail.To.Add(partner.Email);
+                    mail.Subject = mailContent.subject;
                     mail.IsBodyHtml = true;
-                    using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
+                    mail.Body = mailContent.body;
+                    using (SmtpClient smtp = new SmtpClient(serverEmail.host, serverEmail.port))
                     {
-                        smtp.Credentials = new NetworkCredential("tanntse63184@fpt.edu.vn", "thanhtan1998");
+                        smtp.Credentials = new NetworkCredential(serverEmail.username, serverEmail.password);
                         smtp.EnableSsl = true;
                         smtp.UseDefaultCredentials = false;
                         smtp.Send(mail);
-                        return true;
                     }
                 }
+                return true;
             }
             catch (Exception ex)
             {
