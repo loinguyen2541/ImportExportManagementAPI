@@ -953,7 +953,7 @@ namespace ImportExportManagementAPI.Repositories
             try
             {
                 MailMessage mail = new MailMessage();
-                SmtpClient SmtpServer = new SmtpClient(serverEmail.host);
+                SmtpClient smtp = new SmtpClient(serverEmail.host);
 
                 mail.From = new MailAddress(serverEmail.username);
                 mail.To.Add(partner.Email);
@@ -963,12 +963,12 @@ namespace ImportExportManagementAPI.Repositories
 
                 mail.Priority = MailPriority.High;
 
-                SmtpServer.Port = serverEmail.port;
-                SmtpServer.UseDefaultCredentials = false;
-                SmtpServer.Credentials = new System.Net.NetworkCredential(serverEmail.username, serverEmail.password);
-                SmtpServer.EnableSsl = true;
+                smtp.Port = serverEmail.port;
+                smtp.UseDefaultCredentials = false;
+                smtp.Credentials = new System.Net.NetworkCredential(serverEmail.username, serverEmail.password);
+                smtp.EnableSsl = true;
 
-                SmtpServer.Send(mail);
+                smtp.Send(mail);
                 return "";
             }
             catch (Exception ex)
