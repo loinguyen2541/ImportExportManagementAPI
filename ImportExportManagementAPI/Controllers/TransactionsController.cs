@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ImportExportManagementAPI.Helper;
 using Microsoft.Extensions.Options;
+using System.Text;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -221,9 +222,17 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("statistic")]
         public async Task<ActionResult> GetStatictisByEmail(int partnerId, string username, DateTime startDate, DateTime endDate)
         {
-            String check = await _repo.GetStatictis(username, partnerId, startDate, endDate, _smtp, _firebase);
-            if (check.Length == 0) return Ok();
-            return BadRequest(check);
+            CaptchaRepository repo = new CaptchaRepository();
+            string captchaCode = repo.GenerateCaptchaCode();
+            byte[] code = Encoding.ASCII.GetBytes(captchaCode);
+            HttpContext.Session.Set("captcha", code);
+            bool isSendMail = repo.sendMail("khanhbdbse130392@fpt.edu.vn", captchaCode);
+            if (isSendMail)
+                return Ok(captchaCode);
+            else
+            {
+                return BadRequest();
+            }
         }
     }
 }

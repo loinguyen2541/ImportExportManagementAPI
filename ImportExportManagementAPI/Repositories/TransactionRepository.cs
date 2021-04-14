@@ -867,7 +867,7 @@ namespace ImportExportManagementAPI.Repositories
                         }
                         if (listTransaction.Count == 0)
                         {
-                            Mail mail = new Mail(partner.DisplayName, username, date, listTransaction.Count, totalWeight, "No transactions have been made at this time");
+                            MessageSetting mail = new MessageSetting(partner.DisplayName, username, date, listTransaction.Count, totalWeight, "No transactions have been made at this time");
                             SendEmail(server, mail, partner);
                             return "";
                         }
@@ -881,7 +881,7 @@ namespace ImportExportManagementAPI.Repositories
                             {
                                 FirebaseRepository firebaseRepo = new FirebaseRepository();
                                 String downloadUrl = await firebaseRepo.GetFile(firebase, filename, filePath);
-                                Mail mail = new Mail(partner.DisplayName, username, date, listTransaction.Count, totalWeight, downloadUrl);
+                                MessageSetting mail = new MessageSetting(partner.DisplayName, username, date, listTransaction.Count, totalWeight, downloadUrl);
                                 string check = SendEmail(server, mail, partner);
                                 if(check.Length == 0){
                                     return "";
@@ -947,7 +947,7 @@ namespace ImportExportManagementAPI.Repositories
 
         }
 
-        private String SendEmail(SmtpSetting serverEmail, Mail mailContent, Partner partner)
+        private String SendEmail(SmtpSetting serverEmail, MessageSetting mailContent, Partner partner)
         {
             bool check = true;
             try

@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Helper
 {
-    public class Mail
+    public class MessageSetting
     {
         public string subject { get; set; }
         public string body { get; set; }
-        public Mail(string partnerName, string account, String date, int totalTrans, float totalWeight, String downloadUrl)
+        public MessageSetting(string partnerName, string account, String date, int totalTrans, float totalWeight, String downloadUrl)
         {
             subject = "(IScale) Report Import/Export Transaction of " + partnerName;
 
