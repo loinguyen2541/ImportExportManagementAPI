@@ -953,20 +953,20 @@ namespace ImportExportManagementAPI.Repositories
             bool check = true;
             try
             {
-                MailMessage mail = new MailMessage();
-
-                mail.From = new MailAddress(serverEmail.username);
-                mail.To.Add(partner.Email);
-                mail.Subject = mailContent.subject;
-                mail.IsBodyHtml = true;
-                mail.Body = mailContent.body;
-
-                using (SmtpClient smtp = new SmtpClient(serverEmail.host, serverEmail.port))
+                using (MailMessage mail = new MailMessage())
                 {
-                    smtp.Credentials = new NetworkCredential(serverEmail.username, serverEmail.password);
-                    smtp.EnableSsl = true;
-                    smtp.UseDefaultCredentials = false;
-                    smtp.Send(mail);                    
+                    mail.From = new MailAddress(serverEmail.username, mailContent.subject, System.Text.Encoding.UTF8);
+                    mail.To.Add(partner.Email);
+                    mail.Subject = mailContent.subject;
+                    mail.IsBodyHtml = true;
+                    mail.Body = mailContent.body;
+                    using (SmtpClient smtp = new SmtpClient(serverEmail.host, serverEmail.port))
+                    {
+                        smtp.Credentials = new NetworkCredential(serverEmail.username, serverEmail.password);
+                        smtp.EnableSsl = true;
+                        smtp.UseDefaultCredentials = false;
+                        smtp.Send(mail);
+                    }
                 }
                 return true;
             }

@@ -11,8 +11,10 @@ namespace ImportExportManagementAPI.Helper
     {
         public string subject { get; set; }
         public string body { get; set; }
+        public string sender { get; set; }
         public MessageSetting(string partnerName, string account, String date, int totalTrans, float totalWeight, String downloadUrl)
         {
+            sender = "IScale Automatic Mail";
             subject = "(IScale) Report Import/Export Transaction of " + partnerName;
 
             string htmlString = @"<html>
