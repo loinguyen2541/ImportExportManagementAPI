@@ -14,6 +14,7 @@ namespace ImportExportManagementAPI.Models
         public int StatusPartner { get; set; }
         public String ContentForAdmin { get; set; }
         public String ContentForPartner { get; set; }
+        public DateTime CreatedDate { get; set; }
         public int PartnerId { get; set; }
         public Partner Partner { get; set; }
         public int TransactionId { get; set; }
