@@ -882,8 +882,13 @@ namespace ImportExportManagementAPI.Repositories
                                 FirebaseRepository firebaseRepo = new FirebaseRepository();
                                 String downloadUrl = await firebaseRepo.GetFile(firebase, filename, filePath);
                                 Mail mail = new Mail(partner.DisplayName, username, date, listTransaction.Count, totalWeight, downloadUrl);
-                                SendEmail(server, mail, partner);
-                                return "";
+                                checkExport = SendEmail(server, mail, partner);
+                                if(checkExport){
+                                    return "";
+                                }else
+                                {
+                                    return "Send mail failed";
+                                }
                             }
                             else
                             {
@@ -944,7 +949,7 @@ namespace ImportExportManagementAPI.Repositories
 
         private bool SendEmail(SmtpSetting serverEmail, Mail mailContent, Partner partner)
         {
-            bool check = false;
+            bool check = true;
             try
             {
                 MailMessage mail = new MailMessage();
@@ -966,7 +971,7 @@ namespace ImportExportManagementAPI.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                check = false;
             }
             return check;
         }
