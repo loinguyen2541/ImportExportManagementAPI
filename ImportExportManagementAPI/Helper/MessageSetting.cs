@@ -30,6 +30,7 @@ namespace ImportExportManagementAPI.Helper
                                         <div>Time to submit statistics: <b>" + DateTime.Now.ToString("dd/MM/yyyy hh:mm") + @"</b></div>
                                         <br/>
                                         <div>Download link: <b>" + downloadUrl + @"</div>
+                                        <br/>
                                         <div>Sincerely thank you,</div>
                                         <div><b>IScale</b></div>
                                         </div>

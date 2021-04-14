@@ -955,7 +955,7 @@ namespace ImportExportManagementAPI.Repositories
             {  
                 using (MailMessage mail = new MailMessage())
                 {
-                    mail.From = new MailAddress(serverEmail.username, mailContent.subject, System.Text.Encoding.UTF8);
+                    mail.From = new MailAddress(serverEmail.username, mailContent.sender, System.Text.Encoding.UTF8);
                     mail.To.Add(partner.Email);
                     mail.Subject = mailContent.subject;
                     mail.IsBodyHtml = true;
