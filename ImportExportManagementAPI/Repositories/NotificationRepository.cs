@@ -20,7 +20,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<Notification> listNotification = new Pagination<Notification>();
             IQueryable<Notification> rawData = null;
-            rawData = _dbSet.Include(p=>p.Transaction).OrderBy(n => n.StatusAdmin).OrderByDescending(n => n.CreatedDate);
+            rawData = _dbSet.Include(p => p.Transaction).OrderBy(n => n.StatusAdmin).OrderByDescending(n => n.CreatedDate);
             listNotification = await DoPaging(paging, rawData);
             return listNotification;
         }
@@ -102,7 +102,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 foreach (var item in listUnread)
                 {
-                    await UpdateStatusNotification(item, NotificationStatus.Available);
+                    await UpdateStatusNotification(item, NotificationStatus.Available, filter);
                 }
             }
         }
@@ -110,30 +110,42 @@ namespace ImportExportManagementAPI.Repositories
         public async Task<List<Notification>> GetListUnreadNotification(NotificationFilter filter)
         {
             List<Notification> notifications = new List<Notification>();
-            IQueryable<Notification> queryable = _dbSet.Where(n => n.StatusPartner.Equals(NotificationStatus.Unread));
+            IQueryable<Notification> queryable = _dbSet;
             if (filter != null)
             {
-                if(filter.PartnerId != 0)
+                if (filter.StatusType != null)
+                    if (filter.StatusType.Equals("Admin"))
+                    {
+                        queryable = queryable.Where(n => n.StatusAdmin.Equals(NotificationStatus.Unread));
+                    }
+                if (filter.PartnerId != 0)
                 {
                     //có truyền vào tham số partnerId
-                    queryable = queryable.Where(n => n.PartnerId == filter.PartnerId);
+                    queryable = queryable.Where(n => n.StatusPartner.Equals(NotificationStatus.Unread) && n.PartnerId == filter.PartnerId);
                 }
-                if(filter.inputDate != DateTime.MinValue)
+                if (filter.inputDate != DateTime.MinValue)
                 {
                     //có truyền datetime
-                    queryable = queryable.Where(n => DateTime.Compare(n.CreatedDate, filter.inputDate ) < 0);
+                    queryable = queryable.Where(n => DateTime.Compare(n.CreatedDate, filter.inputDate) < 0);
                 }
             }
             notifications = await queryable.ToListAsync();
             return notifications;
         }
 
-        public async Task<bool> UpdateStatusNotification(Notification noti, NotificationStatus status)
+        public async Task<bool> UpdateStatusNotification(Notification noti, NotificationStatus status, NotificationFilter filter)
         {
             bool update = true;
             if (noti != null)
             {
-                noti.StatusPartner = status;
+                if (filter.StatusType == "Admin")
+                {
+                    noti.StatusAdmin = status;
+                }
+                else
+                {
+                    noti.StatusPartner = status;
+                }
                 Update(noti);
                 try
                 {

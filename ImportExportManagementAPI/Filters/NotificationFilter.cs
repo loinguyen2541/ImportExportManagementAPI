@@ -9,5 +9,6 @@ namespace ImportExportManagementAPI.Filters
     {
         public int PartnerId { get; set; }
         public DateTime inputDate { get; set; }
+        public string StatusType { get; set; }
     }
 }
