@@ -19,6 +19,43 @@ namespace ImportExportManagementAPI.Migrations
                 .HasAnnotation("ProductVersion", "5.0.3")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("ImportExportManagementAPI.Models.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ContentForAdmin")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContentForPartner")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PartnerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StatusAdmin")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StatusPartner")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TransactionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("PartnerId");
+
+                    b.HasIndex("TransactionId");
+
+                    b.ToTable("Notification");
+                });
+
             modelBuilder.Entity("ImportExportManagementAPI.Models.PartnerType", b =>
                 {
                     b.Property<int>("PartnerTypeId")
@@ -386,6 +423,25 @@ namespace ImportExportManagementAPI.Migrations
                     b.ToTable("Transaction");
                 });
 
+            modelBuilder.Entity("ImportExportManagementAPI.Models.Notification", b =>
+                {
+                    b.HasOne("ImportExportManagement_API.Models.Partner", "Partner")
+                        .WithMany("Notifications")
+                        .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ImportExportManagement_API.Models.Transaction", "Transaction")
+                        .WithMany("Notifications")
+                        .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Partner");
+
+                    b.Navigation("Transaction");
+                });
+
             modelBuilder.Entity("ImportExportManagementAPI.Models.TimeTemplateItem", b =>
                 {
                     b.HasOne("ImportExportManagementAPI.Models.TimeTemplate", "TimeTemplate")
@@ -549,6 +605,8 @@ namespace ImportExportManagementAPI.Migrations
 
                     b.Navigation("InventoryDetails");
 
+                    b.Navigation("Notifications");
+
                     b.Navigation("Schedules");
 
                     b.Navigation("Transactions");
@@ -557,6 +615,11 @@ namespace ImportExportManagementAPI.Migrations
             modelBuilder.Entity("ImportExportManagement_API.Models.Role", b =>
                 {
                     b.Navigation("Accounts");
+                });
+
+            modelBuilder.Entity("ImportExportManagement_API.Models.Transaction", b =>
+                {
+                    b.Navigation("Notifications");
                 });
 #pragma warning restore 612, 618
         }

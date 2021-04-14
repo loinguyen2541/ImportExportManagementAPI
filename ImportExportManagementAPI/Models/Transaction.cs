@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImportExportManagementAPI.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -26,5 +27,6 @@ namespace ImportExportManagement_API.Models
 
         public int GoodsId { get; set; }
         public Goods Goods { get; set; }
+        public List<Notification> Notifications { get; set; }
     }
 }

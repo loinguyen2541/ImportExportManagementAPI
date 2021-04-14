@@ -52,6 +52,9 @@ namespace ImportExportManagement_API
             //SystemConfig
             modelBuilder.Entity<SystemConfig>().HasKey(s => s.AttributeKey);
 
+            //Notification
+            modelBuilder.Entity<Notification>().HasKey(n => n.NotificationId);
+
             SystemConfig storgeCapcacity = new SystemConfig();
             storgeCapcacity.AttributeKey = AttributeKey.StorageCapacity.ToString();
             storgeCapcacity.AttributeValue = configuration.GetValue<String>("SystemConfigs:StorageCapacity");

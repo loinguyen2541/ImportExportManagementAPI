@@ -293,6 +293,35 @@ namespace ImportExportManagementAPI.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Notification",
+                columns: table => new
+                {
+                    NotificationId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NotificationType = table.Column<int>(type: "int", nullable: false),
+                    StatusAdmin = table.Column<int>(type: "int", nullable: false),
+                    StatusPartner = table.Column<int>(type: "int", nullable: false),
+                    ContentForAdmin = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ContentForPartner = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PartnerId = table.Column<int>(type: "int", nullable: false),
+                    TransactionId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notification", x => x.NotificationId);
+                    table.ForeignKey(
+                        name: "FK_Notification_Partner_PartnerId",
+                        column: x => x.PartnerId,
+                        principalTable: "Partner",
+                        principalColumn: "PartnerId");
+                    table.ForeignKey(
+                        name: "FK_Notification_Transaction_TransactionId",
+                        column: x => x.TransactionId,
+                        principalTable: "Transaction",
+                        principalColumn: "TransactionId");
+                });
+
             migrationBuilder.InsertData(
                 table: "SystemConfig",
                 columns: new[] { "AttributeKey", "AttributeValue" },
@@ -327,6 +356,16 @@ namespace ImportExportManagementAPI.Migrations
                 name: "IX_InventoryDetail_PartnerId",
                 table: "InventoryDetail",
                 column: "PartnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notification_PartnerId",
+                table: "Notification",
+                column: "PartnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notification_TransactionId",
+                table: "Notification",
+                column: "TransactionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Partner_PartnerTypeId",
@@ -380,16 +419,19 @@ namespace ImportExportManagementAPI.Migrations
                 name: "InventoryDetail");
 
             migrationBuilder.DropTable(
+                name: "Notification");
+
+            migrationBuilder.DropTable(
                 name: "Schedule");
 
             migrationBuilder.DropTable(
                 name: "SystemConfig");
 
             migrationBuilder.DropTable(
-                name: "Transaction");
+                name: "Inventory");
 
             migrationBuilder.DropTable(
-                name: "Inventory");
+                name: "Transaction");
 
             migrationBuilder.DropTable(
                 name: "TimeTemplateItem");
