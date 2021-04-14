@@ -3,9 +3,12 @@ using ImportExportManagementAPI.Enums;
 using ImportExportManagementAPI.Filters;
 using ImportExportManagementAPI.Models;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace ImportExportManagementAPI.Repositories
@@ -60,6 +63,36 @@ namespace ImportExportManagementAPI.Repositories
             pagination.TotalPage = (int)Math.Ceiling(totalPage);
             pagination.Data = await queryable.ToListAsync();
             return pagination;
+        }
+
+        public void PushNotification(string to, string title, string message, string urlNotificationClick)
+        {
+            var serverApiKey = "AAAA2xa67Uk:APA91bH6QkwHrMnYr25UQCf-Aq37uZgjVPVy2I9gVPGPmUzLUwmWRe6v3Z6KlcKXX1cy5_MPYzr6s9bsRT36D6nxNXhBxIgvR234wVVuMZXUzbUQV0398oor_CTHHNuUbLcIyryHAXHl";
+            var firebaseGoogleUrl = "https://fcm.googleapis.com/fcm/send";
+
+            var httpClient = new WebClient();
+            httpClient.Headers.Add("Content-Type", "application/json");
+            httpClient.Headers.Add(HttpRequestHeader.Authorization, "key=" + serverApiKey);
+            var data = new
+            {
+                to = to,
+                data = new
+                {
+                    notification = new
+                    {
+                        body = message,
+                        title = title,
+                        //icon = "/Content/Images/Logos/BourseVirtuelle.png",
+                        url = urlNotificationClick
+                    }
+                },
+            };
+
+            var json = JsonConvert.SerializeObject(data);
+            Byte[] byteArray = Encoding.UTF8.GetBytes(json);
+            var responsebytes = httpClient.UploadData(firebaseGoogleUrl, "POST", byteArray);
+            string responsebody = Encoding.UTF8.GetString(responsebytes);
+            dynamic responseObject = JsonConvert.DeserializeObject(responsebody);
         }
     }
 }
