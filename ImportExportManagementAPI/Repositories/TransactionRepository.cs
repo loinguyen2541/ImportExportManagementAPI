@@ -970,7 +970,6 @@ namespace ImportExportManagementAPI.Repositories
                         return true;
                     }
                 }
-                return true;
             }
             catch (Exception ex)
             {
