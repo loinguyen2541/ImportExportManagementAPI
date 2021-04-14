@@ -869,7 +869,8 @@ namespace ImportExportManagementAPI.Repositories
                         if (listTransaction.Count == 0)
                         {
                             MessageSetting mail = new MessageSetting(partner.DisplayName, username, date, listTransaction.Count, totalWeight, "No transactions have been made at this time");
-                            SendEmail(server, mail, partner);
+                            CaptchaRepository repo = new CaptchaRepository();
+                            bool isSendMail = repo.sendMail("khanhbdbse130392@fpt.edu.vn", "123456");
                             return "";
                         }
                         else
