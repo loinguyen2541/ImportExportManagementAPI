@@ -57,7 +57,7 @@ namespace ImportExportManagementAPI.Repositories
                     mail.IsBodyHtml = true;
                     using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
                     {
-                        smtp.Credentials = new NetworkCredential("baokhanh.buido@gmail.com", "buidobaokhanh0711");
+                        smtp.Credentials = new NetworkCredential("tanntse63184@fpt.edu.vn", "thanhtan1998");
                         smtp.EnableSsl = true;
                         smtp.UseDefaultCredentials = false;
                         smtp.Send(mail);

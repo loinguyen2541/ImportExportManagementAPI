@@ -883,11 +883,9 @@ namespace ImportExportManagementAPI.Repositories
                                 String downloadUrl = await firebaseRepo.GetFile(firebase, filename, filePath);
                                 Mail mail = new Mail(partner.DisplayName, username, date, listTransaction.Count, totalWeight, downloadUrl);
                                 checkExport = SendEmail(server, mail, partner);
-                                if (checkExport)
-                                {
+                                if(checkExport){
                                     return "";
-                                }
-                                else
+                                }else
                                 {
                                     return "Send mail failed";
                                 }
