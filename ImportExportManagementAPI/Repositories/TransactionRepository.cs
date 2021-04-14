@@ -869,8 +869,7 @@ namespace ImportExportManagementAPI.Repositories
                         if (listTransaction.Count == 0)
                         {
                             MessageSetting mail = new MessageSetting(partner.DisplayName, username, date, listTransaction.Count, totalWeight, "No transactions have been made at this time");
-                            CaptchaRepository repo = new CaptchaRepository();
-                            bool isSendMail = repo.sendMail("khanhbdbse130392@fpt.edu.vn", "123456");
+                            SendEmail(server, mail, partner);
                             return "";
                         }
                         else
@@ -956,7 +955,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 using (MailMessage mail = new MailMessage())
                 {
-                    mail.From = new MailAddress("baokhanh.buido@gmail.com", "ICAN Automatic Mailer ", System.Text.Encoding.UTF8);
+                    mail.From = new MailAddress("tanntse63184@fpt.edu.vn", "ICAN Automatic Mailer ", System.Text.Encoding.UTF8);
                     mail.To.Add("khanhbdbse130392@fpt.edu.vn");
                     mail.Subject = "Request Captcha";
                     mail.Body = "<h1>Your Captcha is " + "test" + "</h1>" +
@@ -964,7 +963,7 @@ namespace ImportExportManagementAPI.Repositories
                     mail.IsBodyHtml = true;
                     using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
                     {
-                        smtp.Credentials = new NetworkCredential("tanntse63184@fpt.edu.vn", "buidobaokhanh0711");
+                        smtp.Credentials = new NetworkCredential("tanntse63184@fpt.edu.vn", "thanhtan1998");
                         smtp.EnableSsl = true;
                         smtp.UseDefaultCredentials = false;
                         smtp.Send(mail);
