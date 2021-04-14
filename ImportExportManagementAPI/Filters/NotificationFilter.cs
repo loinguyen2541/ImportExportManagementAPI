@@ -8,5 +8,6 @@ namespace ImportExportManagementAPI.Filters
     public class NotificationFilter
     {
         public int PartnerId { get; set; }
+        public DateTime inputDate { get; set; }
     }
 }

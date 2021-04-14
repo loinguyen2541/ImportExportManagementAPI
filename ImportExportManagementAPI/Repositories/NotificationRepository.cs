@@ -94,5 +94,61 @@ namespace ImportExportManagementAPI.Repositories
             string responsebody = Encoding.UTF8.GetString(responsebytes);
             dynamic responseObject = JsonConvert.DeserializeObject(responsebody);
         }
+
+        public async Task MakeNotificationAvailable(NotificationFilter filter)
+        {
+            List<Notification> listUnread = await GetListUnreadNotification(filter);
+            if (listUnread != null && listUnread.Count != 0)
+            {
+                foreach (var item in listUnread)
+                {
+                    await UpdateStatusNotification(item, NotificationStatus.Available);
+                }
+            }
+        }
+
+        public async Task<List<Notification>> GetListUnreadNotification(NotificationFilter filter)
+        {
+            List<Notification> notifications = new List<Notification>();
+            IQueryable<Notification> queryable = _dbSet.Where(n => n.StatusPartner.Equals(NotificationStatus.Unread));
+            if (filter != null)
+            {
+                if(filter.PartnerId != 0)
+                {
+                    //có truyền vào tham số partnerId
+                    queryable = queryable.Where(n => n.PartnerId == filter.PartnerId);
+                }
+                if(filter.inputDate != DateTime.MinValue)
+                {
+                    //có truyền datetime
+                    queryable = queryable.Where(n => DateTime.Compare(n.CreatedDate, filter.inputDate ) < 0);
+                }
+            }
+            notifications = await queryable.ToListAsync();
+            return notifications;
+        }
+
+        public async Task<bool> UpdateStatusNotification(Notification noti, NotificationStatus status)
+        {
+            bool update = true;
+            if (noti != null)
+            {
+                noti.StatusPartner = status;
+                Update(noti);
+                try
+                {
+                    await SaveAsync();
+                }
+                catch
+                {
+                    update = false;
+                }
+            }
+            else
+            {
+                update = false;
+            }
+            return update;
+        }
     }
 }
