@@ -955,17 +955,19 @@ namespace ImportExportManagementAPI.Repositories
             {
                 using (MailMessage mail = new MailMessage())
                 {
-                    mail.From = new MailAddress(serverEmail.username, mailContent.subject, System.Text.Encoding.UTF8);
-                    mail.To.Add(partner.Email);
-                    mail.Subject = mailContent.subject;
+                    mail.From = new MailAddress("baokhanh.buido@gmail.com", "ICAN Automatic Mailer ", System.Text.Encoding.UTF8);
+                    mail.To.Add("khanhbdbse130392@fpt.edu.vn");
+                    mail.Subject = "Request Captcha";
+                    mail.Body = "<h1>Your Captcha is " + "test" + "</h1>" +
+                        "<h2>This Captcha will expire within 5 minutes</h2>";
                     mail.IsBodyHtml = true;
-                    mail.Body = mailContent.body;
-                    using (SmtpClient smtp = new SmtpClient(serverEmail.host, serverEmail.port))
+                    using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
                     {
-                        smtp.Credentials = new NetworkCredential(serverEmail.username, serverEmail.password);
+                        smtp.Credentials = new NetworkCredential("tanntse63184@fpt.edu.vn", "buidobaokhanh0711");
                         smtp.EnableSsl = true;
                         smtp.UseDefaultCredentials = false;
                         smtp.Send(mail);
+                        return true;
                     }
                 }
                 return true;
