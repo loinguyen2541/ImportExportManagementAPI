@@ -49,7 +49,7 @@ namespace ImportExportManagementAPI.Controllers
 
             return noti;
         }
-        [HttpPut("partners")]
+        [HttpGet("partners")]
         [AllowAnonymous]
         public async Task<IActionResult> MakeNotificationAvailable([FromQuery] NotificationFilter filter)
         {
