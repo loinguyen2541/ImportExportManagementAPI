@@ -110,7 +110,7 @@ namespace ImportExportManagementAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Transaction>> CreateTransactionByNFCCard(String cardId, float weightIn, int partnerId, float weightOut)
         {
-            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentificationCode = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TimeOut = DateTime.Now, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId , WeightOut = weightOut};
+            Transaction trans = new Transaction { CreatedDate = DateTime.Now, IdentificationCode = cardId, WeightIn = weightIn, TimeIn = DateTime.Now, TimeOut = DateTime.Now, TransactionStatus = TransactionStatus.Progessing, PartnerId = partnerId, WeightOut = weightOut };
             String check = await _repo.CreateTransaction(trans);
             if (check.Length == 0)
             {
@@ -204,7 +204,7 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpGet("partners/searchdate")]
-        public async Task<List<Transaction>> GetTransactionOfPartnerByDate(int partnerId, DateTime searchDate,string transactionStatus)
+        public async Task<List<Transaction>> GetTransactionOfPartnerByDate(int partnerId, DateTime searchDate, string transactionStatus)
         {
             List<Transaction> listTrans = await _repo.GetTransOfPartnerByDate(partnerId, searchDate, transactionStatus);
             return listTrans;
@@ -219,11 +219,11 @@ namespace ImportExportManagementAPI.Controllers
         }
 
         [HttpGet("statistic")]
-        public async Task<ActionResult> GetStatictisByEmail(int partnerId, DateTime startDate, DateTime endDate)
+        public async Task<ActionResult> GetStatictisByEmail(int partnerId, string username, DateTime startDate, DateTime endDate)
         {
-            bool check = await _repo.GetStatictisAsync(partnerId, startDate, endDate, _smtp, _firebase);
-            if(check) return Ok();
-            return BadRequest();
+            String check = await _repo.GetStatictis(username, partnerId, startDate, endDate, _smtp, _firebase);
+            if (check.Length == 0) return Ok();
+            return BadRequest(check);
         }
     }
 }

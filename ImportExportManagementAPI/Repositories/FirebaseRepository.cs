@@ -34,6 +34,7 @@ namespace ImportExportManagementAPI.Repositories
             // await the task to wait until upload completes and get the download url
             var downloadUrl = await task;
             stream.Dispose();
+            File.Delete(filePath);
             return downloadUrl;
         }
     }

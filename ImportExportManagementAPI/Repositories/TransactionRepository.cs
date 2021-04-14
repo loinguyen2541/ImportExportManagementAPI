@@ -3,12 +3,10 @@ using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Helper;
 using ImportExportManagementAPI.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Reflection;
@@ -834,53 +832,74 @@ namespace ImportExportManagementAPI.Repositories
             return (float)Math.Round(weight, 2);
         }
 
-        public async Task<bool> GetStatictisAsync(int partnerId, DateTime fromDate, DateTime toDate, SmtpSetting server, FirebaseSetting firebase)
+        public async Task<String> GetStatictis(string username, int partnerId, DateTime fromDate, DateTime toDate, SmtpSetting server, FirebaseSetting firebase)
         {
+            Account account = _dbContext.Account.Find(username);
             Partner partner = _dbContext.Partner.Find(partnerId);
             if (partner != null)
             {
-                List<Transaction> listTransaction = await SearchTransByDate(partnerId, fromDate, toDate);
-                if (listTransaction != null && listTransaction.Count != 0)
+                if (account.RoleId == 3 && !account.Username.Equals(partner.Username))
                 {
-                    float totalWeight = 0;
-                    float temp = 0;
-                    foreach (var item in listTransaction)
+                    return "Account invalid to request report";
+                }
+                else
+                {
+                    List<Transaction> listTransaction = await SearchTransByDate(partnerId, fromDate, toDate);
+                    if (listTransaction != null)
                     {
-                        temp = item.WeightIn - item.WeightOut;
-                        if (temp < 0) temp = temp * -1;
-                        totalWeight += temp;
-                    }
-                    String date = "";
-                    if(fromDate.Date!= toDate.Date)
-                    {
-                       date = fromDate.ToString("dd/MM/yyyy") + " - " + toDate.ToString("dd/MM/yyyy");
+                        float totalWeight = 0;
+                        float temp = 0;
+                        foreach (var item in listTransaction)
+                        {
+                            temp = item.WeightIn - item.WeightOut;
+                            if (temp < 0) temp = temp * -1;
+                            totalWeight += temp;
+                        }
+                        totalWeight = (float) Math.Round(totalWeight, 2);
+                        String date = "";
+                        if (fromDate.Date != toDate.Date)
+                        {
+                            date = fromDate.ToString("dd/MM/yyyy") + " - " + toDate.ToString("dd/MM/yyyy");
+                        }
+                        else
+                        {
+                            date = fromDate.ToString("dd/MM/yyyy");
+                        }
+                        if (listTransaction.Count == 0)
+                        {
+                            Mail mail = new Mail(partner.DisplayName, username, date, listTransaction.Count, totalWeight, "No transactions have been made at this time");
+                            SendEmail(server, mail, partner);
+                            return "";
+                        }
+                        else
+                        {
+                            string path = Environment.SpecialFolder.UserProfile + @"\Downloads";
+                            string filename = Regex.Replace(partner.DisplayName, @"\s+", "") + DateTime.Now.ToString("ddMMyyyy") + DateTime.Now.ToString("hhmmss") + ".xlsx";
+                            string filePath = path + "\\" + filename;
+                            bool checkExport = ExportExcel(listTransaction, filePath);
+                            if (checkExport)
+                            {
+                                FirebaseRepository firebaseRepo = new FirebaseRepository();
+                                String downloadUrl = await firebaseRepo.GetFile(firebase, filename, filePath);
+                                Mail mail = new Mail(partner.DisplayName, username, date, listTransaction.Count, totalWeight, downloadUrl);
+                                SendEmail(server, mail, partner);
+                                return "";
+                            }
+                            else
+                            {
+                                return "Export report excel failed";
+                            }
+                        }
                     }
                     else
                     {
-                        date = fromDate.ToString("dd/MM/yyyy");
-                    }
-                    string path = Directory.GetCurrentDirectory();
-                    string filename = Regex.Replace(partner.DisplayName, @"\s+", "") + DateTime.Now.ToString("ddMMyyyy") + DateTime.Now.ToString("hhmmss") + ".xlsx";
-                    string filePath = path + "\\" + filename;
-                    bool checkExport = ExportExcel(listTransaction, filePath);
-                    if (checkExport)
-                    {
-                        FirebaseRepository firebaseRepo = new FirebaseRepository();
-                        String downloadUrl = await firebaseRepo.GetFile(firebase,filename, filePath);
-                        Mail mail = new Mail(partner, date, listTransaction.Count, totalWeight, downloadUrl);
-                        SendEmail(server, filePath, mail, partner);
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
+                        return "Get transaction failed";
                     }
                 }
-                return false;
             }
             else
             {
-                return false;
+                return "Partner no longer exist";
             }
         }
         static DataTable ConvertToDataTable<T>(List<T> models)
@@ -897,7 +916,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 var values = new object[Props.Length];
                 for (int i = 0; i < Props.Length; i++)
-                {  
+                {
                     values[i] = Props[i].GetValue(item, null);
                 }
                 // Finally add value to datatable    
@@ -916,14 +935,14 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 return true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return false;
             }
 
         }
 
-        private bool SendEmail(SmtpSetting serverEmail, String pathFile, Mail mailContent, Partner partner)
+        private bool SendEmail(SmtpSetting serverEmail, Mail mailContent, Partner partner)
         {
             bool check = false;
             try
@@ -938,7 +957,6 @@ namespace ImportExportManagementAPI.Repositories
                 mail.Body = mailContent.body;
 
                 mail.Priority = MailPriority.High;
-                mail.Attachments.Add(new System.Net.Mail.Attachment(pathFile));
 
                 SmtpServer.Port = serverEmail.port;
                 SmtpServer.Credentials = new System.Net.NetworkCredential(serverEmail.username, serverEmail.password);
