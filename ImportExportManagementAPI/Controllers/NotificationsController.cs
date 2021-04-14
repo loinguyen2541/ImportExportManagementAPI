@@ -1,4 +1,5 @@
 ﻿using ImportExportManagementAPI.Enums;
+using ImportExportManagementAPI.Filters;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -27,7 +28,7 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<Notification> notifications = await _repo.GetAllNotification(paging);
             return notifications;
         }
-        [HttpGet("partner/{partnerId}")]
+        [HttpGet("partners/{partnerId}")]
         [AllowAnonymous]
         public async Task<ActionResult<Pagination<Notification>>> GetPartnerNotification([FromQuery] PaginationParam paging, int partnerId)
         {
@@ -48,6 +49,14 @@ namespace ImportExportManagementAPI.Controllers
 
             return noti;
         }
+        [HttpPut("partners")]
+        [AllowAnonymous]
+        public async Task<IActionResult> MakeNotificationAvailable([FromQuery] NotificationFilter filter)
+        {
+            await _repo.MakeNotificationAvailable(filter);
+            return Ok();
+        }
+
         [HttpPut("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> PutNotification(int id, Notification noti)
