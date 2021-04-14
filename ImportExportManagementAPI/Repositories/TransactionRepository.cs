@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Net;
 using System.Net.Mail;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -882,12 +883,12 @@ namespace ImportExportManagementAPI.Repositories
                                 FirebaseRepository firebaseRepo = new FirebaseRepository();
                                 String downloadUrl = await firebaseRepo.GetFile(firebase, filename, filePath);
                                 MessageSetting mail = new MessageSetting(partner.DisplayName, username, date, listTransaction.Count, totalWeight, downloadUrl);
-                                string check = SendEmail(server, mail, partner);
-                                if(check.Length == 0){
+                                bool check = SendEmail(server, mail, partner);
+                                if(check){
                                     return "";
                                 }else
                                 {
-                                    return check;
+                                    return "Send mail failed";
                                 }
                             }
                             else
@@ -947,13 +948,12 @@ namespace ImportExportManagementAPI.Repositories
 
         }
 
-        private String SendEmail(SmtpSetting serverEmail, MessageSetting mailContent, Partner partner)
+        private bool SendEmail(SmtpSetting serverEmail, MessageSetting mailContent, Partner partner)
         {
             bool check = true;
             try
             {
                 MailMessage mail = new MailMessage();
-                SmtpClient smtp = new SmtpClient(serverEmail.host);
 
                 mail.From = new MailAddress(serverEmail.username);
                 mail.To.Add(partner.Email);
@@ -961,19 +961,18 @@ namespace ImportExportManagementAPI.Repositories
                 mail.IsBodyHtml = true;
                 mail.Body = mailContent.body;
 
-                mail.Priority = MailPriority.High;
-
-                smtp.Port = serverEmail.port;
-                smtp.UseDefaultCredentials = false;
-                smtp.Credentials = new System.Net.NetworkCredential(serverEmail.username, serverEmail.password);
-                smtp.EnableSsl = true;
-
-                smtp.Send(mail);
-                return "";
+                using (SmtpClient smtp = new SmtpClient(serverEmail.host, serverEmail.port))
+                {
+                    smtp.Credentials = new NetworkCredential(serverEmail.username, serverEmail.password);
+                    smtp.EnableSsl = true;
+                    smtp.UseDefaultCredentials = false;
+                    smtp.Send(mail);                    
+                }
+                return true;
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                return false;
             }
         }
 
