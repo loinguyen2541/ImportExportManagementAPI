@@ -966,6 +966,7 @@ namespace ImportExportManagementAPI.Repositories
                 SmtpServer.Port = serverEmail.port;
                 SmtpServer.Credentials = new System.Net.NetworkCredential(serverEmail.username, serverEmail.password);
                 SmtpServer.EnableSsl = true;
+                SmtpServer.UseDefaultCredentials = true;
 
                 SmtpServer.Send(mail);
                 return "";
