@@ -112,7 +112,7 @@ namespace ImportExportManagementAPI.Repositories
                             return null;
                         }
                     }
-                    return WithoutPassword(account);
+                    return account;
                 }
             }
             return null;
