@@ -82,7 +82,7 @@ namespace ImportExportManagementAPI.Controllers
             if (checkTime)
             {
                 TransactionType type = _timeTemplateItemRepo.DefineTransactionType(updateSchedule.PartnerId);
-                
+
                 Schedule beforeSchedule = await _repo.GetByIDAsync(id);
                 String check = await _timeTemplateItemRepo.ChangeSchedule(updateSchedule, beforeSchedule);
                 if (check.Length == 0)
@@ -112,7 +112,7 @@ namespace ImportExportManagementAPI.Controllers
         // POST: api/Schedules
         [HttpPost]
         [AllowAnonymous]
-        public async Task<ActionResult<Schedule>> PostSchedule(Schedule schedule)
+        public ActionResult<Schedule> PostSchedule(Schedule schedule)
         {
             float storgeCapacity;
             if (!float.TryParse(_systemConfigRepository.GetStorageCapacity(), out storgeCapacity))
@@ -144,8 +144,8 @@ namespace ImportExportManagementAPI.Controllers
                             _repo.Insert(schedule);
 
                         }
-                        await _repo.SaveAsync();
-                        await hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
+                        _repo.Save();
+                        hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
                         return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
                     }
                     return BadRequest("Inventory is full");
