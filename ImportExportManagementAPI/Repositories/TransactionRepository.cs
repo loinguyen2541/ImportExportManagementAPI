@@ -410,7 +410,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 TransactionStatus trans;
                 if (Enum.TryParse(transactionStatus, out trans))
-                    rawData = _dbSet.Where(t => t.TransactionStatus == trans);
+                    rawData = _dbSet.Include(t => t.Partner).Where(t => t.TransactionStatus == trans);
             }
             rawData = rawData.Where(t => t.PartnerId == partnerId && date <= t.CreatedDate && t.CreatedDate < nextDay);
             listTransaction = await rawData.OrderByDescending(t => t.CreatedDate).ToListAsync();
