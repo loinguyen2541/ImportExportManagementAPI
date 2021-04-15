@@ -310,16 +310,18 @@ namespace ImportExportManagementAPI.Repositories
         public async ValueTask<List<Transaction>> SearchTransByDate(int partnerId, DateTime fromDate, DateTime toDate)
         {
             List<Transaction> listTransaction = new List<Transaction>();
-            IQueryable<Transaction> rawData = _dbSet.Where(t => t.PartnerId == partnerId);
+            IQueryable<Transaction> rawData = _dbSet.Where(t => t.PartnerId == partnerId && t.TransactionStatus == TransactionStatus.Success);
             if (fromDate.Date == toDate.Date)
             {
                 var date = Convert.ToDateTime(fromDate).Date;
                 var nextDay = date.AddDays(1);
-                rawData = rawData.Where(t => date <= t.CreatedDate && t.CreatedDate < nextDay);
+                rawData = rawData.Where(t => date <= t.CreatedDate && t.CreatedDate < nextDay );
             }
             else
             {
-                rawData = rawData.Where(t => fromDate.Date <= t.CreatedDate && t.CreatedDate <= toDate.Date);
+                var date = Convert.ToDateTime(toDate).Date;
+                var nextDay = date.AddDays(1);
+                rawData = rawData.Where(t => fromDate.Date <= t.CreatedDate && t.CreatedDate < nextDay);
             }
             listTransaction = await rawData.OrderByDescending(t => t.CreatedDate).ToListAsync();
             return listTransaction;
