@@ -22,51 +22,36 @@ namespace ImportExportManagementAPI.Repositories
         public bool CheckInventory(float registeredWeight, int id, TransactionType type, float storageCapacity)
         {
             //check tồn kho đã đạt giới hạn chưa
-            GoodsRepository _goodsRepo = new GoodsRepository();
-            Goods goods = _dbContext.Goods.First();
-            if (goods != null)
+
+            float inventory = _dbSet.Find(id).Inventory;
+            if (type == TransactionType.Import)
             {
-                float inventory = _dbSet.Find(id).Inventory;
-                if (type == TransactionType.Import)
+                if ((storageCapacity - inventory) < registeredWeight)
                 {
-                    SystemConfigRepository systemConfigRepository = new SystemConfigRepository();
-                    float capacity = float.Parse(systemConfigRepository.GetStorageCapacity());
-                    if (goods.QuantityOfInventory == capacity)
+                    return false;
+                }
+                else
+                {
+                    if ((storageCapacity - inventory) >= registeredWeight)
                     {
-                        return false;
+                        return true;
                     }
                     else
                     {
-                        float availableStorageCapacity = storageCapacity - inventory;
-                        if (availableStorageCapacity >= registeredWeight)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-                else if (type == TransactionType.Export)
-                {
-                    if (goods.QuantityOfInventory == 0)
-                    {
                         return false;
                     }
-                    else
-                    {
-                        if (inventory >= registeredWeight)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
                 }
-                return false;
+            }
+            else if (type == TransactionType.Export)
+            {
+                if (inventory >= registeredWeight)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             return false;
         }
