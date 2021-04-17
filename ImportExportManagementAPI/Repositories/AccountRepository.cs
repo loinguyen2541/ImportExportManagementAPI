@@ -126,7 +126,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 using (MailMessage mail = new MailMessage())
                 {
-                    mail.From = new MailAddress(smtpSetting.username, "ICAN Automatic Mailer ", System.Text.Encoding.UTF8);
+                    mail.From = new MailAddress(smtpSetting.username, "IScale Automatic Mailer ", System.Text.Encoding.UTF8);
                     mail.To.Add(partnerEmail);
                     mail.Subject = "Information for logging into the IScale system";
                     string htmlString = @"<html>
