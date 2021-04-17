@@ -1,9 +1,11 @@
 ﻿using ImportExportManagement_API.Models;
+using ImportExportManagementAPI.Helper;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +20,11 @@ namespace ImportExportManagementAPI.Controllers
     public class AccountController : ControllerBase
     {
         AccountRepository _repo;
-        public AccountController()
+        private readonly SmtpSetting _smtp;
+        public AccountController(IOptions<SmtpSetting> smtp)
         {
             _repo = new AccountRepository();
+            _smtp = smtp.Value;
         }
 
         // GET: api/Partners
@@ -111,6 +115,17 @@ namespace ImportExportManagementAPI.Controllers
             await _repo.SaveAsync();
 
             return NoContent();
+        }
+        [HttpGet("requestpassword")]
+        [AllowAnonymous]
+        public ActionResult RequestPassword(string username, string password, string displayName, string email)
+        {
+            Account account = new Account() { Username = username, Password = password};
+            bool sendEmail = _repo.SendMail(account, displayName, email,_smtp);
+            if (sendEmail){
+                return Ok();
+            }
+            return BadRequest();
         }
     }
 }

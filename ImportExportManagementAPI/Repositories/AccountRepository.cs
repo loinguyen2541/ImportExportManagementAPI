@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,7 +44,7 @@ namespace ImportExportManagementAPI.Repositories
 
         public async Task<List<Account>> GetAccountByRole(int roleId)
         {
-            List<Account> accounts = await _dbSet.Where(a => a.RoleId == roleId).ToListAsync(); 
+            List<Account> accounts = await _dbSet.Where(a => a.RoleId == roleId).ToListAsync();
             return accounts;
         }
 
@@ -116,6 +118,46 @@ namespace ImportExportManagementAPI.Repositories
                 }
             }
             return null;
+        }
+
+        public bool SendMail(Account account, string displayName, string partnerEmail, SmtpSetting smtpSetting)
+        {
+            try
+            {
+                using (MailMessage mail = new MailMessage())
+                {
+                    mail.From = new MailAddress(smtpSetting.username, "ICAN Automatic Mailer ", System.Text.Encoding.UTF8);
+                    mail.To.Add(partnerEmail);
+                    mail.Subject = "Information for logging into the IScale system";
+                    string htmlString = @"<html>
+                                    <body>
+                                        <div>
+                                        <div><h3>IScale would like to send your IScale account, details are as follows:</h3></div>
+                                        <br/>
+                                        <div>Username: <b>" + account.Username + @"</b></div>
+                                        <div>Password: <b>" + account.Password + @"</b></div>
+                                        <br/>
+                                        <div>Sincerely thank you,</div>
+                                        <div><b>IScale</b></div>
+                                        </div>
+                                     </body>
+                                  </html>";
+                    mail.Body = htmlString;
+                    mail.IsBodyHtml = true;
+                    using (SmtpClient smtp = new SmtpClient(smtpSetting.host, smtpSetting.port))
+                    {
+                        smtp.Credentials = new NetworkCredential(smtpSetting.username, smtpSetting.password);
+                        smtp.EnableSsl = true;
+                        smtp.UseDefaultCredentials = false;
+                        smtp.Send(mail);
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
