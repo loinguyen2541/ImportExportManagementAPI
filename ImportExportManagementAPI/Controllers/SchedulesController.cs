@@ -133,17 +133,14 @@ namespace ImportExportManagementAPI.Controllers
 
                         //check date
                         String scheduleTime = _systemConfigRepository.GetAutoSchedule();
-                        DateTime generateScheduleTime = DateTime.ParseExact(scheduleTime, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-                        DateTime current = DateTime.ParseExact(DateTime.Now.ToString("HH:mm:ss"), "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-                        if (current > generateScheduleTime) schedule.ScheduleDate = schedule.ScheduleDate.AddDays(1);
-
-                        schedule.ScheduleStatus = ScheduleStatus.Approved;
-
-                        if (!_repo.TryToUpdate(schedule))
+                        DateTime generateScheduleTime = DateTime.Parse(scheduleTime);
+                        DateTime current = DateTime.Now;
+                        if (current > generateScheduleTime)
                         {
-                            _repo.Insert(schedule);
-
+                            schedule.ScheduleDate = schedule.ScheduleDate.AddDays(1);
                         }
+                        schedule.ScheduleStatus = ScheduleStatus.Approved;
+                        _repo.Insert(schedule);
                         _repo.Save();
                         hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
                         return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);

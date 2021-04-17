@@ -79,7 +79,7 @@ namespace ImportExportManagementAPI
                 options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
                 options.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
-            services.AddDbContext<ImportExportManagement_API.IEDbContext>();
+            services.AddDbContext<ImportExportManagement_API.IEDbContext>(ServiceLifetime.Transient); ;
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ImportExportManagementAPI", Version = "v1" });

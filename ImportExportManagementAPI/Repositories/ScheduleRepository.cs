@@ -341,7 +341,7 @@ namespace ImportExportManagement_API.Repositories
             return _dbSet.Any(e => e.ScheduleId == id);
         }
 
-        public Boolean TryToUpdate(Schedule schedule)
+        public Boolean IsExist(Schedule schedule)
         {
             Schedule currentSchedule = _dbSet.Where(s => s.ScheduleStatus == ScheduleStatus.Approved && s.TransactionType == schedule.TransactionType && s.TimeTemplateItemId == schedule.TimeTemplateItemId).SingleOrDefault();
             if (currentSchedule != null)
