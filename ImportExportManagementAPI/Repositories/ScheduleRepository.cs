@@ -307,16 +307,16 @@ namespace ImportExportManagement_API.Repositories
             return listReport;
         }
 
-        public async void DisableAll()
+        public void DisableAll()
         {
-            List<Schedule> schedules = await _dbSet.Where(p => p.ScheduleStatus == ScheduleStatus.Approved).ToListAsync();
+            List<Schedule> schedules = _dbSet.Where(p => p.ScheduleStatus == ScheduleStatus.Approved).ToList();
             foreach (var item in schedules)
             {
                 item.ScheduleStatus = ScheduleStatus.Cancel;
                 item.UpdatedBy = SystemName.System.ToString();
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
-            await SaveAsync();
+            Save();
         }
 
 

@@ -315,7 +315,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 var date = Convert.ToDateTime(fromDate).Date;
                 var nextDay = date.AddDays(1);
-                rawData = rawData.Where(t => date <= t.CreatedDate && t.CreatedDate < nextDay );
+                rawData = rawData.Where(t => date <= t.CreatedDate && t.CreatedDate < nextDay);
             }
             else
             {
@@ -818,9 +818,9 @@ namespace ImportExportManagementAPI.Repositories
             return check;
         }
 
-        public async void CancelProcessing()
+        public void CancelProcessing()
         {
-            List<Transaction> transactions = await _dbSet.Where(t => t.TransactionStatus == TransactionStatus.Progessing).ToListAsync();
+            List<Transaction> transactions = _dbSet.Where(t => t.TransactionStatus == TransactionStatus.Progessing).ToList();
             foreach (var item in transactions)
             {
                 item.TransactionStatus = TransactionStatus.Disable;
@@ -828,7 +828,7 @@ namespace ImportExportManagementAPI.Repositories
                 item.Description = "Disable " + SystemName.System.ToString();
                 _dbContext.Entry(item).State = EntityState.Modified;
             }
-            await SaveAsync();
+            Save();
         }
         private float Rounding(float weight, TransactionType type)
         {
@@ -858,7 +858,7 @@ namespace ImportExportManagementAPI.Repositories
                             if (temp < 0) temp = temp * -1;
                             totalWeight += temp;
                         }
-                        totalWeight = (float) Math.Round(totalWeight, 2);
+                        totalWeight = (float)Math.Round(totalWeight, 2);
                         String date = "";
                         if (fromDate.Date != toDate.Date)
                         {
@@ -886,9 +886,11 @@ namespace ImportExportManagementAPI.Repositories
                                 String downloadUrl = await firebaseRepo.GetFile(firebase, filename, filePath);
                                 MessageSetting mail = new MessageSetting(partner.DisplayName, username, date, listTransaction.Count, totalWeight, downloadUrl);
                                 bool check = SendEmail(server, mail, partner);
-                                if(check){
+                                if (check)
+                                {
                                     return "";
-                                }else
+                                }
+                                else
                                 {
                                     return "Send mail failed";
                                 }
@@ -954,7 +956,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             bool check = true;
             try
-            {  
+            {
                 using (MailMessage mail = new MailMessage())
                 {
                     mail.From = new MailAddress(serverEmail.username, mailContent.sender, System.Text.Encoding.UTF8);

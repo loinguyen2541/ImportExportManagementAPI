@@ -25,12 +25,12 @@ namespace ImportExportManagementAPI.Controllers
         private readonly GoodsRepository _goodsRepository;
         private readonly SystemConfigRepository _systemConfigRepository;
         private readonly IHubContext<ScheduleHub> hubContext;
-        public SchedulesController(SystemConfigRepository systemConfigRepository, IHubContext<ScheduleHub> scheduleHub)
+        public SchedulesController(IHubContext<ScheduleHub> scheduleHub)
         {
             _repo = new ScheduleRepository();
             _timeTemplateItemRepo = new TimeTemplateItemRepository();
             _goodsRepository = new GoodsRepository();
-            _systemConfigRepository = systemConfigRepository;
+            _systemConfigRepository = new SystemConfigRepository();
             hubContext = scheduleHub;
         }
 
@@ -142,7 +142,10 @@ namespace ImportExportManagementAPI.Controllers
                         schedule.ScheduleStatus = ScheduleStatus.Approved;
                         _repo.Insert(schedule);
                         _repo.Save();
-                        hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
+                        Task.Run(new Action(() =>
+                        {
+                            hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
+                        }));
                         return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
                     }
                     return BadRequest("Inventory is full");

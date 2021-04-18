@@ -111,9 +111,9 @@ namespace ImportExportManagementAPI.Controllers
 
         [HttpGet("current")]
         [AllowAnonymous]
-        public async Task<ActionResult<TimeTemplate>> GetCurrentTimeTemplate(int partnerId)
+        public ActionResult<TimeTemplate> GetCurrentTimeTemplate(int partnerId)
         {
-            TimeTemplate timeTemplate = await _timeTemplateRepository.GetCurrentTimeTemplateAsync(partnerId);
+            TimeTemplate timeTemplate = _timeTemplateRepository.GetCurrentTimeTemplate(partnerId);
             return timeTemplate;
         }
 

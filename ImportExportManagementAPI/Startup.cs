@@ -104,7 +104,6 @@ namespace ImportExportManagementAPI
                 });
             });
             services.AddSignalR();
-            services.AddSingleton<SystemConfigRepository>();
 
         }
 

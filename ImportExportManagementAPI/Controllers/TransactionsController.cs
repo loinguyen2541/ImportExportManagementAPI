@@ -127,7 +127,7 @@ namespace ImportExportManagementAPI.Controllers
         //update transaction information => manual
         [HttpPut("manual/{id}")]
         [AllowAnonymous]
-        public async Task<IActionResult> UpdateTransaction(int id, Transaction trans)
+        public IActionResult UpdateTransaction(int id, Transaction trans)
         {
             //await _repo.UpdateTransactionByManual(trans, id)
             Transaction transactionUpdated = new Transaction();

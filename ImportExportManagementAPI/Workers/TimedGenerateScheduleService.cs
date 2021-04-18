@@ -119,10 +119,13 @@ namespace ImportExportManagementAPI.Workers
 
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
-            float capacity = _goodsRepository.GetGoodCapacity();
-            _timeTemplateRepository.ResetTimeTemplate(capacity);
-            _scheduleRepository.DisableAll();
-            _transactionRepository.CancelProcessing();
+            Task.Run(new Action(() =>
+           {
+               float capacity = _goodsRepository.GetGoodCapacity();
+               _timeTemplateRepository.ResetTimeTemplate(capacity);
+               _scheduleRepository.DisableAll();
+               _transactionRepository.CancelProcessing();
+           }));
 
             if (count == 2)
             {

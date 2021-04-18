@@ -23,15 +23,15 @@ namespace ImportExportManagementAPI.Repositories
         ///  and change status of applied item template to disable.
         /// </summary>
         /// <param name="inventory"></param>
-        public async void ResetTimeTemplate(float inventory)
+        public void ResetTimeTemplate(float inventory)
         {
 
-            TimeTemplate timeTemplateApplied = await _dbSet.Include(t => t.TimeTemplateItems)
-                .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Applied).SingleOrDefaultAsync();
-            await _dbContext.Entry(timeTemplateApplied).ReloadAsync();
+            TimeTemplate timeTemplateApplied = _dbSet.Include(t => t.TimeTemplateItems)
+                .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Applied).SingleOrDefault();
+            _dbContext.Entry(timeTemplateApplied).Reload();
 
-            TimeTemplate timeTemplatePending = await _dbSet.Include(t => t.TimeTemplateItems)
-                .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Pending).SingleOrDefaultAsync();
+            TimeTemplate timeTemplatePending = _dbSet.Include(t => t.TimeTemplateItems)
+                .Where(p => p.TimeTemplateStatus == TimeTemplateStatus.Pending).SingleOrDefault();
 
             if (timeTemplatePending == null)
             {
@@ -63,7 +63,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
             }
 
-            await SaveAsync();
+            Save();
         }
 
         private void UpdateCurrentApliedTemplate(TimeTemplate timeTemplate, float inventory)
@@ -85,12 +85,12 @@ namespace ImportExportManagementAPI.Repositories
             }
         }
 
-        public async Task<TimeTemplate> GetCurrentTimeTemplateAsync(int partnerId)
+        public TimeTemplate GetCurrentTimeTemplate(int partnerId)
         {
-            TimeTemplate timeTemplate = await _dbSet.
+            TimeTemplate timeTemplate = _dbSet.
                 Where(t => t.TimeTemplateStatus == TimeTemplateStatus.Applied)
                 .Include(t => t.TimeTemplateItems).ThenInclude(t => t.Schedules.Where(p => p.PartnerId == partnerId && p.ScheduleStatus.Equals(ScheduleStatus.Cancel)))
-                .SingleOrDefaultAsync();
+                .SingleOrDefault();
             return timeTemplate;
         }
         public async Task<TimeTemplate> GetForecastInventoryToday()
