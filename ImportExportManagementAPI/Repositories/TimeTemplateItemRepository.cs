@@ -84,7 +84,7 @@ namespace ImportExportManagementAPI.Repositories
             return type;
         }
 
-        public bool UpdateCurrent(TransactionType type, float registeredWeight, int timeItemId)
+        public void UpdateCurrent(TransactionType type, float registeredWeight, int timeItemId)
         {
             TimeTemplateItem timeTemplateItem = _dbSet.Find(timeItemId);
             float targetItemCapacity = 0;
@@ -108,9 +108,7 @@ namespace ImportExportManagementAPI.Repositories
                     UpdateCapacityImport(timeTemplateItems, timeTemplateItem.ScheduleTime, targetItemCapacity, registeredWeight);
                 }
                 _dbContext.SaveChanges();
-                return true;
             }
-            return false;
         }
 
         public void UpdateCapacityExport(List<TimeTemplateItem> timeTemplateItems, TimeSpan targetTime, float targetInventory, float registeredWeight)

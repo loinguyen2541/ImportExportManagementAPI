@@ -65,27 +65,25 @@ namespace ImportExportManagementAPI.Workers
 
                     if (_timeTemplateItemRepo.CheckInventory(schedule.RegisteredWeight, schedule.TimeTemplateItemId, schedule.TransactionType, storgeCapacity))
                     {
-                        if (_timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId))
-                        {
+                        _timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
 
-                            //check date
-                            String scheduleTime = _systemConfigRepository.GetAutoSchedule();
-                            DateTime generateScheduleTime = DateTime.Parse(scheduleTime);
-                            DateTime current = DateTime.Now;
-                            if (current > generateScheduleTime)
-                            {
-                                schedule.ScheduleDate = schedule.ScheduleDate.AddDays(1);
-                            }
-                            schedule.ScheduleStatus = Models.ScheduleStatus.Approved;
-                            _repo.Insert(schedule);
-                            _repo.Save();
-                            //Task.Run(new Action(() =>
-                            //{
-                            //    hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
-                            //}));
-                            SendMessage(CreateMessage(schedule.PartnerId, CreateSchuleResponseStatus.Success, "You have successfully scheduled!"));
-                            return;
+                        //check date
+                        String scheduleTime = _systemConfigRepository.GetAutoSchedule();
+                        DateTime generateScheduleTime = DateTime.Parse(scheduleTime);
+                        DateTime current = DateTime.Now;
+                        if (current > generateScheduleTime)
+                        {
+                            schedule.ScheduleDate = schedule.ScheduleDate.AddDays(1);
                         }
+                        schedule.ScheduleStatus = Models.ScheduleStatus.Approved;
+                        _repo.Insert(schedule);
+                        _repo.Save();
+                        //Task.Run(new Action(() =>
+                        //{
+                        //    hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
+                        //}));
+                        SendMessage(CreateMessage(schedule.PartnerId, CreateSchuleResponseStatus.Success, "You have successfully scheduled!"));
+                        return;
                     }
                     SendMessage(CreateMessage(schedule.PartnerId, CreateSchuleResponseStatus.Error, "Your registered weight exceeds the stock volume!"));
                     return;
