@@ -17,9 +17,9 @@ namespace ImportExportManagementAPI.Controllers
         private readonly SystemConfigRepository _systemConfigRepository;
         private readonly TimedGenerateScheduleService _timedGenerateScheduleService;
 
-        public SystemConfigController(SystemConfigRepository systemConfigRepository, TimedGenerateScheduleService timedGenerateScheduleService)
+        public SystemConfigController(TimedGenerateScheduleService timedGenerateScheduleService)
         {
-            _systemConfigRepository = systemConfigRepository;
+            _systemConfigRepository = new SystemConfigRepository();
             _timedGenerateScheduleService = timedGenerateScheduleService;
         }
 
