@@ -90,7 +90,9 @@ namespace ImportExportManagementAPI
                 o.IdleTimeout = TimeSpan.FromSeconds(30 * 60);
             });
             services.AddSingleton<TimedGenerateScheduleService>();
+            services.AddSingleton<CreateScheduleQueueService>();
             services.AddHostedService(s => s.GetRequiredService<TimedGenerateScheduleService>());
+            services.AddHostedService(s => s.GetRequiredService<CreateScheduleQueueService>());
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowOrigin",

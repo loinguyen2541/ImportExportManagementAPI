@@ -23,7 +23,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             //check tồn kho đã đạt giới hạn chưa
 
-            float inventory = _dbSet.Find(id).Inventory;
+            float inventory = _dbSet.AsNoTracking().Where(i => i.TimeTemplateItemId == id).SingleOrDefault().Inventory;
             if (type == TransactionType.Import)
             {
                 if ((storageCapacity - inventory) < registeredWeight)

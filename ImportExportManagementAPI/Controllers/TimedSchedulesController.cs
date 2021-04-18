@@ -13,10 +13,12 @@ namespace ImportExportManagementAPI.Controllers
     public class TimedSchedulesController : ControllerBase
     {
         TimedGenerateScheduleService TimedControlService;
+        CreateScheduleQueueService CreateScheduleQueueService;
 
-        public TimedSchedulesController(TimedGenerateScheduleService timedGenerateScheduleService)
+        public TimedSchedulesController(TimedGenerateScheduleService timedGenerateScheduleService, CreateScheduleQueueService createScheduleQueueService)
         {
             TimedControlService = timedGenerateScheduleService;
+            CreateScheduleQueueService = createScheduleQueueService;
         }
 
         [HttpGet("stop")]
@@ -30,6 +32,13 @@ namespace ImportExportManagementAPI.Controllers
         public async Task<ActionResult> Start()
         {
             await TimedControlService.StartAsync(new System.Threading.CancellationToken());
+            return Ok();
+        }
+
+        [HttpGet("add")]
+        public ActionResult add()
+        {
+            CreateScheduleQueueService.Schedules.Enqueue(new ImportExportManagement_API.Models.Schedule());
             return Ok();
         }
     }

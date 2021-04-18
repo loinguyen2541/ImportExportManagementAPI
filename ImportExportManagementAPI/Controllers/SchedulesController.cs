@@ -13,6 +13,7 @@ using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using ImportExportManagementAPI.Hubs;
+using ImportExportManagementAPI.Workers;
 
 namespace ImportExportManagementAPI.Controllers
 {
@@ -25,13 +26,15 @@ namespace ImportExportManagementAPI.Controllers
         private readonly GoodsRepository _goodsRepository;
         private readonly SystemConfigRepository _systemConfigRepository;
         private readonly IHubContext<ScheduleHub> hubContext;
-        public SchedulesController(IHubContext<ScheduleHub> scheduleHub)
+        private readonly CreateScheduleQueueService _createScheduleQueueService;
+        public SchedulesController(IHubContext<ScheduleHub> scheduleHub, CreateScheduleQueueService createScheduleQueueService)
         {
             _repo = new ScheduleRepository();
             _timeTemplateItemRepo = new TimeTemplateItemRepository();
             _goodsRepository = new GoodsRepository();
             _systemConfigRepository = new SystemConfigRepository();
             hubContext = scheduleHub;
+            _createScheduleQueueService = createScheduleQueueService;
         }
 
         [HttpGet]
@@ -114,48 +117,50 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public ActionResult<Schedule> PostSchedule(Schedule schedule)
         {
-            float storgeCapacity;
-            if (!float.TryParse(_systemConfigRepository.GetStorageCapacity(), out storgeCapacity))
-            {
-                return NoContent();
-            }
-            Boolean checkTime = _timeTemplateItemRepo.CheckValidTime(schedule.TimeTemplateItemId);
-            if (checkTime)
-            {
-                if (schedule.RegisteredWeight != 0)
-                {
-                    TransactionType type = _timeTemplateItemRepo.DefineTransactionType(schedule.PartnerId);
-                    schedule.TransactionType = type;
+            _createScheduleQueueService.Schedules.Enqueue(schedule);
+            return Ok();
+            //float storgeCapacity;
+            //if (!float.TryParse(_systemConfigRepository.GetStorageCapacity(), out storgeCapacity))
+            //{
+            //    return NoContent();
+            //}
+            //Boolean checkTime = _timeTemplateItemRepo.CheckValidTime(schedule.TimeTemplateItemId);
+            //if (checkTime)
+            //{
+            //    if (schedule.RegisteredWeight != 0)
+            //    {
+            //        TransactionType type = _timeTemplateItemRepo.DefineTransactionType(schedule.PartnerId);
+            //        schedule.TransactionType = type;
 
-                    if (_timeTemplateItemRepo.CheckInventory(schedule.RegisteredWeight, schedule.TimeTemplateItemId, schedule.TransactionType, storgeCapacity))
-                    {
-                        if (_timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId))
-                        {
+            //        if (_timeTemplateItemRepo.CheckInventory(schedule.RegisteredWeight, schedule.TimeTemplateItemId, schedule.TransactionType, storgeCapacity))
+            //        {
+            //            if (_timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId))
+            //            {
 
-                            //check date
-                            String scheduleTime = _systemConfigRepository.GetAutoSchedule();
-                            DateTime generateScheduleTime = DateTime.Parse(scheduleTime);
-                            DateTime current = DateTime.Now;
-                            if (current > generateScheduleTime)
-                            {
-                                schedule.ScheduleDate = schedule.ScheduleDate.AddDays(1);
-                            }
-                            schedule.ScheduleStatus = ScheduleStatus.Approved;
-                            _repo.Insert(schedule);
-                            _repo.Save();
-                            Task.Run(new Action(() =>
-                            {
-                                hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
-                            }));
-                            return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
-                        }
-                        return BadRequest("Inventory is full");
-                    }
-                    return BadRequest("Inventory is full");
-                }
-                return BadRequest("Weight must be greater than 0");
-            }
-            return BadRequest("Out of time to schedule");
+            //                //check date
+            //                String scheduleTime = _systemConfigRepository.GetAutoSchedule();
+            //                DateTime generateScheduleTime = DateTime.Parse(scheduleTime);
+            //                DateTime current = DateTime.Now;
+            //                if (current > generateScheduleTime)
+            //                {
+            //                    schedule.ScheduleDate = schedule.ScheduleDate.AddDays(1);
+            //                }
+            //                schedule.ScheduleStatus = ScheduleStatus.Approved;
+            //                _repo.Insert(schedule);
+            //                _repo.Save();
+            //                Task.Run(new Action(() =>
+            //                {
+            //                    hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
+            //                }));
+            //                return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
+            //            }
+            //            return BadRequest("Inventory is full");
+            //        }
+            //        return BadRequest("Inventory is full");
+            //    }
+            //    return BadRequest("Weight must be greater than 0");
+            //}
+            //return BadRequest("Out of time to schedule");
         }
 
         [HttpPut("cancel")]
