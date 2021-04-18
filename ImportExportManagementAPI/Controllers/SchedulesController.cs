@@ -129,24 +129,27 @@ namespace ImportExportManagementAPI.Controllers
 
                     if (_timeTemplateItemRepo.CheckInventory(schedule.RegisteredWeight, schedule.TimeTemplateItemId, schedule.TransactionType, storgeCapacity))
                     {
-                        _timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
+                        if (_timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId))
+                        {
 
-                        //check date
-                        String scheduleTime = _systemConfigRepository.GetAutoSchedule();
-                        DateTime generateScheduleTime = DateTime.Parse(scheduleTime);
-                        DateTime current = DateTime.Now;
-                        if (current > generateScheduleTime)
-                        {
-                            schedule.ScheduleDate = schedule.ScheduleDate.AddDays(1);
+                            //check date
+                            String scheduleTime = _systemConfigRepository.GetAutoSchedule();
+                            DateTime generateScheduleTime = DateTime.Parse(scheduleTime);
+                            DateTime current = DateTime.Now;
+                            if (current > generateScheduleTime)
+                            {
+                                schedule.ScheduleDate = schedule.ScheduleDate.AddDays(1);
+                            }
+                            schedule.ScheduleStatus = ScheduleStatus.Approved;
+                            _repo.Insert(schedule);
+                            _repo.Save();
+                            Task.Run(new Action(() =>
+                            {
+                                hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
+                            }));
+                            return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
                         }
-                        schedule.ScheduleStatus = ScheduleStatus.Approved;
-                        _repo.Insert(schedule);
-                        _repo.Save();
-                        Task.Run(new Action(() =>
-                        {
-                            hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
-                        }));
-                        return CreatedAtAction("GetSchedule", new { id = schedule.ScheduleId }, schedule);
+                        return BadRequest("Inventory is full");
                     }
                     return BadRequest("Inventory is full");
                 }
