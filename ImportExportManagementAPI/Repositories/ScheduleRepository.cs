@@ -230,7 +230,7 @@ namespace ImportExportManagement_API.Repositories
             {
                 var convert = Convert.ToDateTime(searchDate).Date;
                 var nextDay = convert.AddDays(1);
-                queryable = queryable.Where(s => convert <= s.ScheduleDate && s.ScheduleDate <= nextDay);
+                queryable = queryable.Where(s => convert <= s.ScheduleDate && s.ScheduleDate <= nextDay && s.ScheduleStatus == ScheduleStatus.Approved);
                 int test = queryable.ToList().Count;
             }
             if (partnerId != 0)

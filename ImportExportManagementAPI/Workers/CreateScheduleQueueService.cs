@@ -87,7 +87,7 @@ namespace ImportExportManagementAPI.Workers
                         //{
                         //    hubContext.Clients.All.SendAsync("ReloadScheduleList", "reload");
                         //}));
-                        SendMessage(CreateMessage(schedule.PartnerId, CreateSchuleResponseStatus.Success, "You have successfully scheduled!"));
+                        SendMessage(CreateMessage(schedule.PartnerId, CreateSchuleResponseStatus.Success, "You have successfully booked !"));
                         return;
                     }
                     SendMessage(CreateMessage(schedule.PartnerId, CreateSchuleResponseStatus.Error, "Your registered weight exceeds the stock volume!"));
