@@ -175,6 +175,7 @@ namespace ImportExportManagementAPI.Controllers
                     Schedule checkCancel = await _timeTemplateItemRepo.CancelSchedule(schedule, username);
                     _repo.Update(checkCancel);
                     await _repo.SaveAsync();
+                    await hubContext.Clients.All.SendAsync("CancelSchedule", "other user cancel schedule");
                     return NoContent();
                 }
                 else

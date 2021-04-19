@@ -1,9 +1,7 @@
 ﻿using ImportExportManagement_API.Models;
 using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Controllers;
-using ImportExportManagementAPI.Hubs;
 using ImportExportManagementAPI.Models;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -20,13 +18,6 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class TimeTemplateItemRepository : BaseRepository<TimeTemplateItem>
     {
-        private readonly IHubContext<ScheduleHub> hubContext;
-
-        public TimeTemplateItemRepository(IHubContext<ScheduleHub> scheduleHub)
-        {
-            hubContext = scheduleHub;
-        }
-
 
         public bool CheckInventory(float registeredWeight, int id, TransactionType type, float storageCapacity)
         {
@@ -188,7 +179,6 @@ namespace ImportExportManagementAPI.Repositories
                 try
                 {
                     await _dbContext.SaveChangesAsync();
-                    hubContext.Clients.All.SendAsync("CancelSchedule", "Some user cancel schedule");
                     return schedule;
                 }
                 catch
