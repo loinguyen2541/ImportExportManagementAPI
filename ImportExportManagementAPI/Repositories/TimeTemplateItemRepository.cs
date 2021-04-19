@@ -32,14 +32,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 else
                 {
-                    if ((storageCapacity - inventory) >= registeredWeight)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
             }
             else if (type == TransactionType.Export)

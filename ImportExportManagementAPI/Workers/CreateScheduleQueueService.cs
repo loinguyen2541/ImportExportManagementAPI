@@ -50,6 +50,11 @@ namespace ImportExportManagementAPI.Workers
 
         private void CreateSchdule(Schedule schedule)
         {
+            if (schedule == null)
+            {
+                SendMessage(CreateMessage(schedule.PartnerId, CreateSchuleResponseStatus.Error, "Your schedule not valid!!"));
+                return;
+            }
             float storgeCapacity;
             if (!float.TryParse(_systemConfigRepository.GetStorageCapacity(), out storgeCapacity))
             {
