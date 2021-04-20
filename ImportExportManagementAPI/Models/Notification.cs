@@ -20,5 +20,6 @@ namespace ImportExportManagementAPI.Models
         public Partner Partner { get; set; }
         public int TransactionId { get; set; }
         public Transaction Transaction { get; set; }
+        public Schedule Schedule { get; set; }
     }
 }

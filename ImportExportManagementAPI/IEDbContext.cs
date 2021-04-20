@@ -55,6 +55,9 @@ namespace ImportExportManagement_API
             //Notification
             modelBuilder.Entity<Notification>().HasKey(n => n.NotificationId);
 
+            //ActivityLog
+            modelBuilder.Entity<ActivityLog>().HasKey(n => n.ActivityLogId);
+
             SystemConfig storgeCapcacity = new SystemConfig();
             storgeCapcacity.AttributeKey = AttributeKey.StorageCapacity.ToString();
             storgeCapcacity.AttributeValue = configuration.GetValue<String>("SystemConfigs:StorageCapacity");
@@ -80,5 +83,7 @@ namespace ImportExportManagement_API
         public DbSet<TimeTemplate> TimeTemplate { get; set; }
         public DbSet<TimeTemplateItem> TimeTemplateItem { get; set; }
         public DbSet<SystemConfig> SystemConfig { get; set; }
+        public DbSet<Notification> Notification { get; set; }
+        public DbSet<ActivityLog> ActivityLog { get; set; }
     }
 }

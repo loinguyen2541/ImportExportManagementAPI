@@ -10,16 +10,42 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    [Migration("20210414044618_update-notification")]
-    partial class updatenotification
+    [Migration("20210420083747_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.3")
+                .HasAnnotation("ProductVersion", "5.0.5")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("ImportExportManagementAPI.Models.ActivityLog", b =>
+                {
+                    b.Property<int>("ActivityLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("AccountUsername")
+                        .HasColumnType("nvarchar(25)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RecordDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ActivityLogId");
+
+                    b.HasIndex("AccountUsername");
+
+                    b.ToTable("ActivityLog");
+                });
 
             modelBuilder.Entity("ImportExportManagementAPI.Models.Notification", b =>
                 {
@@ -43,6 +69,9 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("PartnerId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ScheduleId")
+                        .HasColumnType("int");
+
                     b.Property<int>("StatusAdmin")
                         .HasColumnType("int");
 
@@ -55,6 +84,8 @@ namespace ImportExportManagementAPI.Migrations
                     b.HasKey("NotificationId");
 
                     b.HasIndex("PartnerId");
+
+                    b.HasIndex("ScheduleId");
 
                     b.HasIndex("TransactionId");
 
@@ -428,6 +459,15 @@ namespace ImportExportManagementAPI.Migrations
                     b.ToTable("Transaction");
                 });
 
+            modelBuilder.Entity("ImportExportManagementAPI.Models.ActivityLog", b =>
+                {
+                    b.HasOne("ImportExportManagement_API.Models.Account", "Account")
+                        .WithMany("ActivityLogs")
+                        .HasForeignKey("AccountUsername");
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("ImportExportManagementAPI.Models.Notification", b =>
                 {
                     b.HasOne("ImportExportManagement_API.Models.Partner", "Partner")
@@ -436,6 +476,10 @@ namespace ImportExportManagementAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ImportExportManagement_API.Models.Schedule", "Schedule")
+                        .WithMany("Notifications")
+                        .HasForeignKey("ScheduleId");
+
                     b.HasOne("ImportExportManagement_API.Models.Transaction", "Transaction")
                         .WithMany("Notifications")
                         .HasForeignKey("TransactionId")
@@ -443,6 +487,8 @@ namespace ImportExportManagementAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Partner");
+
+                    b.Navigation("Schedule");
 
                     b.Navigation("Transaction");
                 });
@@ -587,6 +633,8 @@ namespace ImportExportManagementAPI.Migrations
 
             modelBuilder.Entity("ImportExportManagement_API.Models.Account", b =>
                 {
+                    b.Navigation("ActivityLogs");
+
                     b.Navigation("Partner");
                 });
 
@@ -620,6 +668,11 @@ namespace ImportExportManagementAPI.Migrations
             modelBuilder.Entity("ImportExportManagement_API.Models.Role", b =>
                 {
                     b.Navigation("Accounts");
+                });
+
+            modelBuilder.Entity("ImportExportManagement_API.Models.Schedule", b =>
+                {
+                    b.Navigation("Notifications");
                 });
 
             modelBuilder.Entity("ImportExportManagement_API.Models.Transaction", b =>

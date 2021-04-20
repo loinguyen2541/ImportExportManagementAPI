@@ -25,5 +25,6 @@ namespace ImportExportManagement_API.Models
         public Role Role { get; set; }
         public Partner Partner { get; set; }
         public String Token { get; set; }
+        public List<ActivityLog> ActivityLogs { get; set; }
     }
 }

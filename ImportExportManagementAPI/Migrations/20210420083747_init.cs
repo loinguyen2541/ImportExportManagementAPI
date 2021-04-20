@@ -132,6 +132,28 @@ namespace ImportExportManagementAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ActivityLog",
+                columns: table => new
+                {
+                    ActivityLogId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Username = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RecordDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AccountUsername = table.Column<string>(type: "nvarchar(25)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ActivityLog", x => x.ActivityLogId);
+                    table.ForeignKey(
+                        name: "FK_ActivityLog_Account_AccountUsername",
+                        column: x => x.AccountUsername,
+                        principalTable: "Account",
+                        principalColumn: "Username",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Partner",
                 columns: table => new
                 {
@@ -304,8 +326,10 @@ namespace ImportExportManagementAPI.Migrations
                     StatusPartner = table.Column<int>(type: "int", nullable: false),
                     ContentForAdmin = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ContentForPartner = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PartnerId = table.Column<int>(type: "int", nullable: false),
-                    TransactionId = table.Column<int>(type: "int", nullable: false)
+                    TransactionId = table.Column<int>(type: "int", nullable: false),
+                    ScheduleId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -315,6 +339,12 @@ namespace ImportExportManagementAPI.Migrations
                         column: x => x.PartnerId,
                         principalTable: "Partner",
                         principalColumn: "PartnerId");
+                    table.ForeignKey(
+                        name: "FK_Notification_Schedule_ScheduleId",
+                        column: x => x.ScheduleId,
+                        principalTable: "Schedule",
+                        principalColumn: "ScheduleId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Notification_Transaction_TransactionId",
                         column: x => x.TransactionId,
@@ -336,6 +366,11 @@ namespace ImportExportManagementAPI.Migrations
                 name: "IX_Account_RoleId",
                 table: "Account",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ActivityLog_AccountUsername",
+                table: "ActivityLog",
+                column: "AccountUsername");
 
             migrationBuilder.CreateIndex(
                 name: "IX_IdentityCard_PartnerId",
@@ -361,6 +396,11 @@ namespace ImportExportManagementAPI.Migrations
                 name: "IX_Notification_PartnerId",
                 table: "Notification",
                 column: "PartnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notification_ScheduleId",
+                table: "Notification",
+                column: "ScheduleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notification_TransactionId",
@@ -413,6 +453,9 @@ namespace ImportExportManagementAPI.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "ActivityLog");
+
+            migrationBuilder.DropTable(
                 name: "IdentityCard");
 
             migrationBuilder.DropTable(
@@ -422,13 +465,13 @@ namespace ImportExportManagementAPI.Migrations
                 name: "Notification");
 
             migrationBuilder.DropTable(
-                name: "Schedule");
-
-            migrationBuilder.DropTable(
                 name: "SystemConfig");
 
             migrationBuilder.DropTable(
                 name: "Inventory");
+
+            migrationBuilder.DropTable(
+                name: "Schedule");
 
             migrationBuilder.DropTable(
                 name: "Transaction");
