@@ -23,10 +23,13 @@ namespace ImportExportManagementAPI.Repositories
         {
             //check tồn kho đã đạt giới hạn chưa
 
-            float inventory = _dbSet.AsNoTracking().Where(i => i.TimeTemplateItemId == id).SingleOrDefault().Inventory;
+            TimeTemplateItem timeTemplateItem = _dbSet.Where(i => i.TimeTemplateItemId == id).SingleOrDefault();
+
+            _dbContext.Entry(timeTemplateItem).Reload();
+
             if (type == TransactionType.Import)
             {
-                if ((storageCapacity - inventory) < registeredWeight)
+                if ((storageCapacity - timeTemplateItem.Inventory) < registeredWeight)
                 {
                     return false;
                 }
@@ -37,7 +40,7 @@ namespace ImportExportManagementAPI.Repositories
             }
             else if (type == TransactionType.Export)
             {
-                if (inventory >= registeredWeight)
+                if (timeTemplateItem.Inventory >= registeredWeight)
                 {
                     return true;
                 }
