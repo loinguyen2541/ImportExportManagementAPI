@@ -1,9 +1,11 @@
 ﻿using ImportExportManagementAPI.Enums;
 using ImportExportManagementAPI.Filters;
+using ImportExportManagementAPI.Hubs;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -16,9 +18,11 @@ namespace ImportExportManagementAPI.Controllers
     [ApiController]
     public class NotificationsController : ControllerBase
     {
+        private readonly IHubContext<ScheduleHub> hubContext;
         NotificationRepository _repo;
-        public NotificationsController()
+        public NotificationsController(IHubContext<ScheduleHub> scheduleHub)
         {
+            hubContext = scheduleHub;
             _repo = new NotificationRepository();
         }
         [HttpGet]
@@ -85,7 +89,7 @@ namespace ImportExportManagementAPI.Controllers
         {
             _repo.Insert(noti);
             await _repo.SaveAsync();
-
+            hubContext.Clients.All.SendAsync("PushNotiSuccess", "reload");
             return CreatedAtAction("GetNotification", new { id = noti.NotificationId }, noti);
         }
 
