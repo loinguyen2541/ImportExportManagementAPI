@@ -2,6 +2,7 @@
 using ImportExportManagementAPI.Enums;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,9 +17,10 @@ namespace ImportExportManagementAPI.Models
         public String ContentForAdmin { get; set; }
         public String ContentForPartner { get; set; }
         public DateTime CreatedDate { get; set; }
+        public int? ScheduleId { get; set; }
+        public int? TransactionId { get; set; }
         public int PartnerId { get; set; }
         public Partner Partner { get; set; }
-        public int TransactionId { get; set; }
         public Transaction Transaction { get; set; }
         public Schedule Schedule { get; set; }
     }
