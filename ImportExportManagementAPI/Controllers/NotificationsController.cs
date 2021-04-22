@@ -89,7 +89,7 @@ namespace ImportExportManagementAPI.Controllers
         {
             _repo.Insert(noti);
             await _repo.SaveAsync();
-            hubContext.Clients.All.SendAsync("PushNotiSuccess", "reload");
+            await hubContext.Clients.All.SendAsync("PushNotiSuccess", "reload");
             return CreatedAtAction("GetNotification", new { id = noti.NotificationId }, noti);
         }
 
