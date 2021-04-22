@@ -12,6 +12,8 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class InventoryRepository : BaseRepository<Inventory>
     {
+        private readonly ScheduleRepository scheduleRepository;
+
         public async ValueTask<Pagination<Inventory>> GetAllInventory(PaginationParam paging, InventoryFilter filter)
         {
             Pagination<Inventory> listInventory = new Pagination<Inventory>();
@@ -163,6 +165,19 @@ namespace ImportExportManagementAPI.Repositories
             }
             return objectTotal;
         }
+        public float TotalWeightInventoryByPartner(string dateRecord, int partnerId)
+        {
+            var convert = Convert.ToDateTime(dateRecord).Date;
+            //check ngày này có inventory chưa
+            Inventory inventory = _dbSet.Where(p => p.RecordedDate == convert).FirstOrDefault();
+            float totalWeightByPartnerType = 0;
+            if (inventory != null)
+            {
+                totalWeightByPartnerType = TotalWeightInventoryOfPartnerByDate(convert, partnerId).Result;
+            }
+            return totalWeightByPartnerType;
+        }
+   
         public float GetOpeningStockByDate(DateTime date, int id)
         {
             float OpeningStock = _dbSet.Where(o => o.RecordedDate == date && o.InventoryId == id).Select(o => o.OpeningStock).FirstOrDefault();

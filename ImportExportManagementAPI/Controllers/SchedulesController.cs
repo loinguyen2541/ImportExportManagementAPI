@@ -188,9 +188,9 @@ namespace ImportExportManagementAPI.Controllers
 
         [HttpGet("top10")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<Schedule>>> GetTop10Schedule()
+        public async Task<ActionResult<List<Schedule>>> GetTop10Schedule([FromQuery] string partnerID)
         {
-            return Ok(await _repo.GetTop10Schedule());
+            return Ok(await _repo.GetTop10Schedule(partnerID));
         }
         [HttpGet("search-partner")]
         [AllowAnonymous]

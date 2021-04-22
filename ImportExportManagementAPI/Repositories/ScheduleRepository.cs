@@ -27,6 +27,17 @@ namespace ImportExportManagement_API.Repositories
 
             return schedule;
         }
+
+
+        public int CountScheduleByPartner(string dateRecord, int partnerId)
+        { 
+            var convert = Convert.ToDateTime(dateRecord).Date;
+            return _dbSet.Where(t => t.CreatedDate >= convert && t.CreatedDate < convert.AddDays(1)
+            && t.PartnerId == partnerId
+            && t.ScheduleStatus == ScheduleStatus.Approved
+            ).Count();
+        }
+
         public async ValueTask<Pagination<Schedule>> GetAllAsync(PaginationParam paging, ScheduleFilterParam filter)
         {
             Pagination<Schedule> schedules = new Pagination<Schedule>();
@@ -353,13 +364,17 @@ namespace ImportExportManagement_API.Repositories
             return false;
         }
 
-        public async Task<List<Schedule>> GetTop10Schedule()
+        public async Task<List<Schedule>> GetTop10Schedule(string partnerId)
         {
             IQueryable<Schedule> rawData = null;
             DateTime now = DateTime.Today;
             DateTime yesterday = now;
             DateTime tomorrow = now.AddDays(1);
             rawData = _dbSet.Include(s => s.Partner).Where(s => s.CreatedDate > yesterday && s.CreatedDate < tomorrow && s.ScheduleStatus == ScheduleStatus.Approved && !s.UpdatedBy.Equals("Update action")).OrderByDescending(o => o.ScheduleId);
+            if (partnerId != null)
+            {
+                rawData = rawData.Where(p => p.PartnerId == int.Parse(partnerId));
+            }
             return await rawData.Take(10).ToListAsync();
         }
 

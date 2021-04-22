@@ -23,6 +23,13 @@ namespace ImportExportManagementAPI.Repositories
             return await _dbSet.Include(t => t.Partner).Where(t => t.TransactionId == id).FirstOrDefaultAsync();
         }
 
+        public int CountTransactionByPartner(string dateRecord, int partnerId)
+        {
+            var convert = Convert.ToDateTime(dateRecord).Date;
+           List<Transaction> transactions =  _dbSet.Where(t => t.CreatedDate >= convert && t.CreatedDate < convert.AddDays(1) && t.PartnerId == partnerId && t.TransactionStatus == TransactionStatus.Success).ToList();
+            return transactions.Count();
+        }
+
         //kiểm tra xem các trans đang process có thẻ này không
         public async Task<bool> CheckProcessingCard(String cardId, String method)
         {

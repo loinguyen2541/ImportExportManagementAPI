@@ -1,4 +1,5 @@
 ﻿using ImportExportManagement_API.Models;
+using ImportExportManagement_API.Repositories;
 using ImportExportManagementAPI.Models;
 using ImportExportManagementAPI.Objects;
 using ImportExportManagementAPI.Repositories;
@@ -14,10 +15,14 @@ namespace ImportExportManagementAPI.Controllers
     [ApiController]
     public class InventoriesController : ControllerBase
     {
-        InventoryRepository _repo;
+        private readonly InventoryRepository _repo;
+        private readonly ScheduleRepository _repoSchedule;
+        private readonly TransactionRepository transactionRepository;
         public InventoriesController()
         {
+            _repoSchedule = new ScheduleRepository();
             _repo = new InventoryRepository();
+            transactionRepository = new TransactionRepository();
         }
 
         // GET: api/inventories
@@ -81,6 +86,24 @@ namespace ImportExportManagementAPI.Controllers
         public ActionResult<ObjectTotalImportExportToday> GetTotalByDateTypeFloat(DateTime date)
         {
             return Ok(_repo.TotalWeightInventoryFloat(date).Result);
+        }
+        [HttpGet("totalByPartner")]
+        [AllowAnonymous]
+        public ActionResult<ObjectTotalImportExportToday> GetTotalByPartner(string searchDate,int partnerId)
+        {
+           
+            float totalWeightTransactionByPartner = _repo.TotalWeightInventoryByPartner(searchDate, partnerId);
+            float totalWeightScheduleByPartner = _repoSchedule.GetTotalSchedule(partnerId, searchDate).Result;
+            int transactionCount = transactionRepository.CountTransactionByPartner(searchDate, partnerId);
+            int scheduleCount = _repoSchedule.CountScheduleByPartner(searchDate, partnerId);
+
+            return Ok( new
+            {
+                totalWeightTransactionByPartner = totalWeightTransactionByPartner,
+                totalWeightScheduleByPartner= totalWeightScheduleByPartner,
+                transactionCount = transactionCount,
+                scheduleCount = scheduleCount,
+            });
         }
         [HttpGet("totalByMonth")]
         [AllowAnonymous]
