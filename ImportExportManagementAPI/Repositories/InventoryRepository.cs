@@ -218,6 +218,40 @@ namespace ImportExportManagementAPI.Repositories
 
             }
             return listDetail.OrderBy(o => o.date).ToList();
+        } 
+        public List<TotalInventoryDetailedByDate> TotalWeightInventoryFloatByMonthForPartner(DateTime dateFrom, DateTime dateTo,int partnerId)
+        {
+            List<TotalInventoryDetailedByDate> listDetail = new List<TotalInventoryDetailedByDate>();
+            //check ngày này có inventory chưa
+            if (dateFrom != DateTime.MinValue && dateTo != DateTime.MinValue)
+            {
+                IQueryable<Inventory> rawData = null;
+                rawData = _dbSet.Where(p => p.RecordedDate >= dateFrom && p.RecordedDate <= dateTo);
+                //get list detail
+                List<Inventory> inventories = rawData.ToList();
+                InventoryDetailRepository detailRepo = new InventoryDetailRepository();
+                List<int> listInvenId = new List<int>();
+                foreach (var item in inventories)
+                {
+                    listInvenId.Add(item.InventoryId);
+                }
+                if (listInvenId.Count > 0)
+                {
+                    listDetail = detailRepo.GetInventoryDetailDateFromDateToForPartner(listInvenId, partnerId);
+                    foreach (var item in inventories)
+                    {
+                        foreach (var item2 in listDetail)
+                        {
+                            if (item.InventoryId == item2.id)
+                            {
+                                item2.date = item.RecordedDate;
+                            }
+                        }
+                    }
+                }
+
+            }
+            return listDetail.OrderBy(o => o.date).ToList();
         }
         public List<Inventory> ReportPartner(DateTime DateFrom, DateTime DateTo, string partnerName)
         {

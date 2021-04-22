@@ -314,6 +314,16 @@ namespace ImportExportManagementAPI.Repositories
 
             return rawData.ToList();
         }
+        public List<TotalInventoryDetailedByDate> GetInventoryDetailDateFromDateToForPartner(List<int> inventories, int partnerId)
+        {
+            var rawData = _dbSet.Where(d => inventories.Contains(d.InventoryId) && d.PartnerId == partnerId).Select(p => new TotalInventoryDetailedByDate
+            {
+                id = p.InventoryId,
+                weight = p.Weight,
+                type = (InventoryDetailType)p.Type,
+            }) ;
+            return rawData.ToList<TotalInventoryDetailedByDate>();
+        }
 
     }
 }

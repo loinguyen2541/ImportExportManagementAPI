@@ -111,6 +111,14 @@ namespace ImportExportManagementAPI.Controllers
         {
             return Ok(_repo.TotalWeightInventoryFloatByMonth(dateFrom, dateTo));
         }
+
+        [HttpGet("totalByMonthForPartner")]
+        [AllowAnonymous]
+        public ActionResult<List<TotalInventoryDetailedByDate>> GetTotalByDateFromDateToByPartnerId(DateTime dateFrom, DateTime dateTo,int partnerId)
+        {
+            return Ok(_repo.TotalWeightInventoryFloatByMonthForPartner(dateFrom, dateTo, partnerId));
+        }
+
         //lấy tổng khối lượng nhập/xuất theo ngày
         [HttpGet("reportPartner")]
         [AllowAnonymous]
