@@ -4,14 +4,16 @@ using ImportExportManagement_API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    partial class IEDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210503065153_update-systemconfigs")]
+    partial class updatesystemconfigs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -126,12 +128,11 @@ namespace ImportExportManagementAPI.Migrations
                         new
                         {
                             AttributeKey = "AutoSchedule",
-                            AttributeValue = "23:00:00"
+                            AttributeValue = "5/3/2021 12:00:00 AM"
                         },
                         new
                         {
-                            AttributeKey = "SystemDate",
-                            AttributeValue = "5/3/2021 12:00:00 AM"
+                            AttributeKey = "SystemDate"
                         });
                 });
 

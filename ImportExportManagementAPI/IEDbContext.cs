@@ -64,10 +64,15 @@ namespace ImportExportManagement_API
 
             SystemConfig autoSchedule = new SystemConfig();
             autoSchedule.AttributeKey = AttributeKey.AutoSchedule.ToString();
-            autoSchedule.AttributeValue = configuration.GetValue<String>("SystemConfigs:AutoSchedule"); ;
+            autoSchedule.AttributeValue = configuration.GetValue<String>("SystemConfigs:AutoSchedule");
+
+            SystemConfig systemDate = new SystemConfig();
+            systemDate.AttributeKey = AttributeKey.SystemDate.ToString();
+            systemDate.AttributeValue = DateTime.Now.Date.ToString();
 
             modelBuilder.Entity<SystemConfig>().HasData(storgeCapcacity);
             modelBuilder.Entity<SystemConfig>().HasData(autoSchedule);
+            modelBuilder.Entity<SystemConfig>().HasData(systemDate);
         }
 
         public DbSet<Partner> Partner { get; set; }

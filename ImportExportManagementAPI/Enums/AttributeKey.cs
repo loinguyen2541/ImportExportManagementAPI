@@ -17,6 +17,8 @@ namespace ImportExportManagementAPI.Models
         [EnumMember(Value = "StorageCapacity")]
         StorageCapacity,
         [EnumMember(Value = "AutoSchedule")]
-        AutoSchedule
+        AutoSchedule,
+        [EnumMember(Value = "SystemDate")]
+        SystemDate
     }
 }
