@@ -38,6 +38,18 @@ namespace ImportExportManagement_API.Repositories
             ).Count();
         }
 
+        public async ValueTask<List<Schedule>> GetAllAsyncToday()
+        {
+            DateTime now = DateTime.Today;
+            DateTime yesterday = now;
+            DateTime tomorrow = now.AddDays(1);
+            List<Schedule> schedules = new List<Schedule>();
+            schedules = _dbSet.Include(i => i.Partner).Where(
+                s => s.CreatedDate > yesterday
+                && s.CreatedDate < tomorrow
+                && s.ScheduleStatus == ScheduleStatus.Approved).ToList();
+            return schedules;
+        }
         public async ValueTask<Pagination<Schedule>> GetAllAsync(PaginationParam paging, ScheduleFilterParam filter)
         {
             Pagination<Schedule> schedules = new Pagination<Schedule>();
@@ -252,6 +264,7 @@ namespace ImportExportManagement_API.Repositories
         }
         public async Task<List<Schedule>> GetByPartnerId(int partnerId)
         {
+
             List<Schedule> schedules = await _dbSet
                 .Where(s => s.PartnerId == partnerId && !s.UpdatedBy.Equals("Update action")).OrderBy(s => s.ScheduleDate).ToListAsync();
             return schedules;
