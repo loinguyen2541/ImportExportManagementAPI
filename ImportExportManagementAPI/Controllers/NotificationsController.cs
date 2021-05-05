@@ -34,9 +34,9 @@ namespace ImportExportManagementAPI.Controllers
         }
         [HttpGet("partners/{partnerId}")]
         [AllowAnonymous]
-        public async Task<ActionResult<Pagination<Notification>>> GetPartnerNotification([FromQuery] PaginationParam paging, int partnerId)
+        public async Task<ActionResult<Pagination<Notification>>> GetPartnerNotification([FromQuery] PaginationParam paging, String username)
         {
-            Pagination<Notification> notifications = await _repo.GetNotificationPartner(paging, partnerId);
+            Pagination<Notification> notifications = await _repo.GetNotificationPartner(paging, username);
             return notifications;
         }
 
@@ -103,7 +103,7 @@ namespace ImportExportManagementAPI.Controllers
                 return NotFound();
             }
 
-            noti.StatusPartner = NotificationStatus.Unavailable;
+            noti.Status = NotificationStatus.Unavailable;
             _repo.Update(noti);
             await _repo.SaveAsync();
 

@@ -20,16 +20,16 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<Notification> listNotification = new Pagination<Notification>();
             IQueryable<Notification> rawData = null;
-            rawData = _dbSet.Include(p => p.Transaction).ThenInclude(t => t.Partner).OrderBy(n => n.StatusAdmin).OrderByDescending(n => n.CreatedDate);
+            rawData = _dbSet.Include(p => p.Transaction).ThenInclude(t => t.Partner).OrderBy(n => n.Status).OrderByDescending(n => n.CreatedDate);
             listNotification = await DoPaging(paging, rawData);
             return listNotification;
         }
         //get notification of partner
-        public async ValueTask<Pagination<Notification>> GetNotificationPartner(PaginationParam paging, int partnerId)
+        public async ValueTask<Pagination<Notification>> GetNotificationPartner(PaginationParam paging, String username)
         {
             Pagination<Notification> listNotification = new Pagination<Notification>();
             IQueryable<Notification> rawData = null;
-            rawData = _dbSet.Include(p => p.Transaction).ThenInclude(p => p.Partner).OrderBy(n => n.StatusPartner).OrderByDescending(n => n.CreatedDate).Where(n => n.PartnerId == partnerId && n.StatusPartner != NotificationStatus.Unavailable);
+            rawData = _dbSet.Include(p => p.Transaction).ThenInclude(p => p.Partner).OrderBy(n => n.Status).OrderByDescending(n => n.CreatedDate).Where(n => n.Username == username && n.Status != NotificationStatus.Unavailable);
             listNotification = await DoPaging(paging, rawData);
             return listNotification;
         }
@@ -113,15 +113,15 @@ namespace ImportExportManagementAPI.Repositories
             IQueryable<Notification> queryable = _dbSet;
             if (filter != null)
             {
-                if (filter.StatusType != null)
-                    if (filter.StatusType.Equals("Admin"))
-                    {
-                        queryable = queryable.Where(n => n.StatusAdmin.Equals(NotificationStatus.Unread));
-                    }
-                if (filter.PartnerId != 0)
+                //if (filter.StatusType != null)
+                //    if (filter.StatusType.Equals("Admin"))
+                //    {
+                //        queryable = queryable.Where(n => n.Status.Equals(NotificationStatus.Unread));
+                //    }
+                if (filter.Username != null && filter.Username.Length > 0)
                 {
                     //có truyền vào tham số partnerId
-                    queryable = queryable.Where(n => n.StatusPartner.Equals(NotificationStatus.Unread) && n.PartnerId == filter.PartnerId);
+                    queryable = queryable.Where(n => n.Status.Equals(NotificationStatus.Unread) && n.Username == filter.Username);
                 }
                 if (filter.inputDate != DateTime.MinValue)
                 {
@@ -138,14 +138,9 @@ namespace ImportExportManagementAPI.Repositories
             bool update = true;
             if (noti != null)
             {
-                if (filter.StatusType == "Admin")
-                {
-                    noti.StatusAdmin = status;
-                }
-                else
-                {
-                    noti.StatusPartner = status;
-                }
+
+                noti.Status = status;
+
                 Update(noti);
                 try
                 {

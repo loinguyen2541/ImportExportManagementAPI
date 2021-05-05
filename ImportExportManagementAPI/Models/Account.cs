@@ -26,5 +26,6 @@ namespace ImportExportManagement_API.Models
         public Partner Partner { get; set; }
         public String Token { get; set; }
         public List<ActivityLog> ActivityLogs { get; set; }
+        public List<Notification> Notifications { get; set; }
     }
 }
