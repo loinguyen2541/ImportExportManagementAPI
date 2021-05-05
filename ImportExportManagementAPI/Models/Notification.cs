@@ -2,6 +2,7 @@
 using ImportExportManagementAPI.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,15 +13,15 @@ namespace ImportExportManagementAPI.Models
     {
         public int NotificationId { get; set; }
         public NotificationType NotificationType { get; set; }
-        public NotificationStatus StatusAdmin { get; set; }
-        public NotificationStatus StatusPartner { get; set; }
-        public String ContentForAdmin { get; set; }
-        public String ContentForPartner { get; set; }
+        public NotificationStatus Status { get; set; }
+        public String Title { get; set; }
+        public String Content { get; set; }
         public DateTime CreatedDate { get; set; }
-        public int? ScheduleId { get; set; }
-        public int? TransactionId { get; set; }
-        public int PartnerId { get; set; }
-        public Partner Partner { get; set; }
+
+        [MaxLength(25)]
+        public String Username { get; set; }
+
+        public Account Account { get; set; }
         public Transaction Transaction { get; set; }
         public Schedule Schedule { get; set; }
     }
