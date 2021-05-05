@@ -387,6 +387,7 @@ namespace ImportExportManagement_API.Repositories
             if (partnerId != null)
             {
                 rawData = rawData.Where(p => p.PartnerId == int.Parse(partnerId));
+                return await rawData.ToListAsync();
             }
             return await rawData.Take(10).ToListAsync();
         }
