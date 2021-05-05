@@ -144,7 +144,9 @@ namespace ImportExportManagementAPI.Repositories
 
         public async Task<List<TimeTemplateItem>> GetAppliedItem()
         {
-            return await _dbSet.Include(i => i.Schedules.Where(s => s.ScheduleStatus == ScheduleStatus.Approved)).Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).ToListAsync();
+            return await _dbSet
+                //.Include(i => i.Schedules.Where(s => s.ScheduleStatus == ScheduleStatus.Approved))
+                .Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).OrderBy(o => o.ScheduleTime).ToListAsync();
         }
 
         public async Task<Schedule> CancelSchedule(Schedule schedule, String username)
