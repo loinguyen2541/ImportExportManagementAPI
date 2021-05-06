@@ -952,7 +952,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 return true;
             }
-            catch (Exception e)
+            catch
             {
                 return false;
             }
@@ -961,7 +961,6 @@ namespace ImportExportManagementAPI.Repositories
 
         private bool SendEmail(SmtpSetting serverEmail, MessageSetting mailContent, Partner partner)
         {
-            bool check = true;
             try
             {
                 using (MailMessage mail = new MailMessage())
@@ -981,7 +980,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 return true;
             }
-            catch (Exception ex)
+            catch 
             {
                 return false;
             }

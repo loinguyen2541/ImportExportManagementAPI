@@ -46,9 +46,9 @@ namespace ImportExportManagementAPI.Controllers
         }
         [HttpGet("getAll")]
         [AllowAnonymous]
-        public async Task<ActionResult<Pagination<Schedule>>> GetSchedule()
+        public ActionResult<Pagination<Schedule>> GetScheduleToDay()
         {
-            List<Schedule> schedules = await _repo.GetAllAsyncToday();
+            List<Schedule> schedules = _repo.GetAllAsyncToday();
             return Ok(schedules);
         }
         // GET: api/Schedules/search

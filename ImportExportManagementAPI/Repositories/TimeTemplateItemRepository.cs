@@ -5,6 +5,7 @@ using ImportExportManagementAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -144,9 +145,38 @@ namespace ImportExportManagementAPI.Repositories
 
         public async Task<List<TimeTemplateItem>> GetAppliedItem()
         {
-            return await _dbSet
+            ScheduleRepository scheduleRepository = new ScheduleRepository();
+            GoodsRepository goodsRepository = new GoodsRepository();
+            float totalImportExpected = 0;
+            float totalExportExpected = 0;
+            List<TimeTemplateItem> timeTemplateItems = _dbSet
                 .Include(i => i.Schedules.Where(s => s.ScheduleStatus == ScheduleStatus.Approved))
-                .Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).OrderBy(o => o.ScheduleTime).ToListAsync();
+                .Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).OrderBy(o => o.ScheduleTime).ToList();
+            float goodsCapacity = goodsRepository.GetGoodCapacity();
+            List<Schedule> schedules = scheduleRepository.GetAllAsyncToday();
+
+            foreach (var timeTemplateItem in timeTemplateItems)
+            {
+                timeTemplateItem.Inventory = 0;
+                timeTemplateItem.Inventory = totalImportExpected + goodsCapacity - totalExportExpected;
+                foreach (var schedule in schedules)
+                {
+
+                    if (schedule.ScheduleDate.ToString("HH:mm:ss").Contains(timeTemplateItem.ScheduleTime.ToString()))
+                    {
+                        if (schedule.TransactionType == TransactionType.Import)
+                        {
+                            totalImportExpected += schedule.RegisteredWeight;
+                        }
+                        else
+                        {
+                            totalExportExpected += schedule.RegisteredWeight;
+                        }
+                    }
+                }
+            }
+
+            return timeTemplateItems;
         }
 
         public async Task<Schedule> CancelSchedule(Schedule schedule, String username)
