@@ -58,6 +58,9 @@ namespace ImportExportManagement_API
             //ActivityLog
             modelBuilder.Entity<ActivityLog>().HasKey(n => n.ActivityLogId);
 
+            //Notification
+            modelBuilder.Entity<Notification>().HasOne(n => n.Account).WithMany(n => n.Notifications).HasForeignKey(n => n.Username);
+
             SystemConfig storgeCapcacity = new SystemConfig();
             storgeCapcacity.AttributeKey = AttributeKey.StorageCapacity.ToString();
             storgeCapcacity.AttributeValue = configuration.GetValue<String>("SystemConfigs:StorageCapacity");

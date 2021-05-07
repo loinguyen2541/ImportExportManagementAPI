@@ -30,7 +30,7 @@ namespace ImportExportManagement_API.Repositories
 
 
         public int CountScheduleByPartner(string dateRecord, int partnerId)
-        { 
+        {
             var convert = Convert.ToDateTime(dateRecord).Date;
             return _dbSet.Where(t => t.CreatedDate >= convert && t.CreatedDate < convert.AddDays(1)
             && t.PartnerId == partnerId
@@ -44,10 +44,10 @@ namespace ImportExportManagement_API.Repositories
             DateTime yesterday = now;
             DateTime tomorrow = now.AddDays(1);
             List<Schedule> schedules = new List<Schedule>();
-            schedules = _dbSet.Include(i => i.Partner).Where(
+            schedules = await _dbSet.Include(i => i.Partner).Where(
                 s => s.CreatedDate > yesterday
                 && s.CreatedDate < tomorrow
-                && s.ScheduleStatus == ScheduleStatus.Approved).ToList();
+                && s.ScheduleStatus == ScheduleStatus.Approved).ToListAsync();
             return schedules;
         }
         public async ValueTask<Pagination<Schedule>> GetAllAsync(PaginationParam paging, ScheduleFilterParam filter)
