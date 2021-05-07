@@ -44,10 +44,10 @@ namespace ImportExportManagement_API.Repositories
             DateTime yesterday = now;
             DateTime tomorrow = now.AddDays(1);
             List<Schedule> schedules = new List<Schedule>();
-            schedules = await _dbSet.Include(i => i.Partner).Where(
+            schedules = _dbSet.Include(i => i.Partner).Where(
                 s => s.CreatedDate > yesterday
                 && s.CreatedDate < tomorrow
-                && s.ScheduleStatus == ScheduleStatus.Approved).ToListAsync();
+                && s.ScheduleStatus == ScheduleStatus.Approved).ToList();
             return schedules;
         }
         public async ValueTask<Pagination<Schedule>> GetAllAsync(PaginationParam paging, ScheduleFilterParam filter)
@@ -130,7 +130,7 @@ namespace ImportExportManagement_API.Repositories
             TransactionType typeTrans = (TransactionType)type;
             DateTime start = DateTime.Now.Date;
             DateTime end = DateTime.Now.Date.AddDays(1);
-            IQueryable<Schedule> rawData = _dbSet.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end && s.TransactionType.Equals(typeTrans) );
+            IQueryable<Schedule> rawData = _dbSet.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end && s.TransactionType.Equals(typeTrans));
             count = rawData.Count();
             return count;
         }
@@ -393,7 +393,7 @@ namespace ImportExportManagement_API.Repositories
             List<Schedule> schedules = new List<Schedule>();
             foreach (var item in rawData.ToList())
             {
-                if(item.ScheduleDate.ToString("dd/MM/yyyy-HH:mm:ss").CompareTo(DateTime.Now.ToString("dd/MM/yyyy-HH:mm:ss")) > 0)
+                if (item.ScheduleDate.ToString("dd/MM/yyyy-HH:mm:ss").CompareTo(DateTime.Now.ToString("dd/MM/yyyy-HH:mm:ss")) > 0)
                 {
                     schedules.Add(item);
                 }
