@@ -38,7 +38,7 @@ namespace ImportExportManagement_API.Repositories
             ).Count();
         }
 
-        public async ValueTask<List<Schedule>> GetAllAsyncToday()
+        public List<Schedule> GetAllAsyncToday()
         {
             DateTime now = DateTime.Today;
             DateTime yesterday = now;
@@ -130,7 +130,7 @@ namespace ImportExportManagement_API.Repositories
             TransactionType typeTrans = (TransactionType)type;
             DateTime start = DateTime.Now.Date;
             DateTime end = DateTime.Now.Date.AddDays(1);
-            IQueryable<Schedule> rawData = _dbSet.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end && s.TransactionType.Equals(typeTrans));
+            IQueryable<Schedule> rawData = _dbSet.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end && s.TransactionType.Equals(typeTrans) );
             count = rawData.Count();
             return count;
         }
@@ -243,7 +243,6 @@ namespace ImportExportManagement_API.Repositories
             double totalPage = (count * 1.0) / (pagination.Size * 1.0);
             pagination.TotalPage = (int)Math.Ceiling(totalPage);
             pagination.Data = schedules.OrderByDescending(o => o.ScheduleDate).ToList();
-
             return pagination;
         }
 
@@ -383,12 +382,24 @@ namespace ImportExportManagement_API.Repositories
             DateTime now = DateTime.Today;
             DateTime yesterday = now;
             DateTime tomorrow = now.AddDays(1);
-            rawData = _dbSet.Include(s => s.Partner).Where(s => s.CreatedDate > yesterday && s.CreatedDate < tomorrow && s.ScheduleStatus == ScheduleStatus.Approved && !s.UpdatedBy.Equals("Update action")).OrderByDescending(o => o.ScheduleId);
+            rawData = _dbSet.Include(s => s.Partner)
+                .Where(s => s.CreatedDate > yesterday && s.CreatedDate < tomorrow)
+                .OrderByDescending(o => o.ScheduleId);
             if (partnerId != null)
             {
                 rawData = rawData.Where(p => p.PartnerId == int.Parse(partnerId));
+                return await rawData.ToListAsync();
             }
-            return await rawData.Take(10).ToListAsync();
+            List<Schedule> schedules = new List<Schedule>();
+            foreach (var item in rawData.ToList())
+            {
+                if(item.ScheduleDate.ToString("dd/MM/yyyy-HH:mm:ss").CompareTo(DateTime.Now.ToString("dd/MM/yyyy-HH:mm:ss")) > 0)
+                {
+                    schedules.Add(item);
+                }
+            }
+            schedules = schedules.OrderBy(o => o.ScheduleDate).ToList();
+            return await Task.Run(() => schedules);
         }
 
         public async Task<List<Schedule>> GetBookedScheduleInDate(int partnerId)

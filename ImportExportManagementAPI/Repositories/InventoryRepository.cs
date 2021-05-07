@@ -12,7 +12,6 @@ namespace ImportExportManagementAPI.Repositories
 {
     public class InventoryRepository : BaseRepository<Inventory>
     {
-        private readonly ScheduleRepository scheduleRepository;
 
         public async ValueTask<Pagination<Inventory>> GetAllInventory(PaginationParam paging, InventoryFilter filter)
         {
