@@ -19,6 +19,17 @@ namespace ImportExportManagementAPI.Models
         [EnumMember(Value = "AutoSchedule")]
         AutoSchedule,
         [EnumMember(Value = "SystemDate")]
-        SystemDate
+        SystemDate,
+        [EnumMember(Value = "StartWorking")]
+        StartWorking,
+        [EnumMember(Value = "FinishWorking")]
+        FinishWorking,
+        [EnumMember(Value = "StartBreak")]
+        StartBreak,
+        [EnumMember(Value = "FinishBreak")]
+        FinishBreak,
+        [EnumMember(Value = "TimeBetweenSlot")]
+        TimeBetweenSlot
+
     }
 }
