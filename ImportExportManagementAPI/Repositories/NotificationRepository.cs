@@ -20,7 +20,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<Notification> listNotification = new Pagination<Notification>();
             IQueryable<Notification> rawData = null;
-            rawData = _dbSet.Include(p => p.Transaction).ThenInclude(t => t.Partner).Include(i => i.Schedule).OrderBy(n => n.Status).OrderByDescending(n => n.CreatedDate);
+            rawData = _dbSet.OrderBy(n => n.Status).OrderByDescending(n => n.CreatedDate);
             listNotification = await DoPaging(paging, rawData);
             return listNotification;
         }
@@ -29,7 +29,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<Notification> listNotification = new Pagination<Notification>();
             IQueryable<Notification> rawData = null;
-            rawData = _dbSet.Include(p => p.Transaction).ThenInclude(p => p.Partner).OrderBy(n => n.Status).OrderByDescending(n => n.CreatedDate).Where(n => n.Username == username && n.Status != NotificationStatus.Unavailable);
+            rawData = _dbSet.Where(n => n.Username == username && n.Status != NotificationStatus.Unavailable).OrderBy(n => n.Status).OrderByDescending(n => n.CreatedDate);
             listNotification = await DoPaging(paging, rawData);
             return listNotification;
         }
@@ -102,7 +102,7 @@ namespace ImportExportManagementAPI.Repositories
             {
                 foreach (var item in listUnread)
                 {
-                    await UpdateStatusNotification(item, NotificationStatus.Available, filter);
+                    await UpdateStatusNotification(item, NotificationStatus.Available);
                 }
             }
         }
@@ -133,7 +133,7 @@ namespace ImportExportManagementAPI.Repositories
             return notifications;
         }
 
-        public async Task<bool> UpdateStatusNotification(Notification noti, NotificationStatus status, NotificationFilter filter)
+        public async Task<bool> UpdateStatusNotification(Notification noti, NotificationStatus status)
         {
             bool update = true;
             if (noti != null)
@@ -156,6 +156,17 @@ namespace ImportExportManagementAPI.Repositories
                 update = false;
             }
             return update;
+        }
+        
+        public async Task AddRangeNoti(List<Notification> notifications)
+        {
+            foreach (var item in notifications)
+            {
+                Insert(item);
+              
+            }
+            await SaveAsync();
+
         }
     }
 }
