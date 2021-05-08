@@ -21,6 +21,8 @@ namespace ImportExportManagementAPI.Models
 
         public List<Schedule> Schedules { get; set; }
 
+        public TimeTemplateStatus Status { get; set; }
+
         public int TimeTemplateId { get; set; }
         public TimeTemplate TimeTemplate { get; set; }
     }
