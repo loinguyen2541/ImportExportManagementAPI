@@ -23,7 +23,6 @@ namespace ImportExportManagement_API.Models
         public Goods Goods { get; set; }
         public int TimeTemplateItemId { get; set; }
         public TimeTemplateItem TimeTemplateItem { get; set; }
-        public List<Notification> Notifications { get; set; }
 
     }
 }

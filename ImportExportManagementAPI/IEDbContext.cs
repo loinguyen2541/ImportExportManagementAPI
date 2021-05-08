@@ -58,6 +58,9 @@ namespace ImportExportManagement_API
             //ActivityLog
             modelBuilder.Entity<ActivityLog>().HasKey(n => n.ActivityLogId);
 
+            //Notification
+            modelBuilder.Entity<Notification>().HasOne(n => n.Account).WithMany(n => n.Notifications).HasForeignKey(n => n.Username);
+
             SystemConfig storgeCapcacity = new SystemConfig();
             storgeCapcacity.AttributeKey = AttributeKey.StorageCapacity.ToString();
             storgeCapcacity.AttributeValue = configuration.GetValue<String>("SystemConfigs:StorageCapacity");
@@ -66,13 +69,33 @@ namespace ImportExportManagement_API
             autoSchedule.AttributeKey = AttributeKey.AutoSchedule.ToString();
             autoSchedule.AttributeValue = configuration.GetValue<String>("SystemConfigs:AutoSchedule");
 
-            SystemConfig systemDate = new SystemConfig();
-            systemDate.AttributeKey = AttributeKey.SystemDate.ToString();
-            systemDate.AttributeValue = DateTime.Now.Date.ToString();
+            SystemConfig startWorking = new SystemConfig();
+            startWorking.AttributeKey = AttributeKey.StartWorking.ToString();
+            startWorking.AttributeValue = configuration.GetValue<String>("SystemConfigs:StartWorking");
+
+            SystemConfig finishWorking = new SystemConfig();
+            finishWorking.AttributeKey = AttributeKey.FinishWorking.ToString();
+            finishWorking.AttributeValue = configuration.GetValue<String>("SystemConfigs:FinishWorking");
+
+            SystemConfig startBreak = new SystemConfig();
+            startBreak.AttributeKey = AttributeKey.StartBreak.ToString();
+            startBreak.AttributeValue = configuration.GetValue<String>("SystemConfigs:StartBreak");
+
+            SystemConfig finishBreak = new SystemConfig();
+            finishBreak.AttributeKey = AttributeKey.FinishBreak.ToString();
+            finishBreak.AttributeValue = configuration.GetValue<String>("SystemConfigs:FinishBreak");
+
+            SystemConfig timeBetweenSlot = new SystemConfig();
+            timeBetweenSlot.AttributeKey = AttributeKey.TimeBetweenSlot.ToString();
+            timeBetweenSlot.AttributeValue = configuration.GetValue<String>("SystemConfigs:TimeBetweenSlot");
 
             modelBuilder.Entity<SystemConfig>().HasData(storgeCapcacity);
             modelBuilder.Entity<SystemConfig>().HasData(autoSchedule);
-            modelBuilder.Entity<SystemConfig>().HasData(systemDate);
+            modelBuilder.Entity<SystemConfig>().HasData(startBreak);
+            modelBuilder.Entity<SystemConfig>().HasData(finishBreak);
+            modelBuilder.Entity<SystemConfig>().HasData(startWorking);
+            modelBuilder.Entity<SystemConfig>().HasData(finishWorking);
+            modelBuilder.Entity<SystemConfig>().HasData(timeBetweenSlot);
         }
 
         public DbSet<Partner> Partner { get; set; }

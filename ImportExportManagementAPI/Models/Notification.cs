@@ -20,9 +20,6 @@ namespace ImportExportManagementAPI.Models
 
         [MaxLength(25)]
         public String Username { get; set; }
-
         public Account Account { get; set; }
-        public Transaction Transaction { get; set; }
-        public Schedule Schedule { get; set; }
     }
 }

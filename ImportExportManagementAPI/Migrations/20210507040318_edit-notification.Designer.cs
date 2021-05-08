@@ -4,14 +4,16 @@ using ImportExportManagement_API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    partial class IEDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210507040318_edit-notification")]
+    partial class editnotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -123,28 +125,8 @@ namespace ImportExportManagementAPI.Migrations
                         },
                         new
                         {
-                            AttributeKey = "StartBreak",
-                            AttributeValue = "11:30:00"
-                        },
-                        new
-                        {
-                            AttributeKey = "FinishBreak",
-                            AttributeValue = "13:00:00"
-                        },
-                        new
-                        {
-                            AttributeKey = "StartWorking",
-                            AttributeValue = "8:00:00"
-                        },
-                        new
-                        {
-                            AttributeKey = "FinishWorking",
-                            AttributeValue = "5:00:00"
-                        },
-                        new
-                        {
-                            AttributeKey = "TimeBetweenSlot",
-                            AttributeValue = "30"
+                            AttributeKey = "SystemDate",
+                            AttributeValue = "5/7/2021 12:00:00 AM"
                         });
                 });
 

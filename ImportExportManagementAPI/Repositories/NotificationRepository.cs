@@ -29,7 +29,7 @@ namespace ImportExportManagementAPI.Repositories
         {
             Pagination<Notification> listNotification = new Pagination<Notification>();
             IQueryable<Notification> rawData = null;
-            rawData = _dbSet.Include(p => p.Transaction).ThenInclude(p => p.Partner).Include(i => i.Schedule).OrderBy(n => n.Status).OrderByDescending(n => n.CreatedDate).Where(n => n.Username == username && n.Status != NotificationStatus.Unavailable);
+            rawData = _dbSet.Include(p => p.Transaction).ThenInclude(p => p.Partner).OrderBy(n => n.Status).OrderByDescending(n => n.CreatedDate).Where(n => n.Username == username && n.Status != NotificationStatus.Unavailable);
             listNotification = await DoPaging(paging, rawData);
             return listNotification;
         }
