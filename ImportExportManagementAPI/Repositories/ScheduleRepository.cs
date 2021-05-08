@@ -130,7 +130,7 @@ namespace ImportExportManagement_API.Repositories
             TransactionType typeTrans = (TransactionType)type;
             DateTime start = DateTime.Now.Date;
             DateTime end = DateTime.Now.Date.AddDays(1);
-            IQueryable<Schedule> rawData = _dbSet.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end && s.TransactionType.Equals(typeTrans) );
+            IQueryable<Schedule> rawData = _dbSet.Where(s => start <= s.ScheduleDate && s.ScheduleDate <= end && s.TransactionType.Equals(typeTrans));
             count = rawData.Count();
             return count;
         }
@@ -143,7 +143,8 @@ namespace ImportExportManagement_API.Repositories
             {
                 foreach (var item in listSchedules)
                 {
-                    totalWeight += item.RegisteredWeight;
+                    if (item.ScheduleStatus != ScheduleStatus.Cancel)
+                        totalWeight += item.RegisteredWeight;
                 }
             }
             return totalWeight;
@@ -393,7 +394,7 @@ namespace ImportExportManagement_API.Repositories
             List<Schedule> schedules = new List<Schedule>();
             foreach (var item in rawData.ToList())
             {
-                if(item.ScheduleDate.ToString("dd/MM/yyyy-HH:mm:ss").CompareTo(DateTime.Now.ToString("dd/MM/yyyy-HH:mm:ss")) > 0)
+                if (item.ScheduleDate.ToString("dd/MM/yyyy-HH:mm:ss").CompareTo(DateTime.Now.ToString("dd/MM/yyyy-HH:mm:ss")) > 0)
                 {
                     schedules.Add(item);
                 }
