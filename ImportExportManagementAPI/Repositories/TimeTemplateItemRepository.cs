@@ -149,7 +149,7 @@ namespace ImportExportManagementAPI.Repositories
             GoodsRepository goodsRepository = new GoodsRepository();
             float totalImportExpected = 0;
             float totalExportExpected = 0;
-            List<TimeTemplateItem> timeTemplateItems = await _dbSet
+            List<TimeTemplateItem> timeTemplateItems = await _dbSet.Where(i => i.Status == TimeTemplateStatus.Applied)
                 .Include(i => i.Schedules.Where(s => s.ScheduleStatus == ScheduleStatus.Approved))
                 .Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).OrderBy(o => o.ScheduleTime).ToListAsync();
             float goodsCapacity = goodsRepository.GetGoodCapacity();
