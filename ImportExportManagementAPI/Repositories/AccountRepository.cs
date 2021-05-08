@@ -21,7 +21,7 @@ namespace ImportExportManagementAPI.Repositories
         public List<Account> GetAccounts(AccountStatus status)
         {
             List<Account> accounts = null;
-            accounts = _dbSet.Where(p => p.Status == status).ToList();
+            accounts = _dbSet.Include(i => i.Role).Where(p => p.Status == status).ToList();
             return accounts;
         }
         public string checkLogin(Account account)

@@ -87,35 +87,36 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ChangeSchedule(int id, Schedule updateSchedule)
         {
-            Boolean checkTime = _timeTemplateItemRepo.CheckValidTime(updateSchedule.TimeTemplateItemId);
-            if (checkTime)
+            if (id != updateSchedule.ScheduleId)
             {
-                TransactionType type = _timeTemplateItemRepo.DefineTransactionType(updateSchedule.PartnerId);
-
-                Schedule beforeSchedule = await _repo.GetByIDAsync(id);
-                String check = await _timeTemplateItemRepo.ChangeSchedule(updateSchedule, beforeSchedule);
-                if (check.Length == 0)
-                {
-                    try
-                    {
-                        updateSchedule.ScheduleStatus = ScheduleStatus.Approved;
-                        _repo.Insert(updateSchedule);
-                        await _repo.SaveAsync();
-                        return CreatedAtAction("GetSchedule", new { id = updateSchedule.ScheduleId }, updateSchedule);
-                    }
-
-                    catch
-                    {
-                        return BadRequest("Update failed");
-                    }
-
-                }
-                return BadRequest("Update failed");
+                return BadRequest();
+            }
+           if (_timeTemplateItemRepo.CheckValidTime(updateSchedule.TimeTemplateItemId))
+            {
+                _repo.Update(updateSchedule);
+                await hubContext.Clients.All.SendAsync("CancelSchedule", "other user cancel schedule");
             }
             else
             {
-                return BadRequest("Out of time to change schedule");
+                return BadRequest("This frame is time out");
             }
+            try
+            {
+                await _repo.SaveAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_repo.Exist(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok(updateSchedule);
         }
 
         // POST: api/Schedules

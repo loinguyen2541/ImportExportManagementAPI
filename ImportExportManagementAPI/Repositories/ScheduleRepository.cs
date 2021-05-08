@@ -143,7 +143,8 @@ namespace ImportExportManagement_API.Repositories
             {
                 foreach (var item in listSchedules)
                 {
-                    totalWeight += item.RegisteredWeight;
+                    if (item.ScheduleStatus != ScheduleStatus.Cancel)
+                        totalWeight += item.RegisteredWeight;
                 }
             }
             return totalWeight;

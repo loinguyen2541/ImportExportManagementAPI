@@ -21,9 +21,9 @@ namespace ImportExportManagementAPI.Controllers
         }
         [HttpGet("current")]
         [AllowAnonymous]
-        public async Task<ActionResult<List<TimeTemplateItem>>> getCurrent()
+        public async Task<ActionResult<List<TimeTemplateItem>>> getCurrent([FromQuery] string scheduleType)
         {
-            List<TimeTemplateItem> timeTemplateItems = await _timeTemplateItemRepository.GetAppliedItem();
+            List<TimeTemplateItem> timeTemplateItems = await _timeTemplateItemRepository.GetAppliedItemByScheduleType(scheduleType);
             return Ok(timeTemplateItems);
         }
     }

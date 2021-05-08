@@ -1,4 +1,5 @@
-﻿using ImportExportManagementAPI.Enums;
+﻿using ImportExportManagement_API.Models;
+using ImportExportManagementAPI.Enums;
 using ImportExportManagementAPI.Filters;
 using ImportExportManagementAPI.Hubs;
 using ImportExportManagementAPI.Models;
@@ -32,7 +33,7 @@ namespace ImportExportManagementAPI.Controllers
             Pagination<Notification> notifications = await _repo.GetAllNotification(paging);
             return notifications;
         }
-        [HttpGet("partners/{partnerId}")]
+        [HttpGet("getByUsername")]
         [AllowAnonymous]
         public async Task<ActionResult<Pagination<Notification>>> GetPartnerNotification([FromQuery] PaginationParam paging, String username)
         {
@@ -87,8 +88,22 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<Notification>> PostNotification(Notification noti)
         {
-            _repo.Insert(noti);
-            await _repo.SaveAsync();
+            List<Notification> notifications = new List<Notification>();
+            AccountRepository accountRepository = new AccountRepository();
+            notifications.Add(noti);
+            Account account = accountRepository.GetAccounts(AccountStatus.Active).Where(p => p.Username == "admin").FirstOrDefault();
+            if (account != null)
+            {
+                Notification adminNoti = new Notification();
+                adminNoti.Content = noti.Content;
+                adminNoti.CreatedDate = noti.CreatedDate;
+                adminNoti.NotificationType = noti.NotificationType;
+                adminNoti.Status = noti.Status;
+                adminNoti.Title = noti.Title;
+                adminNoti.Username = account.Username;
+                notifications.Add(adminNoti);
+            }
+            await _repo.AddRangeNoti(notifications);
             await hubContext.Clients.All.SendAsync("PushNotiSuccess", "reload");
             return CreatedAtAction("GetNotification", new { id = noti.NotificationId }, noti);
         }
