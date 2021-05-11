@@ -29,7 +29,10 @@ namespace ImportExportManagementAPI.Repositories
         {
             return _dbSet.Where(s => s.AttributeKey == AttributeKey.StorageCapacity.ToString()).Select(s => s.AttributeValue).SingleOrDefault();
         }
-
+        public String GetTimeBetweenSlot()
+        {
+            return _dbSet.Where(s => s.AttributeKey == AttributeKey.TimeBetweenSlot.ToString()).Select(s => s.AttributeValue).SingleOrDefault();
+        }
         public async Task<Boolean> UpdateAutoSchedule(String time)
         {
             TimeSpan newTime;
