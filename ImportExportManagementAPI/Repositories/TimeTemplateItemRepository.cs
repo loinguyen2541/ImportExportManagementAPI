@@ -361,6 +361,35 @@ namespace ImportExportManagementAPI.Repositories
             return listTemp;
         }
 
+        public List<TimeTemplateItem> GetPendingTimeTemplateItems()
+        {
+            return _dbSet.Where(t => t.Status == TimeTemplateStatus.Pending).ToList();
+        }
+
+        public List<TimeTemplateItem> GetAppliedTimeTemplateItems()
+        {
+            return _dbSet.Where(t => t.Status == TimeTemplateStatus.Applied).ToList();
+        }
+
+        public void ChangePendingToAppliedTimeTemplateItem()
+        {
+            List<TimeTemplateItem> pendingTimeTemplateItems = GetPendingTimeTemplateItems();
+            if (pendingTimeTemplateItems != null && pendingTimeTemplateItems.Count > 0)
+            {
+                List<TimeTemplateItem> appliedTimeTemplateItems = GetAppliedTimeTemplateItems();
+                foreach (var item in appliedTimeTemplateItems)
+                {
+                    item.Status = TimeTemplateStatus.Disabled;
+                    _dbContext.Entry(item).State = EntityState.Modified;
+                }
+                foreach (var item in pendingTimeTemplateItems)
+                {
+                    item.Status = TimeTemplateStatus.Applied;
+                    _dbContext.Entry(item).State = EntityState.Modified;
+                }
+                _dbContext.SaveChanges();
+            }
+        }
         //public async Task<string> UpdateScheduleSameTypeAsync(Schedule beforeSchedule, Schedule afterSchedule)
         //{
         //    String message = "";
