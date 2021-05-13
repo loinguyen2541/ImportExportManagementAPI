@@ -163,6 +163,7 @@ namespace ImportExportManagementAPI.Repositories
             List<TimeTemplateItem> timeTemplateItems = await _dbSet
                 .Where(i => i.Status == TimeTemplateStatus.Applied)
                .Include(i => i.TimeTemplate)
+               .Include(i => i.Schedules.Where(s => s.ScheduleStatus == ScheduleStatus.Approved))
                .Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied 
                && i.TimeTemplate.ApplyingDate.Date == DateTime.Now.Date
                )
