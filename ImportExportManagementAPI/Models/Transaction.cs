@@ -27,5 +27,8 @@ namespace ImportExportManagement_API.Models
 
         public int GoodsId { get; set; }
         public Goods Goods { get; set; }
+
+        public int? ScheduleId { get; set; }
+        public Schedule Schedule { get; set; }
     }
 }
