@@ -48,6 +48,7 @@ namespace ImportExportManagement_API
 
             //Transaction
             modelBuilder.Entity<Transaction>().Property(t => t.WeightOut).HasDefaultValue(0);
+            modelBuilder.Entity<Transaction>().HasIndex(t => t.ScheduleId).IsUnique(false);
 
             //SystemConfig
             modelBuilder.Entity<SystemConfig>().HasKey(s => s.AttributeKey);
