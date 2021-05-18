@@ -13,6 +13,6 @@ namespace ImportExportManagementAPI.Models
 {
     public enum ScheduleStatus
     {
-        Approved, Success, Cancel
+        Approved, Success, Cancel, Late, Early
     }
 }
