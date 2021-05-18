@@ -23,6 +23,11 @@ namespace ImportExportManagementAPI.Controllers
             _timedGenerateScheduleService = timedGenerateScheduleService;
         }
 
+        [HttpGet("timeBetweenSlot")]
+        public ActionResult<String> GetTimeBetweenSlot()
+        {
+            return Ok(_systemConfigRepository.GetTimeBetweenSlot());
+        }
         [HttpGet("storge-capacity")]
         public ActionResult<String> GetStorgeCapacity()
         {
