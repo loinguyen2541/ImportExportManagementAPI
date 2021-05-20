@@ -41,7 +41,7 @@ namespace ImportExportManagement_API
                     .HasColumnType("Date");
 
             //Partner
-            modelBuilder.Entity<Partner>().HasOne(p => p.Account).WithOne(a => a.Partner).HasForeignKey<Partner>(p => p.Username);
+            modelBuilder.Entity<Partner>().HasOne(p => p.Account).WithOne(a => a.Partner).HasForeignKey<Partner>(p => p.Username).IsRequired(false);
 
             //IdentityCard
             modelBuilder.Entity<IdentityCard>().HasKey(i => i.IdentityCardId);
