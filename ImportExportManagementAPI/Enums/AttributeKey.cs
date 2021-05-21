@@ -29,7 +29,11 @@ namespace ImportExportManagementAPI.Models
         [EnumMember(Value = "FinishBreak")]
         FinishBreak,
         [EnumMember(Value = "TimeBetweenSlot")]
-        TimeBetweenSlot
+        TimeBetweenSlot,
+        [EnumMember(Value = "MaximumSlot")]
+        MaximumSlot,
+        [EnumMember(Value = "MaximumCanceledSchechule")]
+        MaximumCanceledSchechule
 
     }
 }

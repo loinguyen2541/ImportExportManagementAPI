@@ -90,6 +90,14 @@ namespace ImportExportManagement_API
             timeBetweenSlot.AttributeKey = AttributeKey.TimeBetweenSlot.ToString();
             timeBetweenSlot.AttributeValue = configuration.GetValue<String>("SystemConfigs:TimeBetweenSlot");
 
+            SystemConfig maximumCanceledSchechule = new SystemConfig();
+            maximumCanceledSchechule.AttributeKey = AttributeKey.MaximumCanceledSchechule.ToString();
+            maximumCanceledSchechule.AttributeValue = configuration.GetValue<String>("SystemConfigs:MaximumCanceledSchechule");
+
+            SystemConfig maximumSlot = new SystemConfig();
+            maximumSlot.AttributeKey = AttributeKey.MaximumSlot.ToString();
+            maximumSlot.AttributeValue = configuration.GetValue<String>("SystemConfigs:MaximumSlot ");
+
             modelBuilder.Entity<SystemConfig>().HasData(storgeCapcacity);
             modelBuilder.Entity<SystemConfig>().HasData(autoSchedule);
             modelBuilder.Entity<SystemConfig>().HasData(startBreak);
@@ -97,6 +105,8 @@ namespace ImportExportManagement_API
             modelBuilder.Entity<SystemConfig>().HasData(startWorking);
             modelBuilder.Entity<SystemConfig>().HasData(finishWorking);
             modelBuilder.Entity<SystemConfig>().HasData(timeBetweenSlot);
+            modelBuilder.Entity<SystemConfig>().HasData(maximumCanceledSchechule);
+            modelBuilder.Entity<SystemConfig>().HasData(maximumSlot);
         }
 
         public DbSet<Partner> Partner { get; set; }
