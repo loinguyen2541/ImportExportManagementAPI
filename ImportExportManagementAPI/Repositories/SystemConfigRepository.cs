@@ -29,6 +29,15 @@ namespace ImportExportManagementAPI.Repositories
         {
             return _dbSet.Where(s => s.AttributeKey == AttributeKey.StorageCapacity.ToString()).Select(s => s.AttributeValue).SingleOrDefault();
         }
+        public String GetMaximumSlot()
+        {
+            return _dbSet.Where(s => s.AttributeKey == AttributeKey.MaximumSlot.ToString()).Select(s => s.AttributeValue).SingleOrDefault();
+        }
+        public String GetMaximumCanceledSchechule()
+        {
+            return _dbSet.Where(s => s.AttributeKey == AttributeKey.MaximumCanceledSchechule.ToString()).Select(s => s.AttributeValue).SingleOrDefault();
+        }
+
         public String GetTimeBetweenSlot()
         {
             return _dbSet.Where(s => s.AttributeKey == AttributeKey.TimeBetweenSlot.ToString()).Select(s => s.AttributeValue).SingleOrDefault();

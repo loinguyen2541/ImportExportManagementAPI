@@ -41,14 +41,14 @@ namespace ImportExportManagementAPI.Workers
             {
                 if (Schedules.Count > 0)
                 {
-                    CreateSchdule(Schedules.Dequeue());
+                    await CreateSchduleAsync(Schedules.Dequeue());
                     _logger.LogInformation("Task: Excuted");
                 }
                 await Task.Delay(1000, stoppingToken);
             }
         }
 
-        private void CreateSchdule(Schedule schedule)
+        private async Task CreateSchduleAsync(Schedule schedule)
         {
             if (schedule == null)
             {
@@ -68,7 +68,7 @@ namespace ImportExportManagementAPI.Workers
                     TransactionType type = _timeTemplateItemRepo.DefineTransactionType(schedule.PartnerId);
                     schedule.TransactionType = type;
 
-                    if (_timeTemplateItemRepo.CheckInventory(schedule.RegisteredWeight, schedule.TimeTemplateItemId, schedule.TransactionType, storgeCapacity))
+                    if (await _timeTemplateItemRepo.CheckInventory(schedule.RegisteredWeight, schedule.TimeTemplateItemId, schedule.TransactionType, storgeCapacity))
                     {
                         _timeTemplateItemRepo.UpdateCurrent(schedule.TransactionType, schedule.RegisteredWeight, schedule.TimeTemplateItemId);
 

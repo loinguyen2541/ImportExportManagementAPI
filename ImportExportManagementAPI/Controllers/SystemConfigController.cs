@@ -31,7 +31,13 @@ namespace ImportExportManagementAPI.Controllers
         [HttpGet("storge-capacity")]
         public ActionResult<String> GetStorgeCapacity()
         {
-            return Ok(_systemConfigRepository.GetStorageCapacity());
+            return Ok(new
+            {
+                storeCapacity = _systemConfigRepository.GetStorageCapacity(),
+                MaximumSlot = _systemConfigRepository.GetMaximumSlot(),
+                MaximumCanceledSchechule = _systemConfigRepository.GetMaximumCanceledSchechule(),
+                TimeBetweenSlot = _systemConfigRepository.GetTimeBetweenSlot()
+            });
         }
 
         [HttpPut("auto-schedule")]
