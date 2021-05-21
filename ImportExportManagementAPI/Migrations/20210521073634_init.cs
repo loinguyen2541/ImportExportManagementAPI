@@ -93,9 +93,10 @@ namespace ImportExportManagementAPI.Migrations
                 name: "Account",
                 columns: table => new
                 {
-                    Username = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Password = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
+                    DeviceToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RoleId = table.Column<int>(type: "int", nullable: false),
                     Token = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -118,6 +119,7 @@ namespace ImportExportManagementAPI.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Inventory = table.Column<float>(type: "real", nullable: false),
                     ScheduleTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     TimeTemplateId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -140,7 +142,7 @@ namespace ImportExportManagementAPI.Migrations
                     Username = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RecordDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AccountUsername = table.Column<string>(type: "nvarchar(25)", nullable: true)
+                    AccountUsername = table.Column<string>(type: "nvarchar(50)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -164,7 +166,7 @@ namespace ImportExportManagementAPI.Migrations
                     PhoneNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     PartnerStatus = table.Column<int>(type: "int", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(25)", nullable: true),
+                    Username = table.Column<string>(type: "nvarchar(50)", nullable: true),
                     PartnerTypeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -240,6 +242,37 @@ namespace ImportExportManagementAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notification",
+                columns: table => new
+                {
+                    NotificationId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NotificationType = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    PartnerId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notification", x => x.NotificationId);
+                    table.ForeignKey(
+                        name: "FK_Notification_Account_Username",
+                        column: x => x.Username,
+                        principalTable: "Account",
+                        principalColumn: "Username",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Notification_Partner_PartnerId",
+                        column: x => x.PartnerId,
+                        principalTable: "Partner",
+                        principalColumn: "PartnerId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Schedule",
                 columns: table => new
                 {
@@ -296,7 +329,8 @@ namespace ImportExportManagementAPI.Migrations
                     TransactionStatus = table.Column<int>(type: "int", nullable: false),
                     PartnerId = table.Column<int>(type: "int", nullable: false),
                     IdentificationCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GoodsId = table.Column<int>(type: "int", nullable: false)
+                    GoodsId = table.Column<int>(type: "int", nullable: false),
+                    ScheduleId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -313,54 +347,29 @@ namespace ImportExportManagementAPI.Migrations
                         principalTable: "Partner",
                         principalColumn: "PartnerId",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Notification",
-                columns: table => new
-                {
-                    NotificationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    NotificationType = table.Column<int>(type: "int", nullable: false),
-                    StatusAdmin = table.Column<int>(type: "int", nullable: false),
-                    StatusPartner = table.Column<int>(type: "int", nullable: false),
-                    ContentForAdmin = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ContentForPartner = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PartnerId = table.Column<int>(type: "int", nullable: false),
-                    TransactionId = table.Column<int>(type: "int", nullable: false),
-                    ScheduleId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notification", x => x.NotificationId);
                     table.ForeignKey(
-                        name: "FK_Notification_Partner_PartnerId",
-                        column: x => x.PartnerId,
-                        principalTable: "Partner",
-                        principalColumn: "PartnerId");
-                    table.ForeignKey(
-                        name: "FK_Notification_Schedule_ScheduleId",
+                        name: "FK_Transaction_Schedule_ScheduleId",
                         column: x => x.ScheduleId,
                         principalTable: "Schedule",
                         principalColumn: "ScheduleId",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Notification_Transaction_TransactionId",
-                        column: x => x.TransactionId,
-                        principalTable: "Transaction",
-                        principalColumn: "TransactionId");
                 });
 
             migrationBuilder.InsertData(
                 table: "SystemConfig",
                 columns: new[] { "AttributeKey", "AttributeValue" },
-                values: new object[] { "StorageCapacity", "2000" });
-
-            migrationBuilder.InsertData(
-                table: "SystemConfig",
-                columns: new[] { "AttributeKey", "AttributeValue" },
-                values: new object[] { "AutoSchedule", "13:00:00" });
+                values: new object[,]
+                {
+                    { "StorageCapacity", "2000" },
+                    { "AutoSchedule", "23:00:00" },
+                    { "StartBreak", "11:30:00" },
+                    { "FinishBreak", "13:00:00" },
+                    { "StartWorking", "8:00:00" },
+                    { "FinishWorking", "5:00:00" },
+                    { "TimeBetweenSlot", "30" },
+                    { "MaximumCanceledSchechule", "3" },
+                    { "MaximumSlot", "10" }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Account_RoleId",
@@ -398,14 +407,9 @@ namespace ImportExportManagementAPI.Migrations
                 column: "PartnerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notification_ScheduleId",
+                name: "IX_Notification_Username",
                 table: "Notification",
-                column: "ScheduleId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notification_TransactionId",
-                table: "Notification",
-                column: "TransactionId");
+                column: "Username");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Partner_PartnerTypeId",
@@ -448,6 +452,11 @@ namespace ImportExportManagementAPI.Migrations
                 name: "IX_Transaction_PartnerId",
                 table: "Transaction",
                 column: "PartnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transaction_ScheduleId",
+                table: "Transaction",
+                column: "ScheduleId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -468,16 +477,13 @@ namespace ImportExportManagementAPI.Migrations
                 name: "SystemConfig");
 
             migrationBuilder.DropTable(
+                name: "Transaction");
+
+            migrationBuilder.DropTable(
                 name: "Inventory");
 
             migrationBuilder.DropTable(
                 name: "Schedule");
-
-            migrationBuilder.DropTable(
-                name: "Transaction");
-
-            migrationBuilder.DropTable(
-                name: "TimeTemplateItem");
 
             migrationBuilder.DropTable(
                 name: "Goods");
@@ -486,13 +492,16 @@ namespace ImportExportManagementAPI.Migrations
                 name: "Partner");
 
             migrationBuilder.DropTable(
-                name: "TimeTemplate");
+                name: "TimeTemplateItem");
 
             migrationBuilder.DropTable(
                 name: "Account");
 
             migrationBuilder.DropTable(
                 name: "PartnerType");
+
+            migrationBuilder.DropTable(
+                name: "TimeTemplate");
 
             migrationBuilder.DropTable(
                 name: "Role");

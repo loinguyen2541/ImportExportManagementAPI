@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImportExportManagementAPI.Migrations
 {
     [DbContext(typeof(IEDbContext))]
-    [Migration("20210420083747_init")]
+    [Migration("20210521073634_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,7 +29,7 @@ namespace ImportExportManagementAPI.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("AccountUsername")
-                        .HasColumnType("nvarchar(25)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -54,10 +54,7 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ContentForAdmin")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ContentForPartner")
+                    b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedDate")
@@ -66,28 +63,24 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("NotificationType")
                         .HasColumnType("int");
 
-                    b.Property<int>("PartnerId")
+                    b.Property<int?>("PartnerId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ScheduleId")
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int>("StatusAdmin")
-                        .HasColumnType("int");
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("StatusPartner")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TransactionId")
-                        .HasColumnType("int");
+                    b.Property<string>("Username")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("NotificationId");
 
                     b.HasIndex("PartnerId");
 
-                    b.HasIndex("ScheduleId");
-
-                    b.HasIndex("TransactionId");
+                    b.HasIndex("Username");
 
                     b.ToTable("Notification");
                 });
@@ -128,7 +121,42 @@ namespace ImportExportManagementAPI.Migrations
                         new
                         {
                             AttributeKey = "AutoSchedule",
+                            AttributeValue = "23:00:00"
+                        },
+                        new
+                        {
+                            AttributeKey = "StartBreak",
+                            AttributeValue = "11:30:00"
+                        },
+                        new
+                        {
+                            AttributeKey = "FinishBreak",
                             AttributeValue = "13:00:00"
+                        },
+                        new
+                        {
+                            AttributeKey = "StartWorking",
+                            AttributeValue = "8:00:00"
+                        },
+                        new
+                        {
+                            AttributeKey = "FinishWorking",
+                            AttributeValue = "5:00:00"
+                        },
+                        new
+                        {
+                            AttributeKey = "TimeBetweenSlot",
+                            AttributeValue = "30"
+                        },
+                        new
+                        {
+                            AttributeKey = "MaximumCanceledSchechule",
+                            AttributeValue = "3"
+                        },
+                        new
+                        {
+                            AttributeKey = "MaximumSlot",
+                            AttributeValue = "10"
                         });
                 });
 
@@ -167,6 +195,9 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<TimeSpan>("ScheduleTime")
                         .HasColumnType("time");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<int>("TimeTemplateId")
                         .HasColumnType("int");
 
@@ -180,8 +211,11 @@ namespace ImportExportManagementAPI.Migrations
             modelBuilder.Entity("ImportExportManagement_API.Models.Account", b =>
                 {
                     b.Property<string>("Username")
-                        .HasMaxLength(25)
-                        .HasColumnType("nvarchar(25)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("DeviceToken")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
                         .HasMaxLength(25)
@@ -328,7 +362,7 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Username")
-                        .HasColumnType("nvarchar(25)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("PartnerId");
 
@@ -430,6 +464,9 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<int>("PartnerId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ScheduleId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("TimeIn")
                         .HasColumnType("datetime2");
 
@@ -456,6 +493,8 @@ namespace ImportExportManagementAPI.Migrations
 
                     b.HasIndex("PartnerId");
 
+                    b.HasIndex("ScheduleId");
+
                     b.ToTable("Transaction");
                 });
 
@@ -470,27 +509,15 @@ namespace ImportExportManagementAPI.Migrations
 
             modelBuilder.Entity("ImportExportManagementAPI.Models.Notification", b =>
                 {
-                    b.HasOne("ImportExportManagement_API.Models.Partner", "Partner")
+                    b.HasOne("ImportExportManagement_API.Models.Partner", null)
                         .WithMany("Notifications")
-                        .HasForeignKey("PartnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PartnerId");
 
-                    b.HasOne("ImportExportManagement_API.Models.Schedule", "Schedule")
+                    b.HasOne("ImportExportManagement_API.Models.Account", "Account")
                         .WithMany("Notifications")
-                        .HasForeignKey("ScheduleId");
+                        .HasForeignKey("Username");
 
-                    b.HasOne("ImportExportManagement_API.Models.Transaction", "Transaction")
-                        .WithMany("Notifications")
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Partner");
-
-                    b.Navigation("Schedule");
-
-                    b.Navigation("Transaction");
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("ImportExportManagementAPI.Models.TimeTemplateItem", b =>
@@ -611,9 +638,15 @@ namespace ImportExportManagementAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ImportExportManagement_API.Models.Schedule", "Schedule")
+                        .WithOne("Transaction")
+                        .HasForeignKey("ImportExportManagement_API.Models.Transaction", "ScheduleId");
+
                     b.Navigation("Goods");
 
                     b.Navigation("Partner");
+
+                    b.Navigation("Schedule");
                 });
 
             modelBuilder.Entity("ImportExportManagementAPI.Models.PartnerType", b =>
@@ -634,6 +667,8 @@ namespace ImportExportManagementAPI.Migrations
             modelBuilder.Entity("ImportExportManagement_API.Models.Account", b =>
                 {
                     b.Navigation("ActivityLogs");
+
+                    b.Navigation("Notifications");
 
                     b.Navigation("Partner");
                 });
@@ -672,12 +707,7 @@ namespace ImportExportManagementAPI.Migrations
 
             modelBuilder.Entity("ImportExportManagement_API.Models.Schedule", b =>
                 {
-                    b.Navigation("Notifications");
-                });
-
-            modelBuilder.Entity("ImportExportManagement_API.Models.Transaction", b =>
-                {
-                    b.Navigation("Notifications");
+                    b.Navigation("Transaction");
                 });
 #pragma warning restore 612, 618
         }

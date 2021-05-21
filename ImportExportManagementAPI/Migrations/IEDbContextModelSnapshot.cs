@@ -71,8 +71,8 @@ namespace ImportExportManagementAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")
-                        .HasMaxLength(25)
-                        .HasColumnType("nvarchar(25)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("NotificationId");
 
@@ -145,6 +145,16 @@ namespace ImportExportManagementAPI.Migrations
                         {
                             AttributeKey = "TimeBetweenSlot",
                             AttributeValue = "30"
+                        },
+                        new
+                        {
+                            AttributeKey = "MaximumCanceledSchechule",
+                            AttributeValue = "3"
+                        },
+                        new
+                        {
+                            AttributeKey = "MaximumSlot",
+                            AttributeValue = "10"
                         });
                 });
 
@@ -201,6 +211,9 @@ namespace ImportExportManagementAPI.Migrations
                     b.Property<string>("Username")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("DeviceToken")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
                         .HasMaxLength(25)

@@ -20,6 +20,7 @@ namespace ImportExportManagement_API.Models
         [MaxLength(25)]
         public String Password { get; set; }
         public AccountStatus Status { get; set; }
+        public String DeviceToken { get; set; }
 
         public int RoleId { get; set; }
         public Role Role { get; set; }

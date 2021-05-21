@@ -18,7 +18,7 @@ namespace ImportExportManagementAPI.Models
         public String Content { get; set; }
         public DateTime CreatedDate { get; set; }
 
-        [MaxLength(25)]
+        [MaxLength(50)]
         public String Username { get; set; }
         public Account Account { get; set; }
     }
