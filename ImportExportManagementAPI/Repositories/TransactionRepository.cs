@@ -26,7 +26,7 @@ namespace ImportExportManagementAPI.Repositories
         public int CountTransactionByPartner(string dateRecord, int partnerId)
         {
             var convert = Convert.ToDateTime(dateRecord).Date;
-           List<Transaction> transactions =  _dbSet.Where(t => t.CreatedDate >= convert && t.CreatedDate < convert.AddDays(1) && t.PartnerId == partnerId && t.TransactionStatus == TransactionStatus.Success).ToList();
+            List<Transaction> transactions = _dbSet.Where(t => t.CreatedDate >= convert && t.CreatedDate < convert.AddDays(1) && t.PartnerId == partnerId && t.TransactionStatus == TransactionStatus.Success).ToList();
             return transactions.Count();
         }
 
@@ -248,6 +248,17 @@ namespace ImportExportManagementAPI.Repositories
                     TransactionStatus trans;
                     if (Enum.TryParse(filter.TransactionStatus, out trans))
                         queryable = queryable.Where(t => t.TransactionStatus == trans);
+                }
+                if (filter.IsScheduled != null)
+                {
+                    if (filter.IsScheduled == "Yes")
+                    {
+                        queryable = queryable.Where(t => t.IsScheduled == true);
+                    }
+                    else
+                    {
+                        queryable = queryable.Where(t => t.IsScheduled == false);
+                    }
                 }
                 if ((DateTime.TryParse(filter.DateFrom, out DateTime dateFrom) && (DateTime.TryParse(filter.DateTo, out DateTime dateTo))))
                 {
@@ -980,7 +991,7 @@ namespace ImportExportManagementAPI.Repositories
                 }
                 return true;
             }
-            catch 
+            catch
             {
                 return false;
             }

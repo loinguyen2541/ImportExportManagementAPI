@@ -266,7 +266,7 @@ namespace ImportExportManagement_API.Repositories
         {
 
             List<Schedule> schedules = await _dbSet
-                .Where(s => s.PartnerId == partnerId && !s.UpdatedBy.Equals("Update action")).OrderBy(s => s.ScheduleDate).ToListAsync();
+                .Where(s => s.PartnerId == partnerId && s.CreatedDate.Date == DateTime.Now.Date).ToListAsync();
             return schedules;
         }
 

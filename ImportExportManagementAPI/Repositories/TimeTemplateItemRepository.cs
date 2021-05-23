@@ -20,11 +20,11 @@ namespace ImportExportManagementAPI.Repositories
     public class TimeTemplateItemRepository : BaseRepository<TimeTemplateItem>
     {
 
-        public bool CheckInventory(float registeredWeight, int id, TransactionType type, float storageCapacity)
+        public async Task<bool> CheckInventory(float registeredWeight, int id, TransactionType type, float storageCapacity)
         {
             //check tồn kho đã đạt giới hạn chưa
-
-            TimeTemplateItem timeTemplateItem = _dbSet.Where(i => i.TimeTemplateItemId == id).SingleOrDefault();
+            List<TimeTemplateItem> timeTemplateItems = await GetAppliedItemByScheduleType(type.ToString());
+            TimeTemplateItem timeTemplateItem = timeTemplateItems.Where(i => i.TimeTemplateItemId == id).SingleOrDefault();
 
             _dbContext.Entry(timeTemplateItem).Reload();
 
@@ -150,7 +150,7 @@ namespace ImportExportManagementAPI.Repositories
             List<TimeTemplateItem> timeTemplateItems = await _dbSet.Where(i => i.Status == TimeTemplateStatus.Applied)
                 .Include(i => i.Schedules.Where(s => s.ScheduleStatus == ScheduleStatus.Approved))
                 .Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied).OrderBy(o => o.ScheduleTime).ToListAsync();
-       
+
             return await Task.Run(() => timeTemplateItems);
         }
 
@@ -164,7 +164,7 @@ namespace ImportExportManagementAPI.Repositories
                 .Where(i => i.Status == TimeTemplateStatus.Applied)
                .Include(i => i.TimeTemplate)
                .Include(i => i.Schedules.Where(s => s.ScheduleStatus == ScheduleStatus.Approved))
-               .Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied 
+               .Where(i => i.TimeTemplate.TimeTemplateStatus == TimeTemplateStatus.Applied
                && i.TimeTemplate.ApplyingDate.Date == DateTime.Now.Date
                )
                 .OrderBy(o => o.ScheduleTime).ToListAsync();
