@@ -31,6 +31,7 @@ namespace ImportExportManagement_API
         {
             //Account
             modelBuilder.Entity<Account>().HasKey(a => a.Username);
+            modelBuilder.Entity<Account>().Property(a => a.NumberCanceled).HasDefaultValue(0);
 
             //InventoryDetail
             modelBuilder.Entity<InventoryDetail>().HasKey(p => p.InventoryDetailId);
