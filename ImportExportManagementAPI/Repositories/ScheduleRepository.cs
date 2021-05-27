@@ -34,7 +34,7 @@ namespace ImportExportManagement_API.Repositories
             var convert = Convert.ToDateTime(dateRecord).Date;
             return _dbSet.Where(t => t.CreatedDate >= convert && t.CreatedDate < convert.AddDays(1)
             && t.PartnerId == partnerId
-            && t.ScheduleStatus == ScheduleStatus.Approved
+            && t.ScheduleStatus != ScheduleStatus.Cancel
             ).Count();
         }
 
@@ -253,7 +253,7 @@ namespace ImportExportManagement_API.Repositories
             {
                 var convert = Convert.ToDateTime(searchDate).Date;
                 var nextDay = convert.AddDays(1);
-                queryable = queryable.Where(s => convert <= s.ScheduleDate && s.ScheduleDate <= nextDay && s.ScheduleStatus != ScheduleStatus.Success);
+                queryable = queryable.Where(s => convert <= s.ScheduleDate && s.ScheduleDate <= nextDay );
                 int test = queryable.ToList().Count;
             }
             if (partnerId != 0)
