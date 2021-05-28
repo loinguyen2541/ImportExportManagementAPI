@@ -2,6 +2,7 @@
 using ImportExportManagementAPI.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,6 +17,8 @@ namespace ImportExportManagementAPI.Models
     public class TimeTemplateItem
     {
         public int TimeTemplateItemId { get; set; }
+
+        [NotMapped]
         public float Inventory { get; set; }
         public TimeSpan ScheduleTime { get; set; }
 

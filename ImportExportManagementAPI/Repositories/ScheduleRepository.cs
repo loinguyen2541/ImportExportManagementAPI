@@ -331,6 +331,13 @@ namespace ImportExportManagement_API.Repositories
             return listReport;
         }
 
+        public List<Schedule> GetCanceledScheduleBySystem()
+        {
+            DateTime now = DateTime.Now;
+            List<Schedule> schedules = _dbSet.Where(s => s.ScheduleDate.Date == now.Date).ToList();
+            return schedules;
+        }
+
         public void DisableAll()
         {
             List<Schedule> schedules = _dbSet.Where(p => p.ScheduleStatus == ScheduleStatus.Approved).ToList();

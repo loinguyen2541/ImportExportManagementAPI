@@ -17,7 +17,6 @@ namespace ImportExportManagement_API.Models
         public DateTime CreatedDate { get; set; }
         public String Description { get; set; }
         public float WeightOut { get; set; }
-        public bool IsScheduled { get; set; }
         public TransactionType TransactionType { get; set; }
         public TransactionStatus TransactionStatus { get; set; }
         public int PartnerId { get; set; }

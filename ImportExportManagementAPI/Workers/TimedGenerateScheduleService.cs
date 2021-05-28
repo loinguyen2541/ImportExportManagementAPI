@@ -28,6 +28,7 @@ namespace ImportExportManagementAPI.Workers
         private readonly ScheduleRepository _scheduleRepository;
         private readonly TransactionRepository _transactionRepository;
         private readonly SystemConfigRepository _systemConfigRepository;
+        private readonly AccountRepository _accountRepository;
 
         public TimedGenerateScheduleService(ILogger<TimedGenerateScheduleService> logger)
         {
@@ -38,6 +39,7 @@ namespace ImportExportManagementAPI.Workers
             _systemConfigRepository = new SystemConfigRepository();
             _transactionRepository = new TransactionRepository();
             _timeTemplateItemRepository = new TimeTemplateItemRepository();
+            _accountRepository = new AccountRepository();
         }
 
         public Task StartAsync(CancellationToken stoppingToken)
@@ -128,6 +130,7 @@ namespace ImportExportManagementAPI.Workers
                _timeTemplateItemRepository.ChangePendingToAppliedTimeTemplateItem();
                _scheduleRepository.DisableAll();
                _transactionRepository.CancelProcessing();
+               _accountRepository.UpdateAccountCancelesSchedule(_scheduleRepository.GetCanceledScheduleBySystem());
            }));
 
             if (count == 2)

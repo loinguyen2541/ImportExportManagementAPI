@@ -36,7 +36,6 @@ namespace ImportExportManagement_API.Models
         public PartnerType PartnerType { get; set; }
 
         public List<InventoryDetail> InventoryDetails { get; set; }
-        public List<Notification> Notifications { get; set; }
 
     }
 }
