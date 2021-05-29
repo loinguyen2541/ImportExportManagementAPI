@@ -91,8 +91,10 @@ namespace ImportExportManagementAPI
             });
             services.AddSingleton<TimedGenerateScheduleService>();
             services.AddSingleton<CreateScheduleQueueService>();
+            services.AddSingleton<UpdateScheduleQueueService>();
             services.AddHostedService(s => s.GetRequiredService<TimedGenerateScheduleService>());
             services.AddHostedService(s => s.GetRequiredService<CreateScheduleQueueService>());
+            services.AddHostedService(s => s.GetRequiredService<UpdateScheduleQueueService>());
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowOrigin",
