@@ -70,8 +70,8 @@ namespace ImportExportManagementAPI.Workers
                     {
                         try
                         {
-                            _repo.Update(schedule);
-                            await _repo.SaveAsync();
+                            _repo.UpdateForWorker(schedule);
+                  
                         }
                         catch (DbUpdateConcurrencyException)
                         {
@@ -93,7 +93,7 @@ namespace ImportExportManagementAPI.Workers
 
         public void SendMessage(String message)
         {
-            hubContext.Clients.All.SendAsync("CancelSchedule", message);
+            hubContext.Clients.All.SendAsync("UpdateSchedule", message);
             _logger.LogInformation("Log message: " + message);
         }
 

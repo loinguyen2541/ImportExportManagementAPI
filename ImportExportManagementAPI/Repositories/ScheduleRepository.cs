@@ -455,6 +455,17 @@ namespace ImportExportManagement_API.Repositories
         {
             return Enum.GetValues(typeof(ScheduleStatus)).Cast<ScheduleStatus>().ToList();
         }
+
+        public void UpdateForWorker(Schedule schedule)
+        {
+            Schedule localSchedule = _dbSet.Local.Where(s => s.ScheduleId == schedule.ScheduleId).FirstOrDefault();
+            if(localSchedule != null)
+            {
+                _dbContext.Entry(localSchedule).State = EntityState.Detached;
+            }
+            _dbContext.Entry(schedule).State = EntityState.Modified;
+            _dbContext.SaveChanges();
+        }
     }
     enum SystemName
     {

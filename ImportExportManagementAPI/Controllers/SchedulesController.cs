@@ -89,18 +89,7 @@ namespace ImportExportManagementAPI.Controllers
         [AllowAnonymous]
         public IActionResult ChangeSchedule(int id, Schedule updateSchedule)
         {
-            if (id != updateSchedule.ScheduleId)
-            {
-                return BadRequest();
-            }
-            if (_timeTemplateItemRepo.CheckValidTime(updateSchedule.TimeTemplateItemId))
-            {
-                _updateScheduleQueueService.Schedules.Enqueue(updateSchedule);
-            }
-            else
-            {
-                return BadRequest("This frame is time out");
-            }
+            _updateScheduleQueueService.Schedules.Enqueue(updateSchedule);
             return Ok();
         }
 
