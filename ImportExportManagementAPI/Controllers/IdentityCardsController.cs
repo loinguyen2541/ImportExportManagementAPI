@@ -31,6 +31,7 @@ namespace ImportExportManagementAPI.Controllers
         {
             return await _repo.GetAllAsync();
         }
+
         [HttpGet("pedding")]
         [AllowAnonymous]
         public async Task<ActionResult<List<IdentityCard>>> GetPendingCard()

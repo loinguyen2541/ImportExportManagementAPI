@@ -249,17 +249,7 @@ namespace ImportExportManagementAPI.Repositories
                     if (Enum.TryParse(filter.TransactionStatus, out trans))
                         queryable = queryable.Where(t => t.TransactionStatus == trans);
                 }
-                if (filter.IsScheduled != null)
-                {
-                    if (filter.IsScheduled == "Yes")
-                    {
-                        queryable = queryable.Where(t => t.IsScheduled == true);
-                    }
-                    else
-                    {
-                        queryable = queryable.Where(t => t.IsScheduled == false);
-                    }
-                }
+
                 if ((DateTime.TryParse(filter.DateFrom, out DateTime dateFrom) && (DateTime.TryParse(filter.DateTo, out DateTime dateTo))))
                 {
                     if (filter.DateFrom.Equals(filter.DateTo))
@@ -722,9 +712,6 @@ namespace ImportExportManagementAPI.Repositories
                 return "Partner is not available";
             }
 
-
-            bool checkSchedule = await CheckTransactionScheduled(trans.PartnerId);
-            trans.IsScheduled = checkSchedule;
             //check validate weight in weight out
             if (trans.WeightIn <= 0)
             {
@@ -801,7 +788,7 @@ namespace ImportExportManagementAPI.Repositories
             String check = "";
             bool checkUpdateSchedule = false;
             //update schedule
-            if (transaction.IsScheduled)
+            if (transaction.ScheduleId != null)
             {
                 ScheduleRepository scheduleRepo = new ScheduleRepository();
                 checkUpdateSchedule = await scheduleRepo.UpdateActualWeight(transaction.PartnerId, totalWeight);
@@ -810,7 +797,7 @@ namespace ImportExportManagementAPI.Repositories
                     check = "Weight is not valid with register weight";
                 }
             }
-            if (!transaction.IsScheduled || !checkUpdateSchedule)
+            if (transaction.ScheduleId == null || !checkUpdateSchedule)
             {
                 //transaction chưa đặt lịch
                 TimeTemplateItemRepository timeTemplateItemRepository = new TimeTemplateItemRepository();

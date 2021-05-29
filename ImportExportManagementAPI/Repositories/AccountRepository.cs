@@ -159,5 +159,16 @@ namespace ImportExportManagementAPI.Repositories
                 return false;
             }
         }
+
+        public void UpdateAccountCancelesSchedule(List<Schedule> schedules)
+        {
+            foreach (var item in schedules)
+            {
+                Account account = _dbSet.Where(p => p.Partner.PartnerId == item.PartnerId).SingleOrDefault();
+                account.NumberCanceled += 1;
+                _dbContext.Entry(account).State = EntityState.Modified;
+                _dbContext.SaveChanges();
+            }
+        }
     }
 }
