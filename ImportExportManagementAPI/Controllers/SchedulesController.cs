@@ -23,18 +23,18 @@ namespace ImportExportManagementAPI.Controllers
     {
         private readonly ScheduleRepository _repo;
         private readonly TimeTemplateItemRepository _timeTemplateItemRepo;
-        private readonly GoodsRepository _goodsRepository;
-        private readonly SystemConfigRepository _systemConfigRepository;
         private readonly IHubContext<ScheduleHub> hubContext;
         private readonly CreateScheduleQueueService _createScheduleQueueService;
-        public SchedulesController(IHubContext<ScheduleHub> scheduleHub, CreateScheduleQueueService createScheduleQueueService)
+        private readonly UpdateScheduleQueueService _updateScheduleQueueService;
+
+        public SchedulesController(IHubContext<ScheduleHub> scheduleHub, CreateScheduleQueueService createScheduleQueueService,
+           UpdateScheduleQueueService updateScheduleQueueService)
         {
             _repo = new ScheduleRepository();
             _timeTemplateItemRepo = new TimeTemplateItemRepository();
-            _goodsRepository = new GoodsRepository();
-            _systemConfigRepository = new SystemConfigRepository();
             hubContext = scheduleHub;
             _createScheduleQueueService = createScheduleQueueService;
+            _updateScheduleQueueService = updateScheduleQueueService;
         }
 
         [HttpGet]
@@ -44,6 +44,7 @@ namespace ImportExportManagementAPI.Controllers
             List<Schedule> schedules = await _repo.GetByPartnerId(partnerId);
             return Ok(schedules);
         }
+
         [HttpGet("getAll")]
         [AllowAnonymous]
         public ActionResult<Pagination<Schedule>> GetScheduleToDay()
@@ -51,6 +52,7 @@ namespace ImportExportManagementAPI.Controllers
             List<Schedule> schedules = _repo.GetAllAsyncToday();
             return Ok(schedules);
         }
+
         // GET: api/Schedules/search
         [HttpGet("search")]
         [AllowAnonymous]
@@ -85,38 +87,21 @@ namespace ImportExportManagementAPI.Controllers
         // PUT: api/Schedules/5
         [HttpPut("changeschedule/{id}")]
         [AllowAnonymous]
-        public async Task<IActionResult> ChangeSchedule(int id, Schedule updateSchedule)
+        public IActionResult ChangeSchedule(int id, Schedule updateSchedule)
         {
             if (id != updateSchedule.ScheduleId)
             {
                 return BadRequest();
             }
-           if (_timeTemplateItemRepo.CheckValidTime(updateSchedule.TimeTemplateItemId))
+            if (_timeTemplateItemRepo.CheckValidTime(updateSchedule.TimeTemplateItemId))
             {
-                _repo.Update(updateSchedule);
-                await hubContext.Clients.All.SendAsync("CancelSchedule", "other user cancel schedule");
+                _updateScheduleQueueService.Schedules.Enqueue(updateSchedule);
             }
             else
             {
                 return BadRequest("This frame is time out");
             }
-            try
-            {
-                await _repo.SaveAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_repo.Exist(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return Ok(updateSchedule);
+            return Ok();
         }
 
         // POST: api/Schedules
